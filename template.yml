@@ -3,7 +3,7 @@ title: QuantEcon
 description: A dedicated theme for the QuantEcon course materials
 version: 1.0.0
 license: MIT
-source: https://github.com/curvenote-themes/quantecon
+source: https://github.com/QuantEcon/quantecon-theme
 thumbnail: ./thumbnail.png
 authors:
   - name: Steve Purves
