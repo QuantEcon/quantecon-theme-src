@@ -4,7 +4,7 @@ COMMIT = $(shell git rev-parse --short HEAD)
 # You may need to install jq for this to work!
 VERSION = $(shell cat package.json | jq -r '.version')
 
-THEME=quantecon
+THEME=quantecon-theme
 
 check:
 	@which jq > /dev/null || (echo "Error: the jq linux command is not available. Please install it first (brew install jq | apt-get install jq)." && exit 1)
@@ -12,7 +12,7 @@ check:
 build-theme:
 	mkdir .deploy || true
 	rm -rf .deploy/$(THEME)
-	git clone --depth 1 https://github.com/curvenote-themes/$(THEME) .deploy/$(THEME)
+	git clone --depth 1 https://github.com/QuantEcon/$(THEME) .deploy/$(THEME)
 	rm -rf .deploy/$(THEME)/public .deploy/$(THEME)/build .deploy/$(THEME)/package.json .deploy/$(THEME)/package-lock.json .deploy/$(THEME)/template.yml .deploy/$(THEME)/server.js
 	find template -type f  -exec cp {} .deploy/$(THEME) \;
 	npm run prod:build
@@ -29,10 +29,10 @@ build-theme:
 	cd .deploy/$(THEME) && npm install
 
 build-quantecon:
-	make THEME=quantecon build-theme
+	make THEME=quantecon-theme build-theme
 
 deploy-theme: check
-	echo "Deploying $(THEME) theme to curvenote-themes/$(THEME)"
+	echo "Deploying $(THEME) theme to QuantEcon/$(THEME)"
 	echo "Version: $(VERSION)"
 	make THEME=$(THEME) build-theme
 	cd .deploy/$(THEME) && git add .
@@ -43,4 +43,4 @@ deploy-theme: check
 deploy: deploy-quantecon
 
 deploy-quantecon:
-	make THEME=quantecon deploy-theme
+	make THEME=quantecon-theme deploy-theme
