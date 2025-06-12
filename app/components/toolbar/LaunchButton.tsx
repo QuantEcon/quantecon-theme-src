@@ -31,7 +31,10 @@ function LaunchPanel() {
   const [privateServiceUrl, setPrivateServiceUrl] = React.useState<string | undefined>();
 
   const hasGitHub = !!project?.github;
-  const orgRepo = project?.github ? new URL(project?.github).pathname.slice(1) : undefined;
+  // Remove the `.myst` suffix from the orgRepo URL if present.
+  const orgRepo = project?.github 
+                    ? new URL(project?.github).pathname.slice(1).replace(/\.myst$/, '') 
+                    : undefined;
   const filename = `${page?.location.split('.')[0]}.ipynb`;
 
   const handleSelect = React.useCallback((value: string) => setService(value), []);
