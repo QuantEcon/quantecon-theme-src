@@ -1,5 +1,11 @@
 # @curvenote/quantecon-book
 
+## 1.1.1
+
+### Patch Changes
+
+- 6e39113: Fix colab link for lecture repo ending with .myst
+
 ## 1.1.0
 
 ### Minor Changes
