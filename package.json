@@ -20,13 +20,13 @@
     "version": "changeset version && npm install --force"
   },
   "dependencies": {
-    "@myst-theme/common": "^0.14.0",
-    "@myst-theme/icons": "^0.14.0",
-    "@myst-theme/jupyter": "^0.14.0",
-    "@myst-theme/providers": "^0.14.0",
-    "@myst-theme/search-minisearch": "^0.14.0",
-    "@myst-theme/site": "^0.14.0",
-    "@myst-theme/styles": "^0.14.0",
+    "@myst-theme/common": "^1.1.2",
+    "@myst-theme/icons": "^1.1.2",
+    "@myst-theme/jupyter": "^1.1.2",
+    "@myst-theme/providers": "^1.1.2",
+    "@myst-theme/search-minisearch": "^1.1.2",
+    "@myst-theme/site": "^1.1.2",
+    "@myst-theme/styles": "^1.1.2",
     "@radix-ui/react-dropdown-menu": "^2.1.6",
     "@radix-ui/react-popover": "^1.1.6",
     "@radix-ui/react-radio-group": "^1.2.3",
@@ -36,9 +36,9 @@
     "@remix-run/react": "~1.19.0",
     "@remix-run/vercel": "~1.19.0",
     "lucide-react": "^0.475.0",
-    "myst-common": "^1.7.9",
-    "myst-config": "^1.7.9",
-    "myst-to-react": "^0.14.0",
+    "myst-common": "^1.8.1",
+    "myst-config": "^1.8.1",
+    "myst-to-react": "^1.1.2",
     "node-fetch": "^2.7.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
@@ -60,8 +60,7 @@
   },
   "overrides": {
     "prismjs": "^1.30.0",
-    "katex": "^0.16.21",
-    "cytoscape": "3.30.4"
+    "katex": "^0.16.21"
   },
   "engines": {
     "node": ">=14"
