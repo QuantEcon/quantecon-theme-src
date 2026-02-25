@@ -43,7 +43,7 @@ export function ProjectFrontmatter({
         )}
       </div>
       {authors && (
-        <div aira-label="Author names and links">
+        <div aria-label="Author names and links">
           {authors.reduce<React.ReactNode>((acc, a, i, authors) => {
             let chunk: React.ReactNode = a.name;
             if (a.url) {
@@ -61,7 +61,7 @@ export function ProjectFrontmatter({
               chunk = <> and {chunk}</>;
             }
             return (
-              <span>
+              <span key={a.id ?? a.name ?? i}>
                 {acc}
                 {chunk}
               </span>
