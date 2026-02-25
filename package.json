@@ -58,6 +58,11 @@
     "prettier": "latest",
     "tailwindcss": "^3.4.17"
   },
+  "overrides": {
+    "prismjs": "^1.30.0",
+    "katex": "^0.16.21",
+    "cytoscape": "3.30.4"
+  },
   "engines": {
     "node": ">=14"
   },
