@@ -16,7 +16,7 @@ export function SidebarToggle() {
         })}
         width={24}
         height={24}
-        aria-label="Show table of contents"
+        aria-label="Hide table of contents"
       />
       <Menu
         className={classNames('absolute transition-all duration-300 ease-in-out hover:scale-110', {
@@ -25,7 +25,7 @@ export function SidebarToggle() {
         })}
         width={24}
         height={24}
-        aria-label="Hide table of contents"
+        aria-label="Show table of contents"
       />
     </button>
   );

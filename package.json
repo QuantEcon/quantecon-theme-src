@@ -63,7 +63,7 @@
     "katex": "^0.16.21"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=18"
   },
   "packageManager": "npm@8.10.0"
 }
