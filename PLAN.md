@@ -69,6 +69,11 @@ entire `@myst-theme` 1.x upgrade. Parity work is meaningless until what's alread
       hand-maintained; decide whether `changeset version` should keep prepending (and
       reconcile the format) or whether the changelog is now manual. Document the choice
       in `CONTRIBUTING.md`.
+- [ ] Introduce git **release tags** (`vX.Y.Z`). The release workflow currently creates
+      no tags or GitHub releases, so the `CHANGELOG.md` compare/release footer links
+      (and any future git-history tooling) have nothing to resolve to. Tag the existing
+      releases retroactively at their source commits (recorded in the bundle repo as
+      `🚀 vX.Y.Z from <sha>`) and tag going forward as part of the release step.
 - [ ] Fix naming/branding drift: reconcile the three package names (`@curvenote/quantecon-book`
       vs `@curvenote-themes/quantecon-theme` vs `template.yml` title), and the stale
       `curvenote-themes/quantecon` deploy URL in `README.md` (line ~89).
@@ -111,7 +116,7 @@ and a "full history" link.
       with the QuantEcon blue accent, dark mode, keyboard (Esc to close), and ARIA
       matching the existing toolbar components. Use Radix (already a dependency) for the
       disclosure.
-- [ ] Build commit/​history URLs from the project `github` field (reuse the `.myst`-suffix
+- [ ] Build commit/history URLs from the project `github` field (reuse the `.myst`-suffix
       handling already in `LaunchButton.tsx`).
 - [ ] Graceful no-op when the frontmatter fields are absent.
 

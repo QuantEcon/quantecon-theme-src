@@ -9,7 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > **Release flow.** This theme is developed here in `quantecon-theme-src` and
 > deployed (bundled) to [`QuantEcon/quantecon-theme`](https://github.com/QuantEcon/quantecon-theme)
 > via `make deploy`. The deploy step copies this file into the bundled repo, so this
-> is the canonical changelog. Versions are tagged from `package.json`.
+> is the canonical changelog. The version comes from `package.json`; each release is a
+> deploy commit (`🚀 vX.Y.Z from <sha>`) in the bundled repo. There are currently no
+> git tags (see Phase 0 in [`PLAN.md`](./PLAN.md)).
 
 ## [Unreleased]
 
@@ -39,8 +41,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Dependencies
 - Numerous Dependabot updates merged, including `webpack`, `vite`, `vm2`, `tar-fs`, `lodash`/`lodash-es`, `qs`/`express`, `js-yaml`, `form-data`, `brace-expansion`, `@babel/*`, `diff`, and `minimatch`.
 
-## [1.1.1] - 2025-06-12
-> Changeset authored 2025-06; release formally cut 2026-02-25 ([#8](https://github.com/QuantEcon/quantecon-theme-src/pull/8)).
+## [1.1.1] - 2025-06-13
+> Deployed to the bundle repo on 2025-06-13. The source version-bump PR
+> ([#8](https://github.com/QuantEcon/quantecon-theme-src/pull/8)) was merged much later,
+> on 2026-02-25, as bookkeeping — it did not change what users were running.
 
 ### Fixed
 - Strip the `.myst` suffix from the derived `org/repo` when building Colab / JupyterHub launch URLs, so lecture repos named `lecture-*.myst` produce working notebook links (`6e39113`, [#4](https://github.com/QuantEcon/quantecon-theme-src/pull/4)).
