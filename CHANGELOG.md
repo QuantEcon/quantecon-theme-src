@@ -21,9 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > changes below — a `make deploy` is required to ship them.
 
 ### Changed
-- Upgrade all `@myst-theme/*` packages from `0.14.x` to `1.1.2`, and `myst-common`/`myst-config` to `1.8.1`, aligning with the upstream [`myst-theme/book`](https://github.com/jupyter-book/myst-theme/tree/main/themes/book) template ([#30](https://github.com/QuantEcon/quantecon-theme-src/pull/30)). **Upstream breaking change:** `@myst-theme` v1.0.0 introduced a new AST structure for notebook output nodes ([jupyter-book/myst-theme#571](https://github.com/jupyter-book/myst-theme/pull/571)).
+- Upgrade all `@myst-theme/*` packages from `0.14.x` to `1.3.0`, and `myst-common`/`myst-config` to `1.9.5`, tracking current upstream [`myst-theme/book`](https://github.com/jupyter-book/myst-theme/tree/main/themes/book) ([#30](https://github.com/QuantEcon/quantecon-theme-src/pull/30) brought 0.14→1.1.2; later bumped to 1.3.0 to match latest upstream). **Upstream breaking change:** `@myst-theme` v1.0.0 introduced a new AST structure for notebook output nodes ([jupyter-book/myst-theme#571](https://github.com/jupyter-book/myst-theme/pull/571)).
 - Bump all six `@remix-run/*` packages from `~1.17.0` to `~1.19.0` (still Remix v1) to resolve an `ERESOLVE` peer-dependency conflict with `@myst-theme/site` ([#29](https://github.com/QuantEcon/quantecon-theme-src/pull/29)).
-- Raise the Node engine requirement from `>=14` to `>=18` (required by Remix 1.19); add `.nvmrc` pinned to `18`; bump release-workflow actions v3 → v4 ([#31](https://github.com/QuantEcon/quantecon-theme-src/pull/31)).
+- Raise the Node engine floor from `>=14` to `>=20` (drops EOL Node 18) and move local/CI tooling to **Node 24** (`.nvmrc` + CI + release workflow), matching upstream's build; bump release-workflow actions v3 → v4 ([#31](https://github.com/QuantEcon/quantecon-theme-src/pull/31)).
 
 ### Added
 - CI workflow (`.github/workflows/ci.yml`) running type-check (`npm run compile`) and a production build (`npm run prod:build`) on every push/PR to `main` ([#31](https://github.com/QuantEcon/quantecon-theme-src/pull/31)).
