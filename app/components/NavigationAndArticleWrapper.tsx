@@ -1,5 +1,10 @@
 import { useSidebarHeight } from '@myst-theme/site';
-import { TabStateProvider, UiStateProvider, useThemeTop } from '@myst-theme/providers';
+import {
+  BannerStateProvider,
+  TabStateProvider,
+  UiStateProvider,
+  useThemeTop,
+} from '@myst-theme/providers';
 import { Toolbar } from './toolbar/Toolbar';
 import { ContentsSidebar } from './ContentsSidebar';
 
@@ -40,12 +45,14 @@ export function NavigationAndArticleWrapper({
 }) {
   return (
     <UiStateProvider>
-      <NavigationAndArticleWrapperInternal
-        children={children}
-        hide_toc={hide_toc}
-        hideSearch={hideSearch}
-        inset={inset}
-      />
+      <BannerStateProvider>
+        <NavigationAndArticleWrapperInternal
+          children={children}
+          hide_toc={hide_toc}
+          hideSearch={hideSearch}
+          inset={inset}
+        />
+      </BannerStateProvider>
     </UiStateProvider>
   );
 }

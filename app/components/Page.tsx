@@ -2,12 +2,7 @@ import type { PageLoader } from '@myst-theme/common';
 import { useOutlineHeight } from '@myst-theme/site';
 import { useLoaderData } from '@remix-run/react';
 import type { SiteManifest } from 'myst-config';
-import {
-  useBaseurl,
-  useSiteManifest,
-  ProjectProvider,
-  BannerStateProvider,
-} from '@myst-theme/providers';
+import { useBaseurl, useSiteManifest, ProjectProvider } from '@myst-theme/providers';
 import { ComputeOptionsProvider, ThebeLoaderAndServer } from '@myst-theme/jupyter';
 import { PageContent } from '~/components/PageContent';
 import type { TemplateOptions } from '~/types';
@@ -32,27 +27,25 @@ export function Page() {
   };
   return (
     <div className="relative bg-white dark:bg-qepage-dark">
-      <BannerStateProvider>
-        <ProjectProvider project={data.project}>
-          <PageProvider page={data.page}>
-            <NavigationAndArticleWrapper hide_toc={hide_toc} hideSearch={hide_search}>
-              <ComputeOptionsProvider
-                features={{
-                  notebookCompute: true,
-                  figureCompute: true,
-                  launchBinder: false,
-                }}
-              >
-                <ThebeLoaderAndServer baseurl={baseurl}>
-                  <main className="pt-[72px] px-2" ref={container}>
-                    <PageContent article={data.page} />
-                  </main>
-                </ThebeLoaderAndServer>
-              </ComputeOptionsProvider>
-            </NavigationAndArticleWrapper>
-          </PageProvider>
-        </ProjectProvider>
-      </BannerStateProvider>
+      <ProjectProvider project={data.project}>
+        <PageProvider page={data.page}>
+          <NavigationAndArticleWrapper hide_toc={hide_toc} hideSearch={hide_search}>
+            <ComputeOptionsProvider
+              features={{
+                notebookCompute: true,
+                figureCompute: true,
+                launchBinder: false,
+              }}
+            >
+              <ThebeLoaderAndServer baseurl={baseurl}>
+                <main className="pt-[72px] px-2" ref={container}>
+                  <PageContent article={data.page} />
+                </main>
+              </ThebeLoaderAndServer>
+            </ComputeOptionsProvider>
+          </NavigationAndArticleWrapper>
+        </PageProvider>
+      </ProjectProvider>
     </div>
   );
 }
