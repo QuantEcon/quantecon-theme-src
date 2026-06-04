@@ -32,6 +32,45 @@ export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
   });
 };
 
+/**
+ * Critical CSS — inlined in <head> to fix the Safari/WebKit FOUC on navigation
+ * (https://github.com/QuantEcon/quantecon-theme-src/issues/66).
+ *
+ * Static builds (`myst build --html`) navigate via full document loads, and
+ * WebKit paints the freshly-navigated document for ~1 frame BEFORE any <link>
+ * stylesheet applies — even the same-origin Tailwind app.css. That frame shows
+ * the default serif font and the content grid collapsed to `display: block`
+ * (i.e. the "raw HTML" flash users report). An inline <style> is parsed
+ * synchronously with the document, so it styles that very first paint with no
+ * network round-trip.
+ *
+ * Every selector is wrapped in `:where(...)` so these rules carry **zero**
+ * specificity: they take effect only while nothing else has loaded, and the
+ * real stylesheet (Tailwind preflight + @myst-theme/styles) always wins once it
+ * arrives. This keeps the inline block from overriding the live cascade despite
+ * being emitted after <Links /> in the document head.
+ *
+ * Keep the values in sync with their sources of truth:
+ *   - font stack:    tailwind.config.js  -> theme.extend.fontFamily.sans
+ *   - grid columns:  tailwind.config.js  -> theme.extend.gridTemplateColumns
+ *                    (`simple-sm` / `simple-xl`), applied by `.simple-center-grid`
+ *   - dark bg:       matches the page <body>, which @myst-theme/site renders as
+ *                    `dark:bg-stone-900` (#1c1917) — note the <body> tag lives in
+ *                    that upstream Document, not in this file. (This is the outer
+ *                    page background; the inner content panel uses `qepage-dark`
+ *                    #222, see app/components/Page.tsx — intentionally not set here
+ *                    since these rules target <body>.)
+ */
+const CRITICAL_CSS = `
+:where(html){font-family:"Source Sans 3",sans-serif}
+:where(body){margin:0;background-color:#fff}
+:where(.dark body){background-color:#1c1917}
+:where([hidden],.hidden){display:none}
+:where(.simple-center-grid){display:grid;grid-template-columns:[screen-start] 1fr [body-start] minmax(300px,800px) [body-end] 1fr [screen-end]}
+:where(.simple-center-grid) > *{grid-column:body-start / body-end}
+@media (min-width:1280px){:where(.simple-center-grid){grid-template-columns:[screen-start] 1fr 200px 20px [body-start] 800px [body-end] 20px [margin-start] 200px [margin-end] 1fr [screen-end]}}
+`;
+
 export const links: LinksFunction = () => {
   return [
     {
@@ -97,6 +136,12 @@ export default function AppWithReload() {
         baseurl={BASE_URL}
         renderers={RENDERERS}
         top={50}
+        // dangerouslySetInnerHTML is required, not incidental: CRITICAL_CSS uses a
+        // child combinator (`.simple-center-grid > *`), and React escapes `>` to
+        // `&gt;` in <style> text children during SSR. Browsers don't decode entities
+        // inside <style>, so `<style>{CRITICAL_CSS}</style>` would emit an invalid
+        // selector and silently drop the body-column rule. Keep this as-is.
+        head={<style dangerouslySetInnerHTML={{ __html: CRITICAL_CSS }} />}
       >
         <SkipTo
           targets={[

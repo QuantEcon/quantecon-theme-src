@@ -26,11 +26,24 @@ export default defineConfig({
   snapshotPathTemplate: "{testDir}/__snapshots__/{projectName}/{arg}{ext}",
   use: { baseURL, trace: "on-first-retry" },
   projects: [
+    // Visual snapshots run on Chromium (theme.spec.ts).
     {
       name: "desktop-chrome",
+      testMatch: /theme\.spec\.ts/,
       use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 800 } },
     },
-    { name: "mobile-chrome", use: { ...devices["Pixel 5"] } },
+    {
+      name: "mobile-chrome",
+      testMatch: /theme\.spec\.ts/,
+      use: { ...devices["Pixel 5"] },
+    },
+    // FOUC guard runs on WebKit only — Chromium paint-holds and can't show the
+    // flash (fouc.spec.ts, see QuantEcon/quantecon-theme-src#66).
+    {
+      name: "webkit-fouc",
+      testMatch: /fouc\.spec\.ts/,
+      use: { ...devices["Desktop Safari"] },
+    },
   ],
   webServer: {
     command: "bash tests/visual/serve.sh",
