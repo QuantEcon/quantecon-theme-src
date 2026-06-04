@@ -24,25 +24,33 @@ either a local theme **build directory** or a GitHub **archive zip URL**.
 
 | Target | `THEME_TEMPLATE` |
 | ------ | ---------------- |
-| **v1.1.1 (last release / baseline)** | `https://github.com/QuantEcon/quantecon-theme/archive/refs/heads/main.zip` *(the deployed bundle is still v1.1.1)* |
-| **2.0.0 candidate (this repo)** | a local build dir — `make build-theme` then `$PWD/.deploy/quantecon-theme` |
+| **This repo (current candidate)** | a local build dir — `make build-theme` then `$PWD/.deploy/quantecon-theme` |
+| **The live deployed bundle** | the build repo's `main` archive (moving HEAD = whatever is currently deployed) — `https://github.com/QuantEcon/quantecon-theme/archive/refs/heads/main.zip` |
 
-## Validate the 2.0.0 move (before / after)
+The committed `__snapshots__/` baselines are **v2.0.0** — the first release of the
+`@myst-theme` 1.x theme — captured from a local build.
+
+## Validate a change
 
 ```bash
-# 1. Capture the v1.1.1 baseline snapshots
-THEME_TEMPLATE="https://github.com/QuantEcon/quantecon-theme/archive/refs/heads/main.zip" \
-  npm run test:visual:update
-
-# 2. Build the 2.0.0 candidate and diff against the baseline
+# Build the candidate and diff it against the committed baselines
 make build-theme
 THEME_TEMPLATE="$PWD/.deploy/quantecon-theme" \
   npm run test:visual
 ```
 
-Any diffs reported in step 2 are exactly what the `@myst-theme` 0.14→1.3.0
-upgrade (+ Node 24) changed. Review `playwright-report/` and update baselines
-with `npm run test:visual:update` once changes are confirmed intentional.
+Any diffs are what your change altered. Review `playwright-report/`; once the
+changes are confirmed intentional, refresh the baselines:
+
+```bash
+THEME_TEMPLATE="$PWD/.deploy/quantecon-theme" \
+  npm run test:visual:update
+```
+
+> The baselines were first captured against the deployed **v1.1.1** bundle to validate
+> the `@myst-theme` 0.14 → 1.x upgrade, then re-based to **v2.0.0** once that upgrade
+> shipped. To compare against any released bundle, point `THEME_TEMPLATE` at its
+> archive zip.
 
 ## Files
 
