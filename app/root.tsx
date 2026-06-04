@@ -54,12 +54,18 @@ export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
  *   - font stack:    tailwind.config.js  -> theme.extend.fontFamily.sans
  *   - grid columns:  tailwind.config.js  -> theme.extend.gridTemplateColumns
  *                    (`simple-sm` / `simple-xl`), applied by `.simple-center-grid`
- *   - dark bg:       Tailwind `stone-900` (#1c1917), see <body> className below
+ *   - dark bg:       matches the page <body>, which @myst-theme/site renders as
+ *                    `dark:bg-stone-900` (#1c1917) — note the <body> tag lives in
+ *                    that upstream Document, not in this file. (This is the outer
+ *                    page background; the inner content panel uses `qepage-dark`
+ *                    #222, see app/components/Page.tsx — intentionally not set here
+ *                    since these rules target <body>.)
  */
 const CRITICAL_CSS = `
 :where(html){font-family:"Source Sans 3",sans-serif}
 :where(body){margin:0;background-color:#fff}
 :where(.dark body){background-color:#1c1917}
+:where([hidden],.hidden){display:none}
 :where(.simple-center-grid){display:grid;grid-template-columns:[screen-start] 1fr [body-start] minmax(300px,800px) [body-end] 1fr [screen-end]}
 :where(.simple-center-grid) > *{grid-column:body-start / body-end}
 @media (min-width:1280px){:where(.simple-center-grid){grid-template-columns:[screen-start] 1fr 200px 20px [body-start] 800px [body-end] 20px [margin-start] 200px [margin-end] 1fr [screen-end]}}
@@ -130,6 +136,11 @@ export default function AppWithReload() {
         baseurl={BASE_URL}
         renderers={RENDERERS}
         top={50}
+        // dangerouslySetInnerHTML is required, not incidental: CRITICAL_CSS uses a
+        // child combinator (`.simple-center-grid > *`), and React escapes `>` to
+        // `&gt;` in <style> text children during SSR. Browsers don't decode entities
+        // inside <style>, so `<style>{CRITICAL_CSS}</style>` would emit an invalid
+        // selector and silently drop the body-column rule. Keep this as-is.
         head={<style dangerouslySetInnerHTML={{ __html: CRITICAL_CSS }} />}
       >
         <SkipTo
