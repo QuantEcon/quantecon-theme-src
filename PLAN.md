@@ -104,7 +104,7 @@ upstream is heading.
       and attaches it to the GitHub Release for that tag. Upstream's `theme-assets.yml` is a
       near-verbatim reference — drop its `for THEME in book article` loop (one theme).
 - [ ] Verify `myst start` resolves `site.template: <release-asset-url>` once (a release zip
-      is just an HTTPS zip — the same mechanism today's `heads/main.zip` uses — so low risk).
+      is just an HTTPS zip — the same mechanism today's `archive/refs/heads/main.zip` uses — so low risk).
 
 **Versioning & changelog:**
 - [ ] Make `vX.Y.Z` **tags** the release trigger; tag existing releases retroactively at
@@ -122,9 +122,10 @@ upstream is heading.
 
 **Cut 2.0.0 (quick deploy now, then re-release on the new flow):**
 - [ ] **Now (decided — quick deploy first):** bump `package.json` to **2.0.0** (the
-      `@myst-theme` 1.1.2 upgrade + technical-review fixes) and run the existing `make deploy`
-      to the old build repo to get consumers off v1.1.1 **today**. This interim deploy is
-      throwaway (the build repo is being retired) — accepted for speed.
+      `@myst-theme` 1.3.0 upgrade, Node 24 toolchain, consolidated dependency/security
+      updates, and technical-review fixes — all now merged to `main`) and run the existing
+      `make deploy` to the old build repo to get consumers off v1.1.1 **today**. This interim
+      deploy is throwaway (the build repo is being retired) — accepted for speed.
 - [ ] **After the pipeline lands:** re-publish `v2.0.0` (or the next version if changes have
       accrued) as the first release through the new tag-triggered flow on the renamed repo,
       then retire `make deploy`.
@@ -151,8 +152,9 @@ upstream is heading.
       repo name.
 - [ ] De-duplicate the two "Development" sections in `README.md` and update the Usage URL to
       the pinned-release form.
-- [ ] Triage the ~20 open Dependabot PRs; schedule the Remix v2 migration ([#28]) that
-      unblocks the remaining `npm audit` findings.
+- [x] Triaged & consolidated the ~20 Dependabot PRs into a single lockfile refresh
+      ([#55](https://github.com/QuantEcon/quantecon-theme-src/pull/55)–58; `npm audit`
+      68 → 45). The remaining findings need the Remix v2 migration ([#28]) — still to schedule.
 - [ ] Stand up a **visual preview / smoke test** against a real lecture repo (the book-theme
       uses `quantecon-book-theme-fixtures` + Playwright + Netlify previews — a lighter MyST
       equivalent would de-risk every later phase).
@@ -161,12 +163,12 @@ upstream is heading.
 dropped); (2) **consumer URL** — pinned per-lecture tag URLs
 (`…/releases/download/vX.Y.Z/quantecon-theme.zip`); (3) **2.0.0** — quick `make deploy` now,
 then re-release via the new pipeline; (4) **execution split** — the maintainer performs the
-repo rename + archiving, release tags and GitHub Releases are created via `gh` as a separate
-step, and all code/workflow/docs land as PRs first.
+repo rename + archiving and pushes the `vX.Y.Z` tag via `gh`; the tag-triggered workflow then
+creates the GitHub Release and uploads the zip asset; all code/workflow/docs land as PRs first.
 
 **Effort:** M (pipeline + rename + consumer migration). **Risk:** low–medium (one-time
 release-flow change; upstream reference implementation exists). **Deps:** none — best done
-now, pre-cutover, while nothing points at the theme.
+now, pre-cutover, while only `lecture-wasm` points at the theme.
 
 ---
 
