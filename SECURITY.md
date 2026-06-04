@@ -42,7 +42,7 @@ Snapshot as of **2026-06-04**. Re-evaluate when the theme migrates off Remix v1.
 
 | Package(s)                                                              | Severity | Status                                                                                                  |
 | ---------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------- |
-| `@remix-run/node` (GHSA-9583-h5hc-x8cw)                                | critical | **Not applicable** — path traversal in *file* session storage; this theme uses `createCookieSessionStorage`. |
+| `@remix-run/node` (GHSA-9583-h5hc-x8cw)                                | critical | **Not applicable** — path traversal in *file* session storage (`createFileSessionStorage`), which this theme does not use (it has no server session storage). |
 | `@remix-run/react`, `@remix-run/server-runtime`, `@remix-run/router`, `react-router` | high/med | Patched only in Remix v2 / react-router 6.30+. Deferred with the v1 pin.                                 |
 
 ### No upstream fix available
