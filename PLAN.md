@@ -120,23 +120,23 @@ upstream is heading.
 - [ ] Fold the `template.yml` `version` bump (stale at `1.0.0`) into the release step so it
       can no longer drift from `package.json`.
 
-**Cut 1.2.0 (quick deploy now, then re-release on the new flow):**
-- [ ] **Now (decided — quick deploy first):** bump `package.json` to **1.2.0** (the
+**Cut 2.0.0 (quick deploy now, then re-release on the new flow):**
+- [ ] **Now (decided — quick deploy first):** bump `package.json` to **2.0.0** (the
       `@myst-theme` 1.1.2 upgrade + technical-review fixes) and run the existing `make deploy`
       to the old build repo to get consumers off v1.1.1 **today**. This interim deploy is
       throwaway (the build repo is being retired) — accepted for speed.
-- [ ] **After the pipeline lands:** re-publish `v1.2.0` (or the next version if changes have
+- [ ] **After the pipeline lands:** re-publish `v2.0.0` (or the next version if changes have
       accrued) as the first release through the new tag-triggered flow on the renamed repo,
       then retire `make deploy`.
 
-**Consumer migration (once `v1.2.0` is published on the new flow):**
+**Consumer migration (once `v2.0.0` is published on the new flow):**
 - [ ] Repoint the **only current consumer**, `QuantEcon/lecture-wasm`
       ([`lectures/myst.yml:120`](https://github.com/QuantEcon/lecture-wasm/blob/main/lectures/myst.yml#L120)),
       from `…/quantecon-theme/archive/refs/heads/main.zip` to the new pinned release URL
-      (`…/quantecon-theme.mystmd/releases/download/v1.2.0/quantecon-theme.zip`); verify
+      (`…/quantecon-theme.mystmd/releases/download/v2.0.0/quantecon-theme.zip`); verify
       `myst start` / `myst build --html` renders it.
 - [ ] **Order matters** — migrate the consumer *before* archiving the old build repo:
-      land pipeline → publish `v1.2.0` → repoint `lecture-wasm` → then archive
+      land pipeline → publish `v2.0.0` → repoint `lecture-wasm` → then archive
       `QuantEcon/quantecon-theme`.
 - [ ] The flagship lecture repos (`lecture-python.myst`, `lecture-julia.myst`,
       `lecture-datascience.myst`, `lecture-python-advanced.myst`, …) still use the Sphinx
@@ -159,7 +159,7 @@ upstream is heading.
 
 **Decisions (resolved):** (1) **versioning** — manual Keep a Changelog + git tags (Changesets
 dropped); (2) **consumer URL** — pinned per-lecture tag URLs
-(`…/releases/download/vX.Y.Z/quantecon-theme.zip`); (3) **1.2.0** — quick `make deploy` now,
+(`…/releases/download/vX.Y.Z/quantecon-theme.zip`); (3) **2.0.0** — quick `make deploy` now,
 then re-release via the new pipeline; (4) **execution split** — the maintainer performs the
 repo rename + archiving, release tags and GitHub Releases are created via `gh` as a separate
 step, and all code/workflow/docs land as PRs first.

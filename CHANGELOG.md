@@ -15,10 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-> Proposed release: **1.2.0**. This is the substantial `@myst-theme` 0.14 → 1.x
-> upgrade plus a technical-review pass. The currently deployed bundle
-> (`QuantEcon/quantecon-theme`) is still **v1.1.1** and predates all of the
-> changes below — a `make deploy` is required to ship them.
+> Proposed release: **2.0.0** (major). This is the substantial `@myst-theme` 0.14 → 1.x
+> upgrade plus a technical-review pass. It is a **major** bump because it carries
+> backwards-incompatible changes for consumers: `@myst-theme` v1.0.0's new notebook
+> output-node AST (content built with an older `mystmd` may not render correctly) and a
+> raised runtime requirement (Node `>=14` → `>=18`). The currently deployed bundle
+> (`QuantEcon/quantecon-theme`) is still **v1.1.1** and predates all of the changes below
+> — a `make deploy` is required to ship them.
 
 ### Changed
 - Upgrade all `@myst-theme/*` packages from `0.14.x` to `1.1.2`, and `myst-common`/`myst-config` to `1.8.1`, aligning with the upstream [`myst-theme/book`](https://github.com/jupyter-book/myst-theme/tree/main/themes/book) template ([#30](https://github.com/QuantEcon/quantecon-theme-src/pull/30)). **Upstream breaking change:** `@myst-theme` v1.0.0 introduced a new AST structure for notebook output nodes ([jupyter-book/myst-theme#571](https://github.com/jupyter-book/myst-theme/pull/571)).
