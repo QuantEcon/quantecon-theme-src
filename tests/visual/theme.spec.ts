@@ -7,9 +7,11 @@ import { test, expect, Page } from "@playwright/test";
  * error outputs).
  */
 async function settle(page: Page) {
-  await page.waitForLoadState("networkidle");
-  // Give KaTeX/MathJax and webfonts a beat to finish laying out.
-  await page.waitForTimeout(1000);
+  // Not `networkidle` — the runtime theme can hold a persistent connection
+  // open, so it never fires. Wait for load + a beat for math/webfonts.
+  await page.waitForLoadState("load");
+  await page.waitForFunction(() => document.fonts?.ready).catch(() => {});
+  await page.waitForTimeout(1500);
 }
 
 // Route slugs are derived from the fixture filenames; `intro` is the home page.
