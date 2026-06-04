@@ -79,7 +79,7 @@ export const PageContent = React.memo(function ({ article }: { article: PageLoad
                 hideKeywords
               />
               <MyST
-                className="col-screen prose-qetext-light dark:prose-qetext-dark"
+                className="prose-qetext-light dark:prose-qetext-dark"
                 ast={tree as GenericParent}
               />
               <BackmatterParts containerClassName="col-body" parts={parts} />
