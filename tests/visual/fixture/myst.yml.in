@@ -1,0 +1,16 @@
+# Template for the visual-regression fixture project.
+# `serve.sh` copies this to `myst.yml`, substituting __THEME__ with the theme
+# under test (a local build dir for 2.0.0, or a GitHub archive zip for v1.1.1).
+version: 1
+project:
+  title: QuantEcon Theme — Visual Fixture
+  github: https://github.com/QuantEcon/quantecon-theme-src
+  toc:
+    - file: intro.md
+    - file: features.md
+    - file: notebook.ipynb
+site:
+  title: QE Theme Visual Fixture
+  template: __THEME__
+  options:
+    logo_text: QuantEcon Visual Fixture
