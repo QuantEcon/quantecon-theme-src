@@ -56,35 +56,119 @@ Derived from `quantecon-book-theme` v0.20.3 (see its `README.md`, `docs/user/*`,
 
 ---
 
-## Phase 0 — Release & deploy hygiene (prerequisite groundwork)
+## Phase 0 — Modernise the release & distribution setup (prerequisite groundwork)
 
 **Why first:** the deployed bundle is stuck at v1.1.1 (June 2025) and predates the
-entire `@myst-theme` 1.x upgrade. Parity work is meaningless until what's already in
-`main` is shipped and the dev/release loop is trustworthy.
+entire `@myst-theme` 1.x upgrade. Parity work is meaningless until what's in `main` is
+shipped *and* the release loop is trustworthy. This also uses the pre-cutover window —
+while the theme has just one consumer (`lecture-wasm`; see the migration checklist below) —
+to fix the repo architecture cheaply.
 
-- [ ] Cut **1.2.0** (the `@myst-theme` 1.1.2 upgrade + technical-review fixes) — add a
-      changeset, bump `package.json`, sync `template.yml` `version` (currently stale at
-      `1.0.0`), then `make deploy` to refresh `QuantEcon/quantecon-theme`.
-- [ ] Resolve the Changesets ↔ Keep-a-Changelog tension: the new `CHANGELOG.md` is
-      hand-maintained; decide whether `changeset version` should keep prepending (and
-      reconcile the format) or whether the changelog is now manual. Document the choice
-      in `CONTRIBUTING.md`.
-- [ ] Introduce git **release tags** (`vX.Y.Z`). The release workflow currently creates
-      no tags or GitHub releases, so the `CHANGELOG.md` compare/release footer links
-      (and any future git-history tooling) have nothing to resolve to. Tag the existing
-      releases retroactively at their source commits (recorded in the bundle repo as
-      `🚀 vX.Y.Z from <sha>`) and tag going forward as part of the release step.
-- [ ] Fix naming/branding drift: reconcile the three package names (`@curvenote/quantecon-book`
-      vs `@curvenote-themes/quantecon-theme` vs `template.yml` title), and the stale
-      `curvenote-themes/quantecon` deploy URL in `README.md` (line ~89).
-- [ ] De-duplicate the two "Development" sections in `README.md`.
-- [ ] Triage the ~20 open Dependabot PRs; schedule the Remix v2 migration ([#28]) that
-      unblocks the remaining `npm audit` findings.
-- [ ] Stand up a **visual preview / smoke test** against a real lecture repo (the
-      book-theme uses `quantecon-book-theme-fixtures` + Playwright + Netlify previews —
-      a lighter MyST equivalent would de-risk every subsequent phase).
+**Decision — collapse to a single repo that distributes GitHub Release zips.** Today the
+theme is a two-repo split: source here is built by `make deploy` and pushed to a separate
+build repo (`QuantEcon/quantecon-theme`), whose `main`-branch zip lectures download. That
+split is inherited from upstream (`jupyter-book/myst-theme` → `myst-templates/book-theme`),
+where it exists because upstream is a *monorepo producing many products* (npm packages +
+the book & article themes) feeding a *named public registry* — **neither applies to us**
+(one theme, consumed by direct URL). Upstream is itself moving off it: their
+`theme-assets.yml` ships built theme zips as **GitHub Release assets** "rather than pushing
+to the myst-templates/*-theme repos … a step toward using GitHub releases instead"
+(jupyter-book/myst-enhancement-proposals#34). So a single repo + release zips tracks where
+upstream is heading.
 
-**Effort:** S–M. **Risk:** low. **Deps:** none.
+**Target architecture:**
+- **One repo**, renamed **`quantecon-theme.mystmd`** (the `.mystmd` suffix marks it as
+  `mystmd` tooling/renderer, distinct from content. Note: we deliberately do *not* reuse
+  the lectures' `.myst` suffix — that was a transitional RST→MyST marker now being retired
+  org-wide.)
+- Each release is a `vX.Y.Z` **git tag** + **GitHub Release** with a built **theme zip**
+  attached.
+- Lectures set `site.template` to a **direct GitHub zip URL** for a pinned release.
+- **Deliberate simplification (the caveat):** because lectures consume a *direct URL*, we
+  do **not** need the MyST template **registry** or any `myst-cli` template-resolution
+  support — those are exactly the parts of the upstream setup we skip. Build a zip, attach
+  it to a release, point the URL at it.
+
+**Repo consolidation & rename:**
+- [ ] Rename `quantecon-theme-src` → **`quantecon-theme.mystmd`** (GitHub 301-redirects the
+      old URLs; update the local `origin` remote).
+- [ ] Once releases are live, **archive** the old build repo `QuantEcon/quantecon-theme`
+      with a README note pointing to the new repo + release assets; do not reuse the name.
+- [ ] Retire the `make deploy` / `build-theme` / `deploy-theme` Makefile targets (replaced
+      by the release workflow); keep a local `make build-zip` for testing the artifact.
+
+**Release pipeline (adapt upstream `theme-assets.yml`):**
+- [ ] Add a workflow that, on a `vX.Y.Z` tag, builds (`npm run prod:build`), assembles the
+      bundle (`build/ public/ template.yml server.js package.json` with `template`→name and
+      `VERSION` substituted, plus `package-lock.json`, **excluding** `node_modules`), zips it,
+      and attaches it to the GitHub Release for that tag. Upstream's `theme-assets.yml` is a
+      near-verbatim reference — drop its `for THEME in book article` loop (one theme).
+- [ ] Verify `myst start` resolves `site.template: <release-asset-url>` once (a release zip
+      is just an HTTPS zip — the same mechanism today's `archive/refs/heads/main.zip` uses — so low risk).
+
+**Versioning & changelog:**
+- [ ] Make `vX.Y.Z` **tags** the release trigger; tag existing releases retroactively at
+      their source commits (recorded in the old build repo as `🚀 vX.Y.Z from <sha>`) so the
+      `CHANGELOG.md` footer compare/release links resolve.
+- [ ] **Versioning = manual Keep a Changelog + git tags (decided — Changesets dropped).**
+      Remove `.changeset/`, rewrite `release.yml` as the tag-triggered build/release workflow,
+      and **document** the bump → changelog → tag process in `CONTRIBUTING.md`. (Rationale:
+      single non-npm artifact + small team, so Changesets' monorepo/npm payoffs don't apply
+      and its generated changelog clashes with our curated one; also matches every other
+      QuantEcon repo. "Manual" = version + changelog + tag only — build → zip → Release stays
+      automated by the tag trigger.)
+- [ ] Fold the `template.yml` `version` bump (stale at `1.0.0`) into the release step so it
+      can no longer drift from `package.json`.
+
+**Cut 2.0.0 (quick deploy now, then re-release on the new flow):**
+- [ ] **Now (decided — quick deploy first):** bump `package.json` to **2.0.0** (the
+      `@myst-theme` 1.3.0 upgrade, Node 24 toolchain, consolidated dependency/security
+      updates, and technical-review fixes — all now merged to `main`) and run the existing
+      `make deploy` to the old build repo to get consumers off v1.1.1 **today**. This interim
+      deploy is throwaway (the build repo is being retired) — accepted for speed.
+- [ ] **After the pipeline lands:** re-publish `v2.0.0` (or the next version if changes have
+      accrued) as the first release through the new tag-triggered flow on the renamed repo,
+      then retire `make deploy`.
+
+**Consumer migration (once `v2.0.0` is published on the new flow):**
+- [ ] Repoint the **only current consumer**, `QuantEcon/lecture-wasm`
+      ([`lectures/myst.yml:120`](https://github.com/QuantEcon/lecture-wasm/blob/main/lectures/myst.yml#L120)),
+      from `…/quantecon-theme/archive/refs/heads/main.zip` to the new pinned release URL
+      (`…/quantecon-theme.mystmd/releases/download/v2.0.0/quantecon-theme.zip`); verify
+      `myst start` / `myst build --html` renders it.
+- [ ] **Order matters** — migrate the consumer *before* archiving the old build repo:
+      land pipeline → publish `v2.0.0` → repoint `lecture-wasm` → then archive
+      `QuantEcon/quantecon-theme`.
+- [ ] The flagship lecture repos (`lecture-python.myst`, `lecture-julia.myst`,
+      `lecture-datascience.myst`, `lecture-python-advanced.myst`, …) still use the Sphinx
+      `quantecon-book-theme` and are **not** consumers yet — each gets repointed as it cuts
+      over to MyST/JB≥2, not in this phase.
+- [ ] *(FYI, no action)* `QuantEcon/workflow-backups` only carries the repo-name glob
+      `quantecon-.*`, which already matches the new name.
+
+**Hygiene carried over:**
+- [ ] Fix naming/branding drift: reconcile the package name (`@curvenote/quantecon-book` vs
+      `@curvenote-themes/quantecon-theme`) and `template.yml` `title`/`source` against the new
+      repo name.
+- [ ] De-duplicate the two "Development" sections in `README.md` and update the Usage URL to
+      the pinned-release form.
+- [x] Triaged & consolidated the ~20 Dependabot PRs into a single lockfile refresh
+      ([#55](https://github.com/QuantEcon/quantecon-theme-src/pull/55)–58; `npm audit`
+      68 → 45). The remaining findings need the Remix v2 migration ([#28]) — still to schedule.
+- [ ] Stand up a **visual preview / smoke test** against a real lecture repo (the book-theme
+      uses `quantecon-book-theme-fixtures` + Playwright + Netlify previews — a lighter MyST
+      equivalent would de-risk every later phase).
+
+**Decisions (resolved):** (1) **versioning** — manual Keep a Changelog + git tags (Changesets
+dropped); (2) **consumer URL** — pinned per-lecture tag URLs
+(`…/releases/download/vX.Y.Z/quantecon-theme.zip`); (3) **2.0.0** — quick `make deploy` now,
+then re-release via the new pipeline; (4) **execution split** — the maintainer performs the
+repo rename + archiving and pushes the `vX.Y.Z` tag via `gh`; the tag-triggered workflow then
+creates the GitHub Release and uploads the zip asset; all code/workflow/docs land as PRs first.
+
+**Effort:** M (pipeline + rename + consumer migration). **Risk:** low–medium (one-time
+release-flow change; upstream reference implementation exists). **Deps:** none — best done
+now, pre-cutover, while only `lecture-wasm` points at the theme.
 
 ---
 
