@@ -25,7 +25,7 @@ either a local theme **build directory** or a GitHub **archive zip URL**.
 | Target | `THEME_TEMPLATE` |
 | ------ | ---------------- |
 | **This repo (current candidate)** | a local build dir — `make build-theme` then `$PWD/.deploy/quantecon-theme` |
-| **A deployed release** | its archive zip, e.g. `https://github.com/QuantEcon/quantecon-theme/archive/refs/heads/main.zip` |
+| **The live deployed bundle** | the build repo's `main` archive (moving HEAD = whatever is currently deployed) — `https://github.com/QuantEcon/quantecon-theme/archive/refs/heads/main.zip` |
 
 The committed `__snapshots__/` baselines are **v2.0.0** — the first release of the
 `@myst-theme` 1.x theme — captured from a local build.
