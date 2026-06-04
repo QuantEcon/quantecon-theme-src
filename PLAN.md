@@ -61,7 +61,8 @@ Derived from `quantecon-book-theme` v0.20.3 (see its `README.md`, `docs/user/*`,
 **Why first:** the deployed bundle is stuck at v1.1.1 (June 2025) and predates the
 entire `@myst-theme` 1.x upgrade. Parity work is meaningless until what's in `main` is
 shipped *and* the release loop is trustworthy. This also uses the pre-cutover window —
-while ~no lecture references the theme yet — to fix the repo architecture cheaply.
+while the theme has just one consumer (`lecture-wasm`; see the migration checklist below) —
+to fix the repo architecture cheaply.
 
 **Decision — collapse to a single repo that distributes GitHub Release zips.** Today the
 theme is a two-repo split: source here is built by `make deploy` and pushed to a separate
@@ -124,6 +125,22 @@ upstream is heading.
 - [ ] *Sequencing:* if unsticking v1.1.1 is urgent, a one-off `make deploy` could ship 1.2.0
       to the old build repo first — but that's throwaway since the repo is being retired.
       Recommended: land the pipeline first and make 1.2.0 its first release.
+
+**Consumer migration (once `v1.2.0` is published on the new flow):**
+- [ ] Repoint the **only current consumer**, `QuantEcon/lecture-wasm`
+      ([`lectures/myst.yml:120`](https://github.com/QuantEcon/lecture-wasm/blob/main/lectures/myst.yml#L120)),
+      from `…/quantecon-theme/archive/refs/heads/main.zip` to the new pinned release URL
+      (`…/quantecon-theme.mystmd/releases/download/v1.2.0/quantecon-theme.zip`); verify
+      `myst start` / `myst build --html` renders it.
+- [ ] **Order matters** — migrate the consumer *before* archiving the old build repo:
+      land pipeline → publish `v1.2.0` → repoint `lecture-wasm` → then archive
+      `QuantEcon/quantecon-theme`.
+- [ ] The flagship lecture repos (`lecture-python.myst`, `lecture-julia.myst`,
+      `lecture-datascience.myst`, `lecture-python-advanced.myst`, …) still use the Sphinx
+      `quantecon-book-theme` and are **not** consumers yet — each gets repointed as it cuts
+      over to MyST/JB≥2, not in this phase.
+- [ ] *(FYI, no action)* `QuantEcon/workflow-backups` only carries the repo-name glob
+      `quantecon-.*`, which already matches the new name.
 
 **Hygiene carried over:**
 - [ ] Fix naming/branding drift: reconcile the package name (`@curvenote/quantecon-book` vs
