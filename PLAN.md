@@ -110,21 +110,24 @@ upstream is heading.
 - [ ] Make `vX.Y.Z` **tags** the release trigger; tag existing releases retroactively at
       their source commits (recorded in the old build repo as `🚀 vX.Y.Z from <sha>`) so the
       `CHANGELOG.md` footer compare/release links resolve.
-- [ ] Resolve the Changesets ↔ Keep-a-Changelog tension, now that release = tag: either
-      **(a)** drop Changesets and bump/tag manually with the hand-maintained Keep a Changelog
-      (simplest for one theme — recommended), or **(b)** keep Changesets for the version bump
-      + release automation but stop it owning `CHANGELOG.md` (`"changelog": false` in
-      `.changeset/config.json`). Document the choice in `CONTRIBUTING.md`.
+- [ ] **Versioning = manual Keep a Changelog + git tags (decided — Changesets dropped).**
+      Remove `.changeset/`, rewrite `release.yml` as the tag-triggered build/release workflow,
+      and **document** the bump → changelog → tag process in `CONTRIBUTING.md`. (Rationale:
+      single non-npm artifact + small team, so Changesets' monorepo/npm payoffs don't apply
+      and its generated changelog clashes with our curated one; also matches every other
+      QuantEcon repo. "Manual" = version + changelog + tag only — build → zip → Release stays
+      automated by the tag trigger.)
 - [ ] Fold the `template.yml` `version` bump (stale at `1.0.0`) into the release step so it
       can no longer drift from `package.json`.
 
-**Cut 1.2.0 (first release on the new flow):**
-- [ ] Bump `package.json` to **1.2.0** (the `@myst-theme` 1.1.2 upgrade + technical-review
-      fixes), tag `v1.2.0`, and let the pipeline publish the release zip — moving consumers
-      off v1.1.1 at last.
-- [ ] *Sequencing:* if unsticking v1.1.1 is urgent, a one-off `make deploy` could ship 1.2.0
-      to the old build repo first — but that's throwaway since the repo is being retired.
-      Recommended: land the pipeline first and make 1.2.0 its first release.
+**Cut 1.2.0 (quick deploy now, then re-release on the new flow):**
+- [ ] **Now (decided — quick deploy first):** bump `package.json` to **1.2.0** (the
+      `@myst-theme` 1.1.2 upgrade + technical-review fixes) and run the existing `make deploy`
+      to the old build repo to get consumers off v1.1.1 **today**. This interim deploy is
+      throwaway (the build repo is being retired) — accepted for speed.
+- [ ] **After the pipeline lands:** re-publish `v1.2.0` (or the next version if changes have
+      accrued) as the first release through the new tag-triggered flow on the renamed repo,
+      then retire `make deploy`.
 
 **Consumer migration (once `v1.2.0` is published on the new flow):**
 - [ ] Repoint the **only current consumer**, `QuantEcon/lecture-wasm`
@@ -154,10 +157,12 @@ upstream is heading.
       uses `quantecon-book-theme-fixtures` + Playwright + Netlify previews — a lighter MyST
       equivalent would de-risk every later phase).
 
-**Open decisions:** (1) Changesets vs. manual versioning; (2) consumer URL policy — pinned
-`…/releases/download/vX.Y.Z/quantecon-theme.zip` per lecture (reproducible — recommended) vs.
-rolling `…/releases/latest/download/…` (one stable URL, no pinning); (3) sequencing of the
-1.2.0 cut.
+**Decisions (resolved):** (1) **versioning** — manual Keep a Changelog + git tags (Changesets
+dropped); (2) **consumer URL** — pinned per-lecture tag URLs
+(`…/releases/download/vX.Y.Z/quantecon-theme.zip`); (3) **1.2.0** — quick `make deploy` now,
+then re-release via the new pipeline; (4) **execution split** — the maintainer performs the
+repo rename + archiving, release tags and GitHub Releases are created via `gh` as a separate
+step, and all code/workflow/docs land as PRs first.
 
 **Effort:** M (pipeline + rename + consumer migration). **Risk:** low–medium (one-time
 release-flow change; upstream reference implementation exists). **Deps:** none — best done
