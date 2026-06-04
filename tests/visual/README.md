@@ -48,7 +48,7 @@ with `npm run test:visual:update` once changes are confirmed intentional.
 
 - `fixture/` — minimal MyST project (`intro.md`, `features.md`, `notebook.ipynb`)
 - `fixture/myst.yml.in` — template; `serve.sh` writes `myst.yml` from it
-- `serve.sh` — `myst start --headless` with the chosen `THEME_TEMPLATE`
+- `serve.sh` — `myst start` with the chosen `THEME_TEMPLATE`
 - `theme.spec.ts` — one full-page snapshot per surface
 - `__snapshots__/` — committed baselines
 
