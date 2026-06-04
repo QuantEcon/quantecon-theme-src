@@ -18,3 +18,33 @@ jobs:
       - run: npm ci
       - run: npm run compile
       - run: npm run prod:build
+
+  fouc-guard:
+    name: FOUC guard (WebKit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # The visual harness serves the fixture through a live `myst start`.
+      - name: Install mystmd CLI
+        run: npm install -g mystmd
+      # Builds the candidate theme from this branch into .deploy/quantecon-theme.
+      - name: Build theme template
+        run: make build-theme
+      - name: Install Playwright WebKit
+        run: npx playwright install --with-deps webkit
+      - name: Run FOUC guard (QuantEcon/quantecon-theme-src#66)
+        run: npm run test:fouc
+        env:
+          THEME_TEMPLATE: ${{ github.workspace }}/.deploy/quantecon-theme
+          PORT: "3111"
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: fouc-playwright-report
+          path: playwright-report/
+          retention-days: 7

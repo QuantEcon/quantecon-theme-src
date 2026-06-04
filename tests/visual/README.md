@@ -15,7 +15,8 @@ we screenshot the same content rendered by different theme versions and diff.
 
 - Node 24 (`.nvmrc`) and the `mystmd` CLI (`myst`) on `PATH`
 - `npm ci` (installs `@playwright/test`)
-- `npx playwright install --with-deps chromium` (browser binaries)
+- `npx playwright install --with-deps chromium webkit` (browser binaries —
+  `chromium` for the visual snapshots, `webkit` for the FOUC guard below)
 
 ## Selecting the theme: `THEME_TEMPLATE`
 
@@ -52,12 +53,31 @@ THEME_TEMPLATE="$PWD/.deploy/quantecon-theme" \
 > shipped. To compare against any released bundle, point `THEME_TEMPLATE` at its
 > archive zip.
 
+## FOUC guard (WebKit)
+
+`fouc.spec.ts` guards the Safari/WebKit flash-of-unstyled-content fix
+([#66](https://github.com/QuantEcon/quantecon-theme-src/issues/66)): it aborts
+all external stylesheets so the only styling that can reach the first paint is
+the inline critical CSS in `app/root.tsx`, then asserts the layout/font are
+already correct (and a control case proves the abort really strips styling).
+It is **snapshot-free** (asserts computed `display`/`font-family`, not pixels),
+so it is robust across `myst`/CI versions. It runs on the `webkit-fouc` project
+only — Chromium paint-holds and cannot exhibit the flash — and is wired into CI
+as the `FOUC guard (WebKit)` job.
+
+```bash
+make build-theme
+THEME_TEMPLATE="$PWD/.deploy/quantecon-theme" \
+  npm run test:fouc
+```
+
 ## Files
 
 - `fixture/` — minimal MyST project (`intro.md`, `features.md`, `notebook.ipynb`)
 - `fixture/myst.yml.in` — template; `serve.sh` writes `myst.yml` from it
 - `serve.sh` — `myst start` with the chosen `THEME_TEMPLATE`
-- `theme.spec.ts` — one full-page snapshot per surface
+- `theme.spec.ts` — one full-page snapshot per surface (Chromium)
+- `fouc.spec.ts` — FOUC guard, no snapshots (WebKit)
 - `__snapshots__/` — committed baselines
 
 > The generated `fixture/myst.yml`, `fixture/_build/`, and `playwright-report/`
