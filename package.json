@@ -16,6 +16,8 @@
     "dev:css": "tailwindcss -w -i ./styles/app.css -o app/styles/app.css",
     "dev": "npm run dev:copy && npm run build:thebe && concurrently \"npm run dev:css\" \"remix dev\"",
     "start": "npm run build:css && remix dev",
+    "test:visual": "playwright test",
+    "test:visual:update": "playwright test --update-snapshots",
     "changeset": "changeset",
     "version": "changeset version && npm install --force"
   },
@@ -45,6 +47,7 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.12",
+    "@playwright/test": "^1.49.0",
     "@remix-run/dev": "~1.19.0",
     "@remix-run/eslint-config": "~1.19.0",
     "@remix-run/serve": "~1.19.0",
