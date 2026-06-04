@@ -21,3 +21,7 @@ yalc.lock
 
 # This is ignored as it is built
 remix.config.js
+
+# Claude Code local / session state
+.claude/scheduled_tasks.lock
+.claude/settings.local.json
