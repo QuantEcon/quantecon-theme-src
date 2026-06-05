@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to `@curvenote/quantecon-book` (the QuantEcon MyST theme) are
+All notable changes to `@quantecon/lecture-theme` (the QuantEcon MyST theme) are
 documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > is the canonical changelog. The version comes from `package.json`; each release is a
 > deploy commit (`🚀 vX.Y.Z from <sha>`) in the bundled repo. There are currently no
 > git tags (see Phase 0 in [`PLAN.md`](./PLAN.md)).
+
+## [Unreleased]
+
+### Fixed
+- Safari/WebKit flash of unstyled content (FOUC) on page navigation: inline a zero-specificity (`:where(...)`) critical-CSS block (base font + `.simple-center-grid` layout) in the document `<head>` so the first paint is already styled before the linked stylesheet applies ([#66](https://github.com/QuantEcon/quantecon-theme-src/pull/66)).
+
+### Security
+- Resolve backward-compatible Dependabot advisories via npm `overrides` — `uuid` (`^11.1.1`), `ajv` (`^8.18.0`), and `cookie` (`^0.7.0`, used by Remix's cookie session); add `SECURITY.md` documenting the dependency posture and triage for the remaining deferred alerts ([#68](https://github.com/QuantEcon/quantecon-theme-src/pull/68)).
 
 ## [2.0.0] - 2026-06-04
 
@@ -103,6 +111,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial version of the QuantEcon MyST theme: Remix + `@myst-theme` book theme with QuantEcon branding, toolbar (home, search, fullscreen, font scaling, dark mode, downloads, Colab/JupyterHub launch, edit-on-GitHub), content-driven site footer, and bundled brand assets.
 
+[Unreleased]: https://github.com/QuantEcon/quantecon-theme-src/compare/v2.0.0...HEAD
 [2.0.0]: https://github.com/QuantEcon/quantecon-theme-src/compare/v1.1.1...v2.0.0
 [1.1.1]: https://github.com/QuantEcon/quantecon-theme-src/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/QuantEcon/quantecon-theme-src/compare/v1.0.6...v1.1.0

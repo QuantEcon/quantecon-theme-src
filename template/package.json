@@ -1,5 +1,5 @@
 {
-  "name": "@curvenote-themes/template",
+  "name": "@quantecon/lecture-theme",
   "version": "VERSION",
   "private": true,
   "sideEffects": false,
