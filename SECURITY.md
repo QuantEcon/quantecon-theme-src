@@ -42,7 +42,7 @@ Snapshot as of **2026-06-04**. Re-evaluate when the theme migrates off Remix v1.
 
 | Package(s)                                                              | Severity | Status                                                                                                  |
 | ---------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------- |
-| `@remix-run/node` (GHSA-9583-h5hc-x8cw)                                | critical | **Not applicable** — path traversal in *file* session storage (`createFileSessionStorage`), which this theme does not use (it has no server session storage). |
+| `@remix-run/node` (GHSA-9583-h5hc-x8cw)                                | critical | **Not applicable** — path traversal in *file*-backed session storage (`createFileSessionStorage`), which this theme does not use. The theme's only session is the cookie-backed color-mode session (`createCookieSessionStorage`, via `@myst-theme/site`'s `getThemeSession` in `app/root.tsx`). |
 | `@remix-run/react`, `@remix-run/server-runtime`, `@remix-run/router`, `react-router` | high/med | Patched only in Remix v2 / react-router 6.30+. Deferred with the v1 pin.                                 |
 
 ### No upstream fix available
