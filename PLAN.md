@@ -106,7 +106,7 @@ upstream is heading.
 - [ ] Verify `myst start` resolves `site.template: <release-asset-url>` once (a release zip
       is just an HTTPS zip — the same mechanism today's `archive/refs/heads/main.zip` uses — so low risk).
 
-**Versioning & changelog:**
+**Versioning & changelog:** *(remaining work tracked in [#71](https://github.com/QuantEcon/quantecon-theme-src/issues/71))*
 - [ ] Make `vX.Y.Z` **tags** the release trigger; tag existing releases retroactively at
       their source commits (recorded in the old build repo as `🚀 vX.Y.Z from <sha>`) so the
       `CHANGELOG.md` footer compare/release links resolve.
@@ -117,15 +117,23 @@ upstream is heading.
       and its generated changelog clashes with our curated one; also matches every other
       QuantEcon repo. "Manual" = version + changelog + tag only — build → zip → Release stays
       automated by the tag trigger.)
-- [ ] Fold the `template.yml` `version` bump (stale at `1.0.0`) into the release step so it
-      can no longer drift from `package.json`.
+      **Status:** done in [#72](https://github.com/QuantEcon/quantecon-theme-src/pull/72) —
+      removed `.changeset/`, dropped `@changesets/cli` + the `changeset`/`version` scripts,
+      migrated the pending entries into `CHANGELOG.md` `## [Unreleased]`, documented the manual
+      flow in `CONTRIBUTING.md`, and closed the stale Changesets PR #69. **Remaining:** the
+      tag-triggered `release.yml` rewrite (the build → zip → Release pipeline above).
+- [ ] Fold the `template.yml` `version` bump into the release step so it can no longer drift
+      from `package.json` (both at `2.0.0` now, kept in sync manually per `CONTRIBUTING.md`;
+      automation still TODO).
 
 **Cut 2.0.0 (quick deploy now, then re-release on the new flow):**
-- [ ] **Now (decided — quick deploy first):** bump `package.json` to **2.0.0** (the
+- [x] **Now (decided — quick deploy first):** bump `package.json` to **2.0.0** (the
       `@myst-theme` 1.3.0 upgrade, Node 24 toolchain, consolidated dependency/security
       updates, and technical-review fixes — all now merged to `main`) and run the existing
       `make deploy` to the old build repo to get consumers off v1.1.1 **today**. This interim
       deploy is throwaway (the build repo is being retired) — accepted for speed.
+      **Done:** `package.json` at 2.0.0; deployed to `QuantEcon/quantecon-theme` as
+      `2ca0a12` (`🚀 v2.0.0 from 2cf3456`).
 - [ ] **After the pipeline lands:** re-publish `v2.0.0` (or the next version if changes have
       accrued) as the first release through the new tag-triggered flow on the renamed repo,
       then retire `make deploy`.
@@ -147,9 +155,10 @@ upstream is heading.
       `quantecon-.*`, which already matches the new name.
 
 **Hygiene carried over:**
-- [ ] Fix naming/branding drift: reconcile the package name (`@curvenote/quantecon-book` vs
-      `@curvenote-themes/quantecon-theme`) and `template.yml` `title`/`source` against the new
-      repo name.
+- [ ] Fix naming/branding drift: package name **reconciled to `@quantecon/lecture-theme`**
+      across `package.json` + `template/package.json` in
+      [#72](https://github.com/QuantEcon/quantecon-theme-src/pull/72); still TODO — align
+      `template.yml` `title`/`source` with the new repo name once the repo is renamed.
 - [ ] De-duplicate the two "Development" sections in `README.md` and update the Usage URL to
       the pinned-release form.
 - [x] Triaged & consolidated the ~20 Dependabot PRs into a single lockfile refresh
