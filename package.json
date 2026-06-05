@@ -1,5 +1,5 @@
 {
-  "name": "@curvenote/quantecon-book",
+  "name": "@quantecon/lecture-theme",
   "version": "2.0.0",
   "private": true,
   "sideEffects": false,
@@ -18,9 +18,7 @@
     "start": "npm run build:css && remix dev",
     "test:visual": "playwright test",
     "test:visual:update": "playwright test --update-snapshots",
-    "test:fouc": "playwright test --project=webkit-fouc",
-    "changeset": "changeset",
-    "version": "changeset version && npm install --force"
+    "test:fouc": "playwright test --project=webkit-fouc"
   },
   "dependencies": {
     "@myst-theme/common": "^1.3.0",
@@ -47,7 +45,6 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.27.12",
     "@playwright/test": "^1.49.0",
     "@remix-run/dev": "~1.17.0",
     "@remix-run/eslint-config": "~1.17.0",

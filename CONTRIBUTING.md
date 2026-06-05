@@ -79,13 +79,27 @@ We use conventional commits:
 
 ## Releases
 
-Releases are managed via [Changesets](https://github.com/changesets/changesets). To propose a version bump:
+Versioning is **manual**: a curated [Keep a Changelog](https://keepachangelog.com/) entry +
+a `vX.Y.Z` git tag. (Changesets was removed — see [#71](https://github.com/QuantEcon/quantecon-theme-src/issues/71).)
 
-```bash
-npm run changeset
-```
+As you work, add your change to the `## [Unreleased]` section of [`CHANGELOG.md`](./CHANGELOG.md)
+under the appropriate category (`Added` / `Changed` / `Fixed` / `Security` / `Dependencies`),
+with a link to the PR.
 
-Follow the prompts, then commit the generated changeset file with your PR.
+To cut a release:
+
+1. In `CHANGELOG.md`, move the `## [Unreleased]` entries under a new `## [X.Y.Z] - YYYY-MM-DD`
+   heading and add the footer compare link.
+2. Bump the version in **both** `package.json` and `template.yml` (keep them in sync).
+3. Commit (`chore(release): prepare vX.Y.Z`) and open a PR.
+4. After merge, tag the release commit and push the tag:
+   ```bash
+   git tag vX.Y.Z && git push origin vX.Y.Z
+   ```
+
+> **Note:** the tag-triggered build → zip → GitHub Release pipeline is still being set up
+> (see [#71](https://github.com/QuantEcon/quantecon-theme-src/issues/71)). Until it lands,
+> the theme is shipped with `make deploy`.
 
 ## Notes
 
