@@ -1,6 +1,8 @@
-# A QuantEcon Book for MyST Markdown
+# QuantEcon Lecture Theme — for MyST Markdown
 
-A dedicated MyST interactive book theme for the QuantEcon lectures and books.
+A dedicated MyST interactive book theme (`@quantecon/lecture-theme`) for the
+QuantEcon lectures and books, distributed as a zip attached to each
+[GitHub Release](https://github.com/QuantEcon/quantecon-theme.mystmd/releases).
 
 - Responsive and mobile ready
 - Page Footer based on MyST Content
@@ -10,7 +12,7 @@ A dedicated MyST interactive book theme for the QuantEcon lectures and books.
 
 ### Downloads
 
-A when downloads are available on a page a download button will appear in the top toolbar.
+When downloads are available on a page a download button will appear in the top toolbar.
 The contents of the menu available from that button is configured via the [download configuration](https://mystmd.org/guide/website-downloads) of the MyST project and page.
 Typically, a download of the entire book as a PDF is provided along with downloads of each lecture in PDF and Notebook (md) form.
 
@@ -53,11 +55,12 @@ The launch notebooks capability has been developed to mirror capabilities in the
 
 ## Usage with MyST
 
-To use this template locally, update your site template make sure your project's local dependencies are installed:
+Point your project's `site.template` at a **pinned release** zip:
 
-```sh
+```yaml
+# myst.yml
 site:
-  template: https://github.com/QuantEcon/quantecon-theme/archive/refs/heads/main.zip
+  template: https://github.com/QuantEcon/quantecon-theme.mystmd/releases/download/v2.1.0/quantecon-theme.zip
 ```
 
 Then start the local server:
@@ -70,37 +73,26 @@ Open up [http://localhost:3000](http://localhost:3000) and you should be ready t
 
 ## Development
 
-To run a local development server:
+After cloning the repository, install the packages and start the dev server
+(with CSS watch and hot reload):
 
 ```sh
-cd quantecon-theme
 npm install
 npm run dev
 ```
+
+To preview against real MyST content instead, run a headless content server in
+your content project (`myst start --headless`) alongside the theme dev server.
+
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the full development setup,
+available scripts, and the test suites, and [`tests/visual/README.md`](./tests/visual/README.md)
+for the visual-regression harness.
 
 ## Release
 
-To bundle and release this theme run:
-
-```sh
-make deploy
-```
-
-This will build a bundled version of the theme and push to the repository at https://github.com/curvenote-themes/quantecon.
-
-## Development
-
-Run a myst content server:
-
-```
-myst start --headless
-```
-
-After cloning the repository, install the packages and start the server:
-
-```
-npm install
-npm run dev
-```
-
-You should then be able to make changes with hot-reload.
+Releases are cut by pushing a `vX.Y.Z` git tag: the
+[`release.yml`](./.github/workflows/release.yml) workflow builds the theme and
+publishes a GitHub Release with `quantecon-theme.zip` attached, using that
+version's [`CHANGELOG.md`](./CHANGELOG.md) section as the release notes. The
+step-by-step flow is documented in
+[`CONTRIBUTING.md`](./CONTRIBUTING.md#releases).

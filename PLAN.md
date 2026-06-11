@@ -1,6 +1,7 @@
 # PLAN — QuantEcon MyST theme feature parity with `quantecon-book-theme`
 
-This plan tracks bringing the MyST theme (this repo, `quantecon-theme-src`, bundled
+This plan tracks bringing the MyST theme (this repo, `quantecon-theme.mystmd` —
+formerly `quantecon-theme-src` — bundled
 to [`QuantEcon/quantecon-theme`](https://github.com/QuantEcon/quantecon-theme)) to
 feature parity with the Sphinx / Jupyter-Book&lt;2 theme
 [`quantecon-book-theme`](https://github.com/QuantEcon/quantecon-book-theme) ahead of
@@ -90,8 +91,8 @@ upstream is heading.
   it to a release, point the URL at it.
 
 **Repo consolidation & rename:**
-- [ ] Rename `quantecon-theme-src` → **`quantecon-theme.mystmd`** (GitHub 301-redirects the
-      old URLs; update the local `origin` remote).
+- [x] Rename `quantecon-theme-src` → **`quantecon-theme.mystmd`** (GitHub 301-redirects the
+      old URLs; update the local `origin` remote). *(Done 2026-06-11.)*
 - [ ] Once releases are live, **archive** the old build repo `QuantEcon/quantecon-theme`
       with a README note pointing to the new repo + release assets; do not reuse the name.
 - [ ] Retire the `make deploy` / `build-theme` / `deploy-theme` Makefile targets (replaced
@@ -162,12 +163,13 @@ upstream is heading.
       `quantecon-.*`, which already matches the new name.
 
 **Hygiene carried over:**
-- [ ] Fix naming/branding drift: package name **reconciled to `@quantecon/lecture-theme`**
+- [x] Fix naming/branding drift: package name **reconciled to `@quantecon/lecture-theme`**
       across `package.json` + `template/package.json` in
-      [#72](https://github.com/QuantEcon/quantecon-theme-src/pull/72); still TODO — align
-      `template.yml` `title`/`source` with the new repo name once the repo is renamed.
-- [ ] De-duplicate the two "Development" sections in `README.md` and update the Usage URL to
-      the pinned-release form.
+      [#72](https://github.com/QuantEcon/quantecon-theme-src/pull/72); `template.yml`
+      `title`/`source` aligned with the renamed repo in
+      [#79](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/79).
+- [x] De-duplicate the two "Development" sections in `README.md` and update the Usage URL to
+      the pinned-release form ([#79](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/79)).
 - [x] Triaged & consolidated the ~20 Dependabot PRs into a single lockfile refresh
       ([#55](https://github.com/QuantEcon/quantecon-theme-src/pull/55)–58; `npm audit`
       68 → 45). The remaining findings need the Remix v2 migration ([#28]) — still to schedule.

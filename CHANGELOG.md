@@ -6,14 +6,24 @@ documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-> **Release flow.** This theme is developed here in `quantecon-theme-src` and
-> deployed (bundled) to [`QuantEcon/quantecon-theme`](https://github.com/QuantEcon/quantecon-theme)
-> via `make deploy`. The deploy step copies this file into the bundled repo, so this
-> is the canonical changelog. The version comes from `package.json`; each release is a
-> deploy commit (`🚀 vX.Y.Z from <sha>`) in the bundled repo. There are currently no
-> git tags (see Phase 0 in [`PLAN.md`](./PLAN.md)).
+> **Release flow.** This theme is developed in
+> [`QuantEcon/quantecon-theme.mystmd`](https://github.com/QuantEcon/quantecon-theme.mystmd)
+> (renamed from `quantecon-theme-src` on 2026-06-11; old links redirect). Each release
+> is a `vX.Y.Z` git tag: pushing the tag triggers `release.yml`, which builds the theme
+> and publishes a GitHub Release with `quantecon-theme.zip` attached, using that
+> version's section of this file as the release notes (see
+> [`CONTRIBUTING.md`](./CONTRIBUTING.md)). Releases ≤ 2.0.0 predate the pipeline and
+> were deploy commits (`🚀 vX.Y.Z from <sha>`) to the legacy build repo
+> [`QuantEcon/quantecon-theme`](https://github.com/QuantEcon/quantecon-theme), which
+> stays updated via `make deploy` only until consumers move to pinned release URLs
+> (see Phase 0 in [`PLAN.md`](./PLAN.md)).
 
 ## [Unreleased]
+
+## [2.1.0] - 2026-06-11
+
+> First release published through the tag-triggered pipeline, from the renamed
+> `quantecon-theme.mystmd` repo (Phase 0 of [`PLAN.md`](./PLAN.md)).
 
 ### Added
 - Visual-regression CI gate: a `visual` job pixel-diffs the fixture (desktop + mobile Chromium, now including a sidebar-open snapshot — the off-canvas sidebar was invisible to the existing full-page shots) against committed platform-suffixed baselines on every PR, posts a 🎭 results summary comment, and uploads report/diff artifacts; baselines are refreshed by commenting `/update-snapshots` (or `/update-new-snapshots`) on the PR ([#78](https://github.com/QuantEcon/quantecon-theme-src/pull/78)).
@@ -25,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 - Resolve backward-compatible Dependabot advisories via npm `overrides` — `uuid` (`^11.1.1`), `ajv` (`^8.18.0`), and `cookie` (`^0.7.0`, used by Remix's cookie session); add `SECURITY.md` documenting the dependency posture and triage for the remaining deferred alerts ([#68](https://github.com/QuantEcon/quantecon-theme-src/pull/68)).
+- Patch `shell-quote` and `ws` via version-scoped npm `overrides`; refresh the `SECURITY.md` triage ([#75](https://github.com/QuantEcon/quantecon-theme-src/pull/75)).
 
 ## [2.0.0] - 2026-06-04
 
@@ -116,14 +127,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial version of the QuantEcon MyST theme: Remix + `@myst-theme` book theme with QuantEcon branding, toolbar (home, search, fullscreen, font scaling, dark mode, downloads, Colab/JupyterHub launch, edit-on-GitHub), content-driven site footer, and bundled brand assets.
 
-[Unreleased]: https://github.com/QuantEcon/quantecon-theme-src/compare/v2.0.0...HEAD
-[2.0.0]: https://github.com/QuantEcon/quantecon-theme-src/compare/v1.1.1...v2.0.0
-[1.1.1]: https://github.com/QuantEcon/quantecon-theme-src/compare/v1.1.0...v1.1.1
-[1.1.0]: https://github.com/QuantEcon/quantecon-theme-src/compare/v1.0.6...v1.1.0
-[1.0.6]: https://github.com/QuantEcon/quantecon-theme-src/compare/v1.0.5...v1.0.6
-[1.0.5]: https://github.com/QuantEcon/quantecon-theme-src/compare/v1.0.4...v1.0.5
-[1.0.4]: https://github.com/QuantEcon/quantecon-theme-src/compare/v1.0.3...v1.0.4
-[1.0.3]: https://github.com/QuantEcon/quantecon-theme-src/compare/v1.0.2...v1.0.3
-[1.0.2]: https://github.com/QuantEcon/quantecon-theme-src/compare/v1.0.1...v1.0.2
-[1.0.1]: https://github.com/QuantEcon/quantecon-theme-src/compare/v1.0.0...v1.0.1
-[1.0.0]: https://github.com/QuantEcon/quantecon-theme-src/releases/tag/v1.0.0
+[Unreleased]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.0.0...v2.1.0
+[2.0.0]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v1.1.1...v2.0.0
+[1.1.1]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v1.1.0...v1.1.1
+[1.1.0]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v1.0.6...v1.1.0
+[1.0.6]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v1.0.5...v1.0.6
+[1.0.5]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v1.0.4...v1.0.5
+[1.0.4]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v1.0.3...v1.0.4
+[1.0.3]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v1.0.2...v1.0.3
+[1.0.2]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v1.0.1...v1.0.2
+[1.0.1]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v1.0.0...v1.0.1
+[1.0.0]: https://github.com/QuantEcon/quantecon-theme.mystmd/releases/tag/v1.0.0
