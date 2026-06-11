@@ -153,15 +153,15 @@ upstream is heading.
       asset, release notes, and bundle version stamps all verified. Retiring `make deploy`
       waits for the consumer migration below.
 
-**Consumer migration (once `v2.0.0` is published on the new flow):**
+**Consumer migration (now unblocked — `v2.1.0` is published on the new flow):**
 - [ ] Repoint the **only current consumer**, `QuantEcon/lecture-wasm`
       ([`lectures/myst.yml:120`](https://github.com/QuantEcon/lecture-wasm/blob/main/lectures/myst.yml#L120)),
       from `…/quantecon-theme/archive/refs/heads/main.zip` to the new pinned release URL
-      (`…/quantecon-theme.mystmd/releases/download/v2.0.0/quantecon-theme.zip`); verify
+      (`…/quantecon-theme.mystmd/releases/download/v2.1.0/quantecon-theme.zip`); verify
       `myst start` / `myst build --html` renders it.
 - [ ] **Order matters** — migrate the consumer *before* archiving the old build repo:
-      land pipeline → publish `v2.0.0` → repoint `lecture-wasm` → then archive
-      `QuantEcon/quantecon-theme`.
+      land pipeline → publish the first release (`v2.1.0`) → repoint `lecture-wasm` → then
+      archive `QuantEcon/quantecon-theme`.
 - [ ] The flagship lecture repos (`lecture-python.myst`, `lecture-julia.myst`,
       `lecture-datascience.myst`, `lecture-python-advanced.myst`, …) still use the Sphinx
       `quantecon-book-theme` and are **not** consumers yet — each gets repointed as it cuts
