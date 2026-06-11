@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Tag-triggered release pipeline (`.github/workflows/release.yml`): pushing a `vX.Y.Z` tag builds the theme, assembles the bundle (with `template.yml`'s `version` stamped from `package.json` so they cannot drift), and publishes a GitHub Release with `quantecon-theme.zip` attached, using the version's changelog section as the release notes ([#77](https://github.com/QuantEcon/quantecon-theme-src/pull/77)).
+
 ### Fixed
 - Safari/WebKit flash of unstyled content (FOUC) on page navigation: inline a zero-specificity (`:where(...)`) critical-CSS block (base font + `.simple-center-grid` layout) in the document `<head>` so the first paint is already styled before the linked stylesheet applies ([#66](https://github.com/QuantEcon/quantecon-theme-src/pull/66)).
 

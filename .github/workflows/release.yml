@@ -1,0 +1,95 @@
+name: Release
+
+# Tag-triggered build → zip → GitHub Release pipeline (PLAN.md Phase 0, #71).
+#
+# Pushing a `vX.Y.Z` tag builds the theme, assembles the same bundle that
+# `make build-theme` ships (adapted from upstream jupyter-book/myst-theme's
+# `theme-assets.yml`), and publishes a GitHub Release for the tag with
+# `quantecon-theme.zip` attached. Lectures then pin a release URL:
+#   …/releases/download/vX.Y.Z/quantecon-theme.zip
+#
+# The zip contains:
+#   build/, public/                 (from `npm run prod:build`)
+#   template.yml                    (version stamped from package.json — #71)
+#   server.js, package.json, LICENSE, README.md, thumbnail.png, qe-logo.png
+#                                   (from template/, with VERSION substituted)
+#   package-lock.json               (generated; node_modules is NOT shipped)
+#   CHANGELOG.md
+#
+# Guards (both fail the release):
+#   - the tag must match `package.json` `version`
+#   - CHANGELOG.md must have a `## [X.Y.Z]` section — it becomes the release notes
+#
+# This replaces the Changesets release.yml (removed in #72). The legacy
+# `make deploy` push to QuantEcon/quantecon-theme remains only until consumers
+# are repointed to pinned release URLs (PLAN.md Phase 0 consumer migration).
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & publish release zip
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Verify tag matches package.json version
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [ "v$VERSION" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version v$VERSION — bump package.json (see CONTRIBUTING.md \"Releases\") and re-tag."
+            exit 1
+          fi
+
+      - name: Extract release notes from CHANGELOG.md
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          awk -v ver="$VERSION" '
+            index($0, "## [" ver "]") == 1 { flag = 1; next }
+            /^## /                         { flag = 0 }
+            flag
+          ' CHANGELOG.md > release-notes.md
+          if ! grep -q '[^[:space:]]' release-notes.md; then
+            echo "::error::CHANGELOG.md has no \"## [$VERSION]\" section — add the curated entry (see CONTRIBUTING.md \"Releases\") and re-tag."
+            exit 1
+          fi
+
+      - run: npm ci
+      - run: npm run compile
+      - name: Build
+        # esbuild occasionally deadlocks (QuantEcon/quantecon-theme-src — known
+        # flake); time out fast so the run can simply be retried.
+        timeout-minutes: 20
+        run: npm run prod:build
+
+      - name: Assemble theme bundle and zip
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          DIST=dist/quantecon-theme
+          mkdir -p "$DIST"
+          find template -type f -exec cp {} "$DIST" \;
+          cp -r public "$DIST/public"
+          cp -r build "$DIST/build"
+          cp CHANGELOG.md "$DIST/CHANGELOG.md"
+          # Stamp both version fields from package.json so the shipped bundle
+          # cannot drift (#71).
+          sed -i "s/VERSION/$VERSION/g" "$DIST/package.json"
+          sed -E "s/^version: .*/version: $VERSION/" template.yml > "$DIST/template.yml"
+          # Lockfile for reproducible consumer installs, without shipping node_modules.
+          (cd "$DIST" && npm install --package-lock-only)
+          (cd dist && zip -r ../quantecon-theme.zip quantecon-theme)
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: release-notes.md
+          files: quantecon-theme.zip
