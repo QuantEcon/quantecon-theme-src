@@ -3,6 +3,7 @@ import { Author } from '@myst-theme/frontmatter';
 import type { Affiliation, Contributor } from 'myst-frontmatter';
 import React from 'react';
 import { useBaseurl, useLinkProvider } from '@myst-theme/providers';
+import { PageHeaderHistory } from './PageHeaderHistory';
 
 export function ProjectFrontmatter({
   className,
@@ -69,6 +70,7 @@ export function ProjectFrontmatter({
           }, '')}
         </div>
       )}
+      <PageHeaderHistory />
     </div>
   );
 }

@@ -224,26 +224,38 @@ and a "full history" link.
 `docs/user/git-metadata.md`.
 
 **Upstream (build-time) deliverable — required:**
-- [ ] Investigate existing `mystmd` support for last-modified / git metadata in
+- [x] Investigate existing `mystmd` support for last-modified / git metadata in
       frontmatter before writing anything custom.
-- [ ] If absent, build a **MyST plugin** (option A) that, during `myst build`, runs
-      `git log --follow` per source file and injects into frontmatter, e.g.
-      `frontmatter.last_modified` (ISO + formatted) and
-      `frontmatter.changelog: [{hash, author, date, relative_time, message}]`.
-      Mirror the book-theme's git logic (timeouts, `--follow`, graceful no-git
-      fallback, configurable `max_entries` and date format).
+      *Finding (2026-06-12):* none built in — jupyter-book/mystmd#2213 is open with no
+      traction. Plugin transforms can't inject **frontmatter** either (page frontmatter
+      is extracted before `document`-stage transforms run), so the plugin attaches to
+      the page AST (`mdast.data.git_metadata`), which flows into the page JSON intact.
+      Per-page `site:` frontmatter also passes through (validated as a plain object) —
+      used as the manual override / deterministic-fixture channel.
+- [x] If absent, build a **MyST plugin** (option A) that, during `myst build`, runs
+      `git log --follow` per source file and injects
+      `{ last_modified, changelog: [{hash, short_hash, author, date, message}] }`.
+      Mirrors the book-theme's git logic (5s timeout, `--follow`, graceful no-git/
+      untracked fallback, `QE_GIT_METADATA_MAX` for max entries; relative time is
+      computed at render so it can't go stale). → `plugins/git-metadata.mjs`, with a
+      node-level e2e (`npm run test:plugin`) that builds a throwaway project with the
+      real `myst` CLI.
 - [ ] Decide where the plugin lives (a shared `quantecon-myst-plugins` package reused
-      across lecture repos is preferable to per-repo copies).
+      across lecture repos is preferable to per-repo copies). *Interim:* lives in this
+      repo (`plugins/`) — single self-contained `.mjs`, copy or reference from lecture
+      repos; revisit when a second shared plugin appears (the QuantEcon `mystmd` fork
+      is another candidate home, but a plugin stays usable on stock mystmd).
 
 **Theme (render) deliverable:**
-- [ ] New `app/components/PageHeaderHistory.tsx` (or fold into `ProjectFrontmatter.tsx`)
-      that reads the injected frontmatter and renders the button + collapsible dropdown,
+- [x] New `app/components/PageHeaderHistory.tsx` (rendered from `ProjectFrontmatter.tsx`)
+      that reads the injected AST data (or the `site.git_metadata` page-frontmatter
+      override) and renders the button + collapsible dropdown,
       with the QuantEcon blue accent, dark mode, keyboard (Esc to close), and ARIA
-      matching the existing toolbar components. Use Radix (already a dependency) for the
-      disclosure.
-- [ ] Build commit/history URLs from the project `github` field (reuse the `.myst`-suffix
-      handling already in `LaunchButton.tsx`).
-- [ ] Graceful no-op when the frontmatter fields are absent.
+      via the Radix popover used by the existing toolbar components.
+- [x] Build commit/history URLs from the project `github` field — commit links keep the
+      `.myst` suffix (they target the source repo, unlike `LaunchButton.tsx`'s notebook
+      URLs), and the full-history link derives from the mystmd-computed `source_url`.
+- [x] Graceful no-op when the metadata is absent.
 
 **Effort:** M–L (plugin is the bulk). **Risk:** medium (new upstream component).
 **Deps:** Phase 0 preview harness helps validate against a real repo.

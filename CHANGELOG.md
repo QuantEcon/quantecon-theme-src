@@ -20,6 +20,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Git history in page headers (Phase 1 of [`PLAN.md`](./PLAN.md)): a "Last
+  changed" control in the page header expands into a changelog dropdown with
+  GitHub-linked commit hashes and a full-history link, mirroring the
+  `quantecon-book-theme` header. Data is injected at build time by a new MyST
+  transform plugin (`plugins/git-metadata.mjs`, `git log --follow` per page →
+  `mdast.data.git_metadata`), with a `site.git_metadata` page-frontmatter
+  override for manual pinning. mystmd has no built-in last-modified support
+  (jupyter-book/mystmd#2213), and plugin transforms cannot modify page
+  frontmatter, hence the AST channel.
+
 ### Removed
 - Retire the `make deploy` / `deploy-theme` targets — releases ship exclusively via the tag-triggered GitHub Release workflow, and the legacy build repo (`QuantEcon/quantecon-theme`) is archived. `make build-theme` now assembles the bundle locally instead of cloning the archived repo (so the CI test harness no longer depends on it), and a new `make build-zip` produces the release-equivalent zip for local artifact testing ([#81](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/81)).
 
