@@ -98,19 +98,24 @@ upstream is heading.
       by the release workflow); keep a local `make build-zip` for testing the artifact.
 
 **Release pipeline (adapt upstream `theme-assets.yml`):**
-- [ ] Add a workflow that, on a `vX.Y.Z` tag, builds (`npm run prod:build`), assembles the
+- [x] Add a workflow that, on a `vX.Y.Z` tag, builds (`npm run prod:build`), assembles the
       bundle (`build/ public/ template.yml server.js package.json` with `template`→name and
       `VERSION` substituted, plus `package-lock.json`, **excluding** `node_modules`), zips it,
       and attaches it to the GitHub Release for that tag. Upstream's `theme-assets.yml` is a
       near-verbatim reference — drop its `for THEME in book article` loop (one theme).
+      **Done in [#77](https://github.com/QuantEcon/quantecon-theme-src/pull/77)** —
+      `.github/workflows/release.yml`: tag-triggered, guards tag ↔ `package.json` version,
+      requires (and uses as release notes) the version's `CHANGELOG.md` section.
 - [ ] Verify `myst start` resolves `site.template: <release-asset-url>` once (a release zip
       is just an HTTPS zip — the same mechanism today's `archive/refs/heads/main.zip` uses — so low risk).
 
 **Versioning & changelog:** *(remaining work tracked in [#71](https://github.com/QuantEcon/quantecon-theme-src/issues/71))*
-- [ ] Make `vX.Y.Z` **tags** the release trigger; tag existing releases retroactively at
-      their source commits (recorded in the old build repo as `🚀 vX.Y.Z from <sha>`) so the
-      `CHANGELOG.md` footer compare/release links resolve.
-- [ ] **Versioning = manual Keep a Changelog + git tags (decided — Changesets dropped).**
+- [ ] Make `vX.Y.Z` **tags** the release trigger *(trigger wired up in
+      [#77](https://github.com/QuantEcon/quantecon-theme-src/pull/77))*; tag existing releases
+      retroactively at their source commits (recorded in the old build repo as
+      `🚀 vX.Y.Z from <sha>`) so the `CHANGELOG.md` footer compare/release links resolve
+      *(retro-tagging still TODO — maintainer pushes the tags per the execution split below)*.
+- [x] **Versioning = manual Keep a Changelog + git tags (decided — Changesets dropped).**
       Remove `.changeset/`, rewrite `release.yml` as the tag-triggered build/release workflow,
       and **document** the bump → changelog → tag process in `CONTRIBUTING.md`. (Rationale:
       single non-npm artifact + small team, so Changesets' monorepo/npm payoffs don't apply
@@ -120,11 +125,13 @@ upstream is heading.
       **Status:** done in [#72](https://github.com/QuantEcon/quantecon-theme-src/pull/72) —
       removed `.changeset/`, dropped `@changesets/cli` + the `changeset`/`version` scripts,
       migrated the pending entries into `CHANGELOG.md` `## [Unreleased]`, documented the manual
-      flow in `CONTRIBUTING.md`, and closed the stale Changesets PR #69. **Remaining:** the
-      tag-triggered `release.yml` rewrite (the build → zip → Release pipeline above).
-- [ ] Fold the `template.yml` `version` bump into the release step so it can no longer drift
-      from `package.json` (both at `2.0.0` now, kept in sync manually per `CONTRIBUTING.md`;
-      automation still TODO).
+      flow in `CONTRIBUTING.md`, and closed the stale Changesets PR #69. The tag-triggered
+      `release.yml` (the build → zip → Release pipeline above) landed in
+      [#77](https://github.com/QuantEcon/quantecon-theme-src/pull/77).
+- [x] Fold the `template.yml` `version` bump into the release step so it can no longer drift
+      from `package.json` (done in [#77](https://github.com/QuantEcon/quantecon-theme-src/pull/77):
+      the workflow stamps `template.yml`'s `version` from `package.json` into the bundle, and
+      fails if the tag doesn't match `package.json`).
 
 **Cut 2.0.0 (quick deploy now, then re-release on the new flow):**
 - [x] **Now (decided — quick deploy first):** bump `package.json` to **2.0.0** (the

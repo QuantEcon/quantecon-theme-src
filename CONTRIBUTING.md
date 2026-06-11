@@ -90,16 +90,36 @@ To cut a release:
 
 1. In `CHANGELOG.md`, move the `## [Unreleased]` entries under a new `## [X.Y.Z] - YYYY-MM-DD`
    heading and add the footer compare link.
-2. Bump the version in **both** `package.json` and `template.yml` (keep them in sync).
+2. Bump the version in `package.json` (e.g. `npm version X.Y.Z --no-git-tag-version`).
+   You do **not** need to bump `template.yml` — the release workflow stamps its `version`
+   from `package.json` into the published bundle, so the two cannot drift.
 3. Commit (`chore(release): prepare vX.Y.Z`) and open a PR.
 4. After merge, tag the release commit and push the tag:
    ```bash
    git tag vX.Y.Z && git push origin vX.Y.Z
    ```
+5. The tag triggers [`release.yml`](./.github/workflows/release.yml), which builds the
+   theme, zips the bundle, and publishes a **GitHub Release** for the tag with
+   `quantecon-theme.zip` attached, using the version's `CHANGELOG.md` section as the
+   release notes. The workflow **fails** if the tag does not match `package.json` or if
+   `CHANGELOG.md` has no `## [X.Y.Z]` section.
 
-> **Note:** the tag-triggered build → zip → GitHub Release pipeline is still being set up
-> (see [#71](https://github.com/QuantEcon/quantecon-theme-src/issues/71)). Until it lands,
-> the theme is shipped with `make deploy`.
+If a release run fails, the failed run published nothing, so recovery is safe:
+
+- **Transient build failure** (e.g. the occasional esbuild hang): no changes needed —
+  re-run the failed workflow from the Actions UI.
+- **Guard failure** (version mismatch / missing changelog section): land the fix on
+  `main` via a PR, then **move the tag** to the new commit — a pushed tag cannot simply
+  be re-pushed:
+  ```bash
+  git tag -f vX.Y.Z <new-commit-sha>
+  git push --force origin vX.Y.Z
+  ```
+
+> **Note:** consumers are still being migrated to pinned release URLs
+> (see [#71](https://github.com/QuantEcon/quantecon-theme-src/issues/71) and PLAN.md
+> Phase 0). Until `lecture-wasm` is repointed, also run `make deploy` to update the
+> legacy `QuantEcon/quantecon-theme` build repo.
 
 ## Notes
 
