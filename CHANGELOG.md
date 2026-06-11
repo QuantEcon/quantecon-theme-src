@@ -14,11 +14,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > version's section of this file as the release notes (see
 > [`CONTRIBUTING.md`](./CONTRIBUTING.md)). Releases ≤ 2.0.0 predate the pipeline and
 > were deploy commits (`🚀 vX.Y.Z from <sha>`) to the legacy build repo
-> [`QuantEcon/quantecon-theme`](https://github.com/QuantEcon/quantecon-theme), which
-> stays updated via `make deploy` only until consumers move to pinned release URLs
-> (see Phase 0 in [`PLAN.md`](./PLAN.md)).
+> [`QuantEcon/quantecon-theme`](https://github.com/QuantEcon/quantecon-theme), now
+> **archived** — consumers point at pinned release URLs (see Phase 0 in
+> [`PLAN.md`](./PLAN.md)).
 
 ## [Unreleased]
+
+### Removed
+- Retire the `make deploy` / `deploy-theme` targets — releases ship exclusively via the tag-triggered GitHub Release workflow, and the legacy build repo (`QuantEcon/quantecon-theme`) is archived. `make build-theme` now assembles the bundle locally instead of cloning the archived repo (so the CI test harness no longer depends on it), and a new `make build-zip` produces the release-equivalent zip for local artifact testing ([#81](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/81)).
 
 ## [2.1.0] - 2026-06-11
 

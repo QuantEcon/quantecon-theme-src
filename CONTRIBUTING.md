@@ -116,10 +116,10 @@ If a release run fails, the failed run published nothing, so recovery is safe:
   git push --force origin vX.Y.Z
   ```
 
-> **Note:** consumers are still being migrated to pinned release URLs
-> (see [#71](https://github.com/QuantEcon/quantecon-theme-src/issues/71) and PLAN.md
-> Phase 0). Until `lecture-wasm` is repointed, also run `make deploy` to update the
-> legacy `QuantEcon/quantecon-theme` build repo.
+To test the bundle/artifact locally without cutting a release, use
+`make build-theme` (assembles the bundle into `.deploy/quantecon-theme`, as used
+by the visual test harness) or `make build-zip` (also produces the
+release-equivalent zip).
 
 ## Notes
 

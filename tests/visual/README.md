@@ -26,7 +26,7 @@ either a local theme **build directory** or a GitHub **archive zip URL**.
 | Target | `THEME_TEMPLATE` |
 | ------ | ---------------- |
 | **This repo (current candidate)** | a local build dir — `make build-theme` then `$PWD/.deploy/quantecon-theme` |
-| **The live deployed bundle** | the build repo's `main` archive (moving HEAD = whatever is currently deployed) — `https://github.com/QuantEcon/quantecon-theme/archive/refs/heads/main.zip` |
+| **A released bundle** | the pinned release-asset URL — `https://github.com/QuantEcon/quantecon-theme.mystmd/releases/download/vX.Y.Z/quantecon-theme.zip` |
 
 The committed `__snapshots__/` baselines are **platform-suffixed** — font
 antialiasing differs across OSes, so each platform diffs against pixels it

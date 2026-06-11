@@ -93,10 +93,15 @@ upstream is heading.
 **Repo consolidation & rename:**
 - [x] Rename `quantecon-theme-src` → **`quantecon-theme.mystmd`** (GitHub 301-redirects the
       old URLs; update the local `origin` remote). *(Done 2026-06-11.)*
-- [ ] Once releases are live, **archive** the old build repo `QuantEcon/quantecon-theme`
+- [x] Once releases are live, **archive** the old build repo `QuantEcon/quantecon-theme`
       with a README note pointing to the new repo + release assets; do not reuse the name.
-- [ ] Retire the `make deploy` / `build-theme` / `deploy-theme` Makefile targets (replaced
+      *(Done 2026-06-11, after `lecture-wasm` was repointed in
+      [lecture-wasm#48](https://github.com/QuantEcon/lecture-wasm/pull/48).)*
+- [x] Retire the `make deploy` / `build-theme` / `deploy-theme` Makefile targets (replaced
       by the release workflow); keep a local `make build-zip` for testing the artifact.
+      *(Done in [#81](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/81):
+      deploy targets removed; `build-theme` retained for the test harness but now
+      assembles locally instead of cloning the archived repo; `build-zip` added.)*
 
 **Release pipeline (adapt upstream `theme-assets.yml`):**
 - [x] Add a workflow that, on a `vX.Y.Z` tag, builds (`npm run prod:build`), assembles the
@@ -154,14 +159,19 @@ upstream is heading.
       waits for the consumer migration below.
 
 **Consumer migration (now unblocked — `v2.1.0` is published on the new flow):**
-- [ ] Repoint the **only current consumer**, `QuantEcon/lecture-wasm`
+- [x] Repoint the **only current consumer**, `QuantEcon/lecture-wasm`
       ([`lectures/myst.yml:120`](https://github.com/QuantEcon/lecture-wasm/blob/main/lectures/myst.yml#L120)),
       from `…/quantecon-theme/archive/refs/heads/main.zip` to the new pinned release URL
       (`…/quantecon-theme.mystmd/releases/download/v2.1.0/quantecon-theme.zip`); verify
       `myst start` / `myst build --html` renders it.
-- [ ] **Order matters** — migrate the consumer *before* archiving the old build repo:
+      *(Done in [lecture-wasm#48](https://github.com/QuantEcon/lecture-wasm/pull/48):
+      verified locally via `myst start` + the PR's Netlify preview; superseded
+      [lecture-wasm#47](https://github.com/QuantEcon/lecture-wasm/pull/47), closed. The
+      Netlify app's duplicate auto-build fails independently —
+      [lecture-wasm#49](https://github.com/QuantEcon/lecture-wasm/issues/49).)*
+- [x] **Order matters** — migrate the consumer *before* archiving the old build repo:
       land pipeline → publish the first release (`v2.1.0`) → repoint `lecture-wasm` → then
-      archive `QuantEcon/quantecon-theme`.
+      archive `QuantEcon/quantecon-theme`. *(Order held.)*
 - [ ] The flagship lecture repos (`lecture-python.myst`, `lecture-julia.myst`,
       `lecture-datascience.myst`, `lecture-python-advanced.myst`, …) still use the Sphinx
       `quantecon-book-theme` and are **not** consumers yet — each gets repointed as it cuts
