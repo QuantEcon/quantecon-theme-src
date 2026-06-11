@@ -102,7 +102,19 @@ To cut a release:
    theme, zips the bundle, and publishes a **GitHub Release** for the tag with
    `quantecon-theme.zip` attached, using the version's `CHANGELOG.md` section as the
    release notes. The workflow **fails** if the tag does not match `package.json` or if
-   `CHANGELOG.md` has no `## [X.Y.Z]` section — fix and re-tag.
+   `CHANGELOG.md` has no `## [X.Y.Z]` section.
+
+If a release run fails, the failed run published nothing, so recovery is safe:
+
+- **Transient build failure** (e.g. the occasional esbuild hang): no changes needed —
+  re-run the failed workflow from the Actions UI.
+- **Guard failure** (version mismatch / missing changelog section): land the fix on
+  `main` via a PR, then **move the tag** to the new commit — a pushed tag cannot simply
+  be re-pushed:
+  ```bash
+  git tag -f vX.Y.Z <new-commit-sha>
+  git push --force origin vX.Y.Z
+  ```
 
 > **Note:** consumers are still being migrated to pinned release URLs
 > (see [#71](https://github.com/QuantEcon/quantecon-theme-src/issues/71) and PLAN.md
