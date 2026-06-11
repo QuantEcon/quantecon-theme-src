@@ -19,6 +19,63 @@ jobs:
       - run: npm run compile
       - run: npm run prod:build
 
+  # Pixel-diffs the fixture against the committed -linux baselines
+  # (tests/visual/__snapshots__). On intentional design changes, refresh the
+  # baselines by commenting /update-snapshots on the PR (update-snapshots.yml).
+  visual:
+    name: Visual regression (Chromium)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write # daun/playwright-report-summary PR comment
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Install mystmd CLI
+        run: npm install -g mystmd
+      # Builds the candidate theme from this branch into .deploy/quantecon-theme.
+      - name: Build theme template
+        run: make build-theme
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run visual regression tests
+        id: visual
+        # The report/diff artifacts and PR comment below must still be
+        # produced on failure — that is when reviewers need them.
+        continue-on-error: true
+        run: npx playwright test --project=desktop-chrome --project=mobile-chrome
+        env:
+          THEME_TEMPLATE: ${{ github.workspace }}/.deploy/quantecon-theme
+          PORT: "3111"
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: visual-playwright-report
+          path: playwright-report/
+          retention-days: 30
+      - name: Upload test results (actual/diff images) on failure
+        uses: actions/upload-artifact@v4
+        if: steps.visual.outcome == 'failure'
+        with:
+          name: visual-test-diff
+          path: test-results/
+          retention-days: 30
+      - name: Post results summary to PR
+        uses: daun/playwright-report-summary@v4
+        if: github.event_name == 'pull_request'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          report-file: playwright-report/results.json
+          comment-title: "🎭 Visual regression results"
+      - name: Fail if visual tests failed
+        if: steps.visual.outcome == 'failure'
+        run: exit 1
+
   fouc-guard:
     name: FOUC guard (WebKit)
     runs-on: ubuntu-latest

@@ -22,8 +22,17 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: 1,
-  reporter: [["html", { open: "never" }], ["list"]],
-  snapshotPathTemplate: "{testDir}/__snapshots__/{projectName}/{arg}{ext}",
+  reporter: [
+    ["html", { open: "never" }],
+    ["list"],
+    // results.json feeds the PR summary comment in the `visual` CI job.
+    ["json", { outputFile: "playwright-report/results.json" }],
+  ],
+  // Baselines are platform-suffixed (…-darwin, …-linux): font antialiasing
+  // differs across OSes, so local macOS runs and ubuntu CI each diff against
+  // pixels rendered on their own platform. CI baselines are refreshed by
+  // commenting /update-snapshots on a PR (.github/workflows/update-snapshots.yml).
+  snapshotPathTemplate: "{testDir}/__snapshots__/{projectName}-{platform}/{arg}{ext}",
   use: { baseURL, trace: "on-first-retry" },
   projects: [
     // Visual snapshots run on Chromium (theme.spec.ts).

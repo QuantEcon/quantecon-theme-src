@@ -1,0 +1,102 @@
+name: Update Visual Snapshots
+
+# Refreshes the CI (-linux) visual baselines from a PR comment, mirroring
+# quantecon-book-theme's workflow:
+#
+#   /update-snapshots      — re-captures ALL Chromium baselines for this runner
+#                            (use when a visual change is intentional)
+#   /update-new-snapshots  — only writes MISSING baselines
+#                            (safe when adding new tests)
+#
+# The refreshed baselines are committed and pushed to the PR branch, so the
+# `visual` CI job re-runs against them. Notes:
+#   - issue_comment workflows run the file from the DEFAULT branch; the
+#     command only works once this workflow is on `main`.
+#   - The push needs write access to the PR head branch, so this works for
+#     same-repo branches, not forks.
+#   - Local macOS baselines (…-darwin) are unaffected — refresh those locally
+#     with `npm run test:visual:update` (see tests/visual/README.md).
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  update-snapshots:
+    if: |
+      github.event.issue.pull_request &&
+      (contains(github.event.comment.body, '/update-snapshots') ||
+       contains(github.event.comment.body, '/update-new-snapshots'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - name: React to the comment (ack)
+        run: |
+          gh api "repos/${{ github.repository }}/issues/comments/${{ github.event.comment.id }}/reactions" \
+            -f content=eyes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get PR branch
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            });
+            core.setOutput('ref', pr.data.head.ref);
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.pr.outputs.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Install mystmd CLI
+        run: npm install -g mystmd
+      - name: Build theme template
+        run: make build-theme
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Update snapshots
+        # In `missing` mode Playwright exits non-zero on the run that writes a
+        # new baseline — the commit below is the real outcome, so don't fail.
+        continue-on-error: true
+        run: |
+          MODE=all
+          case "$COMMENT_BODY" in
+            *'/update-new-snapshots'*) MODE=missing ;;
+          esac
+          echo "Updating snapshots with --update-snapshots=$MODE"
+          npx playwright test --project=desktop-chrome --project=mobile-chrome \
+            --update-snapshots="$MODE"
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          THEME_TEMPLATE: ${{ github.workspace }}/.deploy/quantecon-theme
+          PORT: "3111"
+
+      - name: Commit and push refreshed baselines
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add tests/visual/__snapshots__
+          if git diff --cached --quiet; then
+            gh pr comment "${{ github.event.issue.number }}" \
+              --body "🎭 \`${{ github.event.comment.body }}\` produced no snapshot changes."
+          else
+            CHANGED=$(git diff --cached --name-only | sed 's/^/- /')
+            git commit -m "test: refresh CI visual snapshots (linux baselines)"
+            git push
+            gh pr comment "${{ github.event.issue.number }}" \
+              --body "$(printf '🎭 Refreshed visual baselines in %s:\n%s' "$(git rev-parse --short HEAD)" "$CHANGED")"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

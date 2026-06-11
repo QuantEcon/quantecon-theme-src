@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Visual-regression CI gate: a `visual` job pixel-diffs the fixture (desktop + mobile Chromium, now including a sidebar-open snapshot — the off-canvas sidebar was invisible to the existing full-page shots) against committed platform-suffixed baselines on every PR, posts a 🎭 results summary comment, and uploads report/diff artifacts; baselines are refreshed by commenting `/update-snapshots` (or `/update-new-snapshots`) on the PR ([#78](https://github.com/QuantEcon/quantecon-theme-src/pull/78)).
 - Tag-triggered release pipeline (`.github/workflows/release.yml`): pushing a `vX.Y.Z` tag builds the theme, assembles the bundle (with `template.yml`'s `version` stamped from `package.json` so they cannot drift), and publishes a GitHub Release with `quantecon-theme.zip` attached, using the version's changelog section as the release notes ([#77](https://github.com/QuantEcon/quantecon-theme-src/pull/77)).
 
 ### Fixed

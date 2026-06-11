@@ -28,8 +28,18 @@ either a local theme **build directory** or a GitHub **archive zip URL**.
 | **This repo (current candidate)** | a local build dir — `make build-theme` then `$PWD/.deploy/quantecon-theme` |
 | **The live deployed bundle** | the build repo's `main` archive (moving HEAD = whatever is currently deployed) — `https://github.com/QuantEcon/quantecon-theme/archive/refs/heads/main.zip` |
 
-The committed `__snapshots__/` baselines are **v2.0.0** — the first release of the
-`@myst-theme` 1.x theme — captured from a local build.
+The committed `__snapshots__/` baselines are **platform-suffixed** — font
+antialiasing differs across OSes, so each platform diffs against pixels it
+rendered itself:
+
+- `…-darwin/` — for local runs on macOS (`npm run test:visual`)
+- `…-linux/` — what the `visual` CI job compares against on every PR
+
+Refresh `-darwin` locally with `npm run test:visual:update`; refresh `-linux`
+by commenting **`/update-snapshots`** on the PR (re-captures all CI baselines —
+use when a visual change is intentional) or **`/update-new-snapshots`** (only
+writes missing ones — safe when adding tests). The workflow pushes the
+refreshed baselines to the PR branch (same-repo branches only, not forks).
 
 ## Validate a change
 
@@ -41,12 +51,18 @@ THEME_TEMPLATE="$PWD/.deploy/quantecon-theme" \
 ```
 
 Any diffs are what your change altered. Review `playwright-report/`; once the
-changes are confirmed intentional, refresh the baselines:
+changes are confirmed intentional, refresh the local (`-darwin`) baselines:
 
 ```bash
 THEME_TEMPLATE="$PWD/.deploy/quantecon-theme" \
   npm run test:visual:update
 ```
+
+…and refresh the CI (`-linux`) baselines by commenting `/update-snapshots` on
+your PR. The `visual` CI job (Chromium, `.github/workflows/ci.yml`) gates every
+PR against the `-linux` baselines and posts a 🎭 results summary comment; on
+failure it uploads the Playwright report and the actual/diff images as
+artifacts (`visual-playwright-report`, `visual-test-diff`).
 
 > The baselines were first captured against the deployed **v1.1.1** bundle to validate
 > the `@myst-theme` 0.14 → 1.x upgrade, then re-based to **v2.0.0** once that upgrade
@@ -76,7 +92,9 @@ THEME_TEMPLATE="$PWD/.deploy/quantecon-theme" \
 - `fixture/` — minimal MyST project (`intro.md`, `features.md`, `notebook.ipynb`)
 - `fixture/myst.yml.in` — template; `serve.sh` writes `myst.yml` from it
 - `serve.sh` — `myst start` with the chosen `THEME_TEMPLATE`
-- `theme.spec.ts` — one full-page snapshot per surface (Chromium)
+- `theme.spec.ts` — one full-page snapshot per surface, plus a sidebar-open
+  viewport snapshot (the sidebar is off-canvas in the full-page shots — #70
+  was invisible to them) (Chromium)
 - `fouc.spec.ts` — FOUC guard, no snapshots (WebKit)
 - `__snapshots__/` — committed baselines
 
