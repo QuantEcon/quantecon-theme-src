@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Top-level (level-1) TOC pages now render as clickable links in the Contents sidebar when they have a slug, so flat-TOC projects are navigable; slug-less grouping titles remain plain headers ([#76](https://github.com/QuantEcon/quantecon-theme-src/pull/76)).
 - Safari/WebKit flash of unstyled content (FOUC) on page navigation: inline a zero-specificity (`:where(...)`) critical-CSS block (base font + `.simple-center-grid` layout) in the document `<head>` so the first paint is already styled before the linked stylesheet applies ([#66](https://github.com/QuantEcon/quantecon-theme-src/pull/66)).
 
 ### Security

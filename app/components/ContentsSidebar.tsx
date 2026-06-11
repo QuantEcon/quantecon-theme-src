@@ -49,6 +49,8 @@ export function ContentsSidebar() {
   const project = useProjectManifest();
   const top = useThemeTop();
   const { toc } = useSidebarHeight(top);
+  const baseurl = useBaseurl();
+  const Link = useLinkProvider();
 
   if (!config) return null;
 
@@ -103,12 +105,20 @@ export function ContentsSidebar() {
                 group={headingOrGroup}
               />
             );
+          // A top-level entry with a slug is a real page (e.g. a flat TOC) and
+          // must be navigable; without one it is a pure grouping title.
           return (
             <p
               className="mt-5 mb-4 text-lg font-semibold text-qetext-light dark:text-qetext-dark"
               key={headingOrGroup.slug ?? headingOrGroup.title}
             >
-              {headingOrGroup.title}
+              {headingOrGroup.slug ? (
+                <Link to={withBaseurl(`/${slugToUrl(headingOrGroup.slug)}`, baseurl)}>
+                  {headingOrGroup.title}
+                </Link>
+              ) : (
+                headingOrGroup.title
+              )}
             </p>
           );
         })}
