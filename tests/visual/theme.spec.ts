@@ -42,7 +42,10 @@ test.describe("QuantEcon theme — visual regression", () => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await settle(page);
     await page.locator('button:has([aria-label="Show table of contents"])').click();
-    await page.waitForTimeout(500); // sidebar slide-in transition is 300ms
+    // The open state is a 300ms translate transition; wait for the sidebar to
+    // be fully on-screen (its "Contents" heading at ratio 1) rather than a
+    // fixed delay.
+    await expect(page.getByText("Contents", { exact: true })).toBeInViewport({ ratio: 1 });
     await expect(page).toHaveScreenshot("sidebar-open.png", {
       maxDiffPixelRatio: 0.01,
       animations: "disabled",

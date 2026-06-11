@@ -67,7 +67,10 @@ jobs:
           retention-days: 30
       - name: Post results summary to PR
         uses: daun/playwright-report-summary@v4
-        if: github.event_name == 'pull_request'
+        # hashFiles guard: if Playwright died before writing results.json
+        # (e.g. the fixture server never came up), skip the summarizer and let
+        # the gate step below attribute the failure to the test run.
+        if: github.event_name == 'pull_request' && hashFiles('playwright-report/results.json') != ''
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           report-file: playwright-report/results.json

@@ -10,6 +10,9 @@ name: Update Visual Snapshots
 #
 # The refreshed baselines are committed and pushed to the PR branch, so the
 # `visual` CI job re-runs against them. Notes:
+#   - Maintainers only: this job checks out and executes PR-branch code with a
+#     `contents: write` token, so the trigger requires the commenter to be an
+#     OWNER/MEMBER/COLLABORATOR and the command to start the comment.
 #   - issue_comment workflows run the file from the DEFAULT branch; the
 #     command only works once this workflow is on `main`.
 #   - The push needs write access to the PR head branch, so this works for
@@ -24,8 +27,9 @@ jobs:
   update-snapshots:
     if: |
       github.event.issue.pull_request &&
-      (contains(github.event.comment.body, '/update-snapshots') ||
-       contains(github.event.comment.body, '/update-new-snapshots'))
+      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) &&
+      (startsWith(github.event.comment.body, '/update-snapshots') ||
+       startsWith(github.event.comment.body, '/update-new-snapshots'))
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -67,17 +71,27 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Update snapshots
-        # In `missing` mode Playwright exits non-zero on the run that writes a
-        # new baseline — the commit below is the real outcome, so don't fail.
-        continue-on-error: true
         run: |
           MODE=all
           case "$COMMENT_BODY" in
-            *'/update-new-snapshots'*) MODE=missing ;;
+            '/update-new-snapshots'*) MODE=missing ;;
           esac
           echo "Updating snapshots with --update-snapshots=$MODE"
+          EXIT=0
           npx playwright test --project=desktop-chrome --project=mobile-chrome \
-            --update-snapshots="$MODE"
+            --update-snapshots="$MODE" || EXIT=$?
+          if [ "$EXIT" -ne 0 ]; then
+            # In `missing` mode the run that WRITES a new baseline exits
+            # non-zero by design — tolerate that one case. Any other failure
+            # (fixture server down, browser install, real test crash) fails
+            # the job rather than silently reporting "no snapshot changes".
+            if [ "$MODE" = "missing" ] && [ -n "$(git status --porcelain tests/visual/__snapshots__)" ]; then
+              echo "Non-zero exit tolerated: new baselines were written."
+            else
+              echo "::error::Playwright failed without updating snapshots (exit $EXIT) — see the log above."
+              exit "$EXIT"
+            fi
+          fi
         env:
           COMMENT_BODY: ${{ github.event.comment.body }}
           THEME_TEMPLATE: ${{ github.workspace }}/.deploy/quantecon-theme
@@ -90,7 +104,7 @@ jobs:
           git add tests/visual/__snapshots__
           if git diff --cached --quiet; then
             gh pr comment "${{ github.event.issue.number }}" \
-              --body "🎭 \`${{ github.event.comment.body }}\` produced no snapshot changes."
+              --body "🎭 The snapshot update produced no baseline changes."
           else
             CHANGED=$(git diff --cached --name-only | sed 's/^/- /')
             git commit -m "test: refresh CI visual snapshots (linux baselines)"
@@ -98,5 +112,13 @@ jobs:
             gh pr comment "${{ github.event.issue.number }}" \
               --body "$(printf '🎭 Refreshed visual baselines in %s:\n%s' "$(git rev-parse --short HEAD)" "$CHANGED")"
           fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Report failure on the PR
+        if: failure()
+        run: |
+          gh pr comment "${{ github.event.issue.number }}" \
+            --body "🎭 Snapshot update **failed** — see the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})."
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
