@@ -33,4 +33,22 @@ test.describe("QuantEcon theme — visual regression", () => {
       });
     });
   }
+
+  // The Contents sidebar is off-canvas by default, so the full-page snapshots
+  // above never see it — #70 (unlinked sidebar entries) was invisible to them.
+  // Open it and snapshot the viewport (not fullPage: stitching a scrolled page
+  // with a fixed overlay produces artifacts).
+  test("sidebar-open", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await settle(page);
+    await page.locator('button:has([aria-label="Show table of contents"])').click();
+    // The open state is a 300ms translate transition; wait for the sidebar to
+    // be fully on-screen (its "Contents" heading at ratio 1) rather than a
+    // fixed delay.
+    await expect(page.getByText("Contents", { exact: true })).toBeInViewport({ ratio: 1 });
+    await expect(page).toHaveScreenshot("sidebar-open.png", {
+      maxDiffPixelRatio: 0.01,
+      animations: "disabled",
+    });
+  });
 });
