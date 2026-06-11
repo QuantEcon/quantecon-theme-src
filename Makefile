@@ -11,9 +11,10 @@ VERSION = $(shell cat package.json | jq -r '.version')
 check:
 	@which jq > /dev/null || (echo "Error: the jq command is not available. Please install it first (brew install jq | apt-get install jq)." && exit 1)
 
-# Assembles the same bundle the release workflow ships into .deploy/$(THEME).
-# Used by the visual/FOUC test harness (THEME_TEMPLATE=$$PWD/.deploy/$(THEME))
-# and for local artifact testing.
+# Assembles the release workflow's bundle into .deploy/$(THEME), then
+# npm-installs it so the visual/FOUC test harness can serve it directly
+# (THEME_TEMPLATE=$$PWD/.deploy/$(THEME)). The node_modules this creates is
+# local-only — `build-zip` excludes it, matching the release asset.
 build-theme: check
 	rm -rf .deploy/$(THEME)
 	mkdir -p .deploy/$(THEME)
@@ -26,8 +27,9 @@ build-theme: check
 	sed -E "s/^version: .*/version: $(VERSION)/" template.yml > .deploy/$(THEME)/template.yml
 	cd .deploy/$(THEME) && npm install
 
-# Zips the bundle for testing the release artifact locally (the release
-# workflow attaches the equivalent zip to the GitHub Release).
+# Zips the bundle for testing the release artifact locally — node_modules
+# excluded, so the zip's contents match what the release workflow attaches
+# to the GitHub Release (which ships only a lockfile).
 build-zip: build-theme
 	cd .deploy && rm -f $(THEME).zip && zip -rq $(THEME).zip $(THEME) -x "$(THEME)/node_modules/*"
 	@echo "Wrote .deploy/$(THEME).zip"
