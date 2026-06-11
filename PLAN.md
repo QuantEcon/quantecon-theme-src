@@ -118,11 +118,14 @@ upstream is heading.
       built, and served the visual fixture with the released theme.
 
 **Versioning & changelog:** *(remaining work tracked in [#71](https://github.com/QuantEcon/quantecon-theme-src/issues/71))*
-- [ ] Make `vX.Y.Z` **tags** the release trigger *(trigger wired up in
+- [x] Make `vX.Y.Z` **tags** the release trigger *(trigger wired up in
       [#77](https://github.com/QuantEcon/quantecon-theme-src/pull/77))*; tag existing releases
       retroactively at their source commits (recorded in the old build repo as
-      `🚀 vX.Y.Z from <sha>`) so the `CHANGELOG.md` footer compare/release links resolve
-      *(retro-tagging still TODO — maintainer pushes the tags per the execution split below)*.
+      `🚀 vX.Y.Z from <sha>`) so the `CHANGELOG.md` footer compare/release links resolve.
+      *(Retro-tagged 2026-06-11: v1.0.0–v1.1.1 + v2.0.0 pushed at their verified source
+      commits — each commit's `package.json` matches its tag; v1.1.0 uses the later of its
+      two deploys — with `release.yml` temporarily disabled so historical tags triggered no
+      runs. Compare links verified resolving.)*
 - [x] **Versioning = manual Keep a Changelog + git tags (decided — Changesets dropped).**
       Remove `.changeset/`, rewrite `release.yml` as the tag-triggered build/release workflow,
       and **document** the bump → changelog → tag process in `CONTRIBUTING.md`. (Rationale:
