@@ -1,9 +1,9 @@
 jtex: v1
-title: QuantEcon
+title: QuantEcon Lecture Theme
 description: A dedicated theme for the QuantEcon course materials
-version: 2.0.0
+version: 2.1.0
 license: MIT
-source: https://github.com/QuantEcon/quantecon-theme
+source: https://github.com/QuantEcon/quantecon-theme.mystmd
 thumbnail: ./thumbnail.png
 authors:
   - name: Steve Purves

@@ -1,4 +1,4 @@
-# Contributing to quantecon-theme-src
+# Contributing to quantecon-theme.mystmd
 
 Thank you for your interest in contributing to the QuantEcon theme!
 
@@ -11,8 +11,8 @@ Thank you for your interest in contributing to the QuantEcon theme!
 
 ```bash
 # Clone the repository
-git clone https://github.com/QuantEcon/quantecon-theme-src.git
-cd quantecon-theme-src
+git clone https://github.com/QuantEcon/quantecon-theme.mystmd.git
+cd quantecon-theme.mystmd
 
 # Install dependencies
 npm install
