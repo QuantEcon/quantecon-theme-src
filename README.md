@@ -12,7 +12,7 @@ QuantEcon lectures and books, distributed as a zip attached to each
 
 ### Downloads
 
-When downloads are available on a page a download button will appear in the top toolbar.
+When downloads are available on a page, a download button will appear in the top toolbar.
 The contents of the menu available from that button is configured via the [download configuration](https://mystmd.org/guide/website-downloads) of the MyST project and page.
 Typically, a download of the entire book as a PDF is provided along with downloads of each lecture in PDF and Notebook (md) form.
 
