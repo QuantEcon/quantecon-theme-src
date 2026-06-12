@@ -272,10 +272,14 @@ stripping) + `docs/user/launch.md`.
       in (`PageContent.tsx` uses `ExecuteScopeProvider`, `NotebookToolbar`). Confirm/enable
       `myst.yml` `project.jupyter`/`thebe` config path and surface a "live compute" toggle
       consistent with the toolbar.
-- [x] **BinderHub:** add a Binder option to the `LaunchButton` radio group; build
-      `…/v2/gh/{org}/{repo}/{branch}?urlpath=…` URLs. *(Done for #26 — new
-      `site.options.binderhub_url` option, default mybinder.org; uses the shared
-      `.notebooks`/`main` constants pending the generalisation item below.)*
+- [x] ~~**BinderHub:** add a Binder option to the `LaunchButton` radio group~~
+      **Decided against (2026-06-12):** BinderHub proved flaky in practice, and Colab
+      is the launch target QuantEcon standardises on — primarily because it provides
+      **GPU access** for the lectures that need it. #26 stays open as a demand-driven
+      future request (an implementation existed in PR #86 and was stripped before
+      merge — recoverable from that history if demand appears). The Private
+      JupyterHub option remains for now; its possible removal (collapsing the
+      launcher to a direct Colab button) is tracked in #87.
 - [ ] Generalise the hardcoded `.notebooks` suffix and `main` branch
       (`LaunchButton.tsx:9–11`) into config read from project frontmatter / `myst.yml`,
       so non-default branches and naming work.

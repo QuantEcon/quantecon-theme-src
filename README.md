@@ -51,17 +51,12 @@ downloads:
 
 ### Launch Notebooks
 
-The launch notebooks capability has been developed to mirror capabilities in the previous QuantEcon theme. It is assumed that the `.notebooks` suffix convention for repository naming is used when launching Google Colab, BinderHub, and Private Jupyter Hub sessions.
+The launch notebooks capability has been developed to mirror capabilities in the previous QuantEcon theme. It is assumed that the `.notebooks` suffix convention for repository naming is used when launching both Google Colab and Private Jupyter Hub sessions.
 
-The BinderHub option defaults to [mybinder.org](https://mybinder.org); point it at
-another deployment with the `binderhub_url` site option:
-
-```yaml
-# myst.yml
-site:
-  options:
-    binderhub_url: https://binder.quantecon.org
-```
+Colab is the primary launch target (it provides GPU access for the lectures that
+need it). BinderHub is deliberately not offered — it proved flaky in practice;
+see issue [#26](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/26),
+kept open as a demand-driven future request.
 
 ## Usage with MyST
 

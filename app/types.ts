@@ -5,6 +5,4 @@ export interface TemplateOptions {
   hide_footer_links?: boolean;
   outline_maxdepth?: number;
   hide_title_block?: boolean;
-  /** BinderHub deployment used by the notebook launcher (default mybinder.org). */
-  binderhub_url?: string;
 }
