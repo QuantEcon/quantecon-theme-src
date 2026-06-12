@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- The notebook-launch toolbar trigger now has an accessible name (`aria-label="Launch notebook"`); previously it exposed no name to assistive technology. Added alongside the first regression coverage of the launch popover (Colab URL + default selection — BinderHub was deliberately not added, see [#26](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/26)).
+
 ### Added
 - Git history in page headers (Phase 1 of [`PLAN.md`](./PLAN.md)): a "Last
   changed" control in the page header expands into a changelog dropdown with
