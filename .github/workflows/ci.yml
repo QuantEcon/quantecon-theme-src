@@ -10,8 +10,8 @@ jobs:
     name: Build & Typecheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
@@ -29,8 +29,8 @@ jobs:
       contents: read
       pull-requests: write # daun/playwright-report-summary PR comment
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
@@ -52,14 +52,14 @@ jobs:
           THEME_TEMPLATE: ${{ github.workspace }}/.deploy/quantecon-theme
           PORT: "3111"
       - name: Upload Playwright report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always()
         with:
           name: visual-playwright-report
           path: playwright-report/
           retention-days: 30
       - name: Upload test results (actual/diff images) on failure
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: steps.visual.outcome == 'failure'
         with:
           name: visual-test-diff
@@ -83,8 +83,8 @@ jobs:
     name: FOUC guard (WebKit)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
@@ -102,7 +102,7 @@ jobs:
         env:
           THEME_TEMPLATE: ${{ github.workspace }}/.deploy/quantecon-theme
           PORT: "3111"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: failure()
         with:
           name: fouc-playwright-report
