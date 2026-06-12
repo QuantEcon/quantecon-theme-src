@@ -1,0 +1,99 @@
+# PR preview on GitHub Pages — self-contained (GITHUB_TOKEN only, no org secrets).
+#
+# Builds a real lecture site (QuantEcon/lecture-python-programming) with the
+# PR's theme via a static `myst build --html` — the production export path the
+# Playwright harness (live `myst start`) never exercises — and deploys it to
+# the gh-pages branch under pr-preview/pr-<n>/. A sticky PR comment links the
+# preview; closing the PR tears the subdirectory down.
+#
+# The content repo is a legacy Jupyter Book (_config.yml/_toc.yml): `myst init`
+# performs the JB→MyST upgrade at build time, so the preview doubles as a
+# continuous migration-readiness check for the lecture content (PLAN.md open
+# question 4). Content is cloned at full depth so the git-metadata plugin
+# (plugins/git-metadata.mjs, PR #83) renders real per-page history.
+name: PR Preview
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, closed]
+
+concurrency:
+  group: pr-preview-${{ github.event.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write # push the rendered site to the gh-pages branch
+  pull-requests: write # sticky preview-link comment
+
+env:
+  CONTENT_REPO: QuantEcon/lecture-python-programming
+  CONTENT_DIR: lectures
+
+jobs:
+  preview:
+    name: Build & deploy preview (gh-pages)
+    # Same-repo PRs only, like update-snapshots.yml (fork PRs get a read-only
+    # GITHUB_TOKEN and could not deploy anyway).
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        if: github.event.action != 'closed'
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        if: github.event.action != 'closed'
+        run: npm ci
+      - name: Install mystmd CLI
+        if: github.event.action != 'closed'
+        run: npm install -g mystmd
+      # Builds the candidate theme from this branch into .deploy/quantecon-theme.
+      - name: Build theme template
+        if: github.event.action != 'closed'
+        run: make build-theme
+      - name: Checkout lecture content (full history for git metadata)
+        if: github.event.action != 'closed'
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ env.CONTENT_REPO }}
+          path: preview-content
+          fetch-depth: 0
+      - name: Convert content to MyST and point it at the PR theme
+        if: github.event.action != 'closed'
+        working-directory: preview-content/${{ env.CONTENT_DIR }}
+        env:
+          THEME_DIR: ${{ github.workspace }}/.deploy/quantecon-theme
+          PLUGIN: ${{ github.workspace }}/plugins/git-metadata.mjs
+          CONTENT_GITHUB: https://github.com/${{ env.CONTENT_REPO }}
+        run: |
+          # `myst init` upgrades the legacy Jupyter Book to myst.yml. With
+          # piped (non-TTY) stdin it exits non-zero on its follow-up
+          # "run myst start now?" prompt after the config is written —
+          # tolerate that, then assert the upgrade actually happened.
+          printf 'y\nn\n' | myst init || true
+          test -f myst.yml
+          yq -i '.site.template = env(THEME_DIR)' myst.yml
+          yq -i '.project.github = env(CONTENT_GITHUB)' myst.yml
+          # The git-metadata plugin ships with the theme from PR #83 onward;
+          # guard so previews still build on branches that predate it.
+          if [ -f "$PLUGIN" ]; then
+            yq -i '.project.plugins = [env(PLUGIN)]' myst.yml
+          fi
+      - name: Build static site
+        if: github.event.action != 'closed'
+        working-directory: preview-content/${{ env.CONTENT_DIR }}
+        env:
+          # Must match the Pages subpath the deploy step publishes to.
+          BASE_URL: /quantecon-theme.mystmd/pr-preview/pr-${{ github.event.number }}
+        run: myst build --html
+      # auto mode: deploys on opened/reopened/synchronize, removes the
+      # pr-preview/pr-<n>/ subdirectory on closed, and maintains the sticky
+      # comment. Root .nojekyll on gh-pages (seeded once) keeps Pages from
+      # eating the underscore-prefixed asset paths (build/_assets/...).
+      - name: Deploy / teardown preview
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: preview-content/${{ env.CONTENT_DIR }}/_build/html
+          action: auto
