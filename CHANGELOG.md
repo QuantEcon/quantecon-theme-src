@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   override for manual pinning. mystmd has no built-in last-modified support
   (jupyter-book/mystmd#2213), and plugin transforms cannot modify page
   frontmatter, hence the AST channel.
+- Per-PR rendered previews on GitHub Pages (`.github/workflows/preview.yml`): each PR statically builds the real `lecture-python-programming` lectures with the candidate theme (`myst build --html`, including the build-time Jupyter Book → MyST upgrade) and publishes to `gh-pages` at `pr-preview/pr-<n>/` with a sticky link comment and teardown on close. Self-contained on `GITHUB_TOKEN` — no external preview service.
 
 ### Removed
 - Retire the `make deploy` / `deploy-theme` targets — releases ship exclusively via the tag-triggered GitHub Release workflow, and the legacy build repo (`QuantEcon/quantecon-theme`) is archived. `make build-theme` now assembles the bundle locally instead of cloning the archived repo (so the CI test harness no longer depends on it), and a new `make build-zip` produces the release-equivalent zip for local artifact testing ([#81](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/81)).

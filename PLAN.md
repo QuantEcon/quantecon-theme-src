@@ -118,11 +118,14 @@ upstream is heading.
       built, and served the visual fixture with the released theme.
 
 **Versioning & changelog:** *(remaining work tracked in [#71](https://github.com/QuantEcon/quantecon-theme-src/issues/71))*
-- [ ] Make `vX.Y.Z` **tags** the release trigger *(trigger wired up in
+- [x] Make `vX.Y.Z` **tags** the release trigger *(trigger wired up in
       [#77](https://github.com/QuantEcon/quantecon-theme-src/pull/77))*; tag existing releases
       retroactively at their source commits (recorded in the old build repo as
-      `🚀 vX.Y.Z from <sha>`) so the `CHANGELOG.md` footer compare/release links resolve
-      *(retro-tagging still TODO — maintainer pushes the tags per the execution split below)*.
+      `🚀 vX.Y.Z from <sha>`) so the `CHANGELOG.md` footer compare/release links resolve.
+      *(Retro-tagged 2026-06-11: v1.0.0–v1.1.1 + v2.0.0 pushed at their verified source
+      commits — each commit's `package.json` matches its tag; v1.1.0 uses the later of its
+      two deploys — with `release.yml` temporarily disabled so historical tags triggered no
+      runs. Compare links verified resolving.)*
 - [x] **Versioning = manual Keep a Changelog + git tags (decided — Changesets dropped).**
       Remove `.changeset/`, rewrite `release.yml` as the tag-triggered build/release workflow,
       and **document** the bump → changelog → tag process in `CONTRIBUTING.md`. (Rationale:
@@ -190,15 +193,21 @@ upstream is heading.
 - [x] Triaged & consolidated the ~20 Dependabot PRs into a single lockfile refresh
       ([#55](https://github.com/QuantEcon/quantecon-theme-src/pull/55)–58; `npm audit`
       68 → 45). The remaining findings need the Remix v2 migration ([#28]) — still to schedule.
-- [ ] Stand up a **visual preview / smoke test** against a real lecture repo (the book-theme
+- [x] Stand up a **visual preview / smoke test** against a real lecture repo (the book-theme
       uses `quantecon-book-theme-fixtures` + Playwright + Netlify previews — a lighter MyST
       equivalent would de-risk every later phase).
       **Status:** the CI gate landed in
       [#78](https://github.com/QuantEcon/quantecon-theme-src/pull/78) — a `visual` job
       pixel-diffs the fixture on every PR (desktop + mobile + sidebar-open), with
       `/update-snapshots` comment-triggered baseline refresh, mirroring the book-theme's
-      setup. **Remaining:** a Netlify-style rendered preview for reviewers (needs org
-      secrets) and a smoke test against real lecture content (e.g. `lecture-wasm`).
+      setup. The rendered preview is **GitHub Pages, not Netlify** (self-contained,
+      `GITHUB_TOKEN` only — the org-secrets blocker is gone): `preview.yml` builds
+      `lecture-python-programming` with the PR's theme via static `myst build --html`
+      (the export/hydration path Playwright's live `myst start` never exercises),
+      deploys to `gh-pages` under `pr-preview/pr-<n>/`, sticky-comments the link, and
+      tears down on close. The content repo is still a legacy Jupyter Book, so the
+      build-time `myst init` upgrade doubles as a migration-readiness check (open
+      question 4). Playwright remains the only gate; the preview is qualitative.
 
 **Decisions (resolved):** (1) **versioning** — manual Keep a Changelog + git tags (Changesets
 dropped); (2) **consumer URL** — pinned per-lecture tag URLs

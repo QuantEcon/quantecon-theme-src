@@ -36,8 +36,8 @@ jobs:
     name: Build & publish release zip
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm
@@ -89,7 +89,7 @@ jobs:
           (cd dist && zip -r ../quantecon-theme.zip quantecon-theme)
 
       - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           body_path: release-notes.md
           files: quantecon-theme.zip
