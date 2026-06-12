@@ -103,7 +103,7 @@ function LaunchPanel() {
 export function LaunchButton({ size, showLabel }: { size: number; showLabel?: boolean }) {
   return (
     <Popover.Root>
-      <Popover.Trigger className="flex items-center cursor-pointer">
+      <Popover.Trigger aria-label="Launch notebook" className="flex items-center cursor-pointer">
         <Tooltip label="Launch Notebook">
           <CirclePlay
             className="opacity-90 hover:scale-110"
