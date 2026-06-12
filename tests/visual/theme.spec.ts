@@ -51,4 +51,39 @@ test.describe("QuantEcon theme — visual regression", () => {
       animations: "disabled",
     });
   });
+
+  // Launch popover with the BinderHub option (#26). window.open is stubbed so
+  // the launch URL assertion is deterministic and offline; the URL's repo part
+  // comes from the fixture's `github` field, so only the stable pieces (host,
+  // .notebooks convention, branch, urlpath) are pinned.
+  test("launch-binder", async ({ page }, testInfo) => {
+    test.skip(
+      testInfo.project.name !== "desktop-chrome",
+      "the launch popover lives in the desktop toolbar; mobile wraps it in MobileActionsMenu"
+    );
+    await page.goto("/notebook", { waitUntil: "domcontentloaded" });
+    await settle(page);
+    await page.evaluate(() => {
+      (window as any).__opened = [];
+      window.open = (url?: string | URL) => {
+        (window as any).__opened.push(String(url));
+        return null;
+      };
+    });
+    await page.getByRole("button", { name: "Launch notebook" }).first().click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog.getByRole("radio", { name: "Google Colab" })).toBeVisible();
+    await expect(dialog.getByRole("radio", { name: "Private" })).toBeVisible();
+    await dialog.getByRole("radio", { name: "BinderHub" }).click();
+    await expect(page).toHaveScreenshot("launch-open.png", {
+      maxDiffPixelRatio: 0.01,
+      animations: "disabled",
+    });
+    await dialog.getByRole("button", { name: "Launch Notebook" }).click();
+    const opened = await page.evaluate(() => (window as any).__opened);
+    expect(opened).toHaveLength(1);
+    expect(opened[0]).toMatch(
+      /^https:\/\/mybinder\.org\/v2\/gh\/QuantEcon\/[\w.-]+\.notebooks\/main\?urlpath=tree\/notebook\.ipynb$/
+    );
+  });
 });

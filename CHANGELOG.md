@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- BinderHub option in the notebook launcher ([#26](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/26)): launches `{binderhub_url}/v2/gh/{org}/{repo}.notebooks/main?urlpath=tree/{page}.ipynb`, with the deployment configurable via the `binderhub_url` site option (default [mybinder.org](https://mybinder.org)). The launch trigger also gains an accessible name (`aria-label="Launch notebook"`).
 - Per-PR rendered previews on GitHub Pages (`.github/workflows/preview.yml`): each PR statically builds the real `lecture-python-programming` lectures with the candidate theme (`myst build --html`, including the build-time Jupyter Book → MyST upgrade) and publishes to `gh-pages` at `pr-preview/pr-<n>/` with a sticky link comment and teardown on close. Self-contained on `GITHUB_TOKEN` — no external preview service.
 
 ### Removed

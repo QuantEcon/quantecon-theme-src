@@ -1,14 +1,30 @@
-import { useProjectManifest } from '@myst-theme/providers';
+import { useProjectManifest, useSiteManifest } from '@myst-theme/providers';
 import * as Popover from '@radix-ui/react-popover';
 import * as RadioGroup from '@radix-ui/react-radio-group';
 import { CirclePlay } from 'lucide-react';
 import React from 'react';
+import type { TemplateOptions } from '~/types';
 import { usePage } from '../PageProvider';
 import { Tooltip } from './Tooltip';
 
 const COLAB_BASE_URL = 'https://colab.research.google.com/github/';
 const GITHUB_REPO_SUFFIX = '.notebooks';
 const GITHUB_REPO_BRANCH = 'main';
+const BINDERHUB_DEFAULT_URL = 'https://mybinder.org';
+
+function buildBinderLaunchUrl({
+  binderhubUrl,
+  orgRepo,
+  filename,
+}: {
+  binderhubUrl: string;
+  orgRepo: string;
+  filename: string;
+}) {
+  // Binder serves the repo contents at the server root, so unlike the
+  // JupyterHub git-pull URL there is no leading repo-name path segment.
+  return `${binderhubUrl.replace(/\/$/, '')}/v2/gh/${orgRepo}${GITHUB_REPO_SUFFIX}/${GITHUB_REPO_BRANCH}?urlpath=tree${filename}`;
+}
 
 function buildJupyterHubLaunchUrl({
   hubBaseUrl,
@@ -26,6 +42,8 @@ function buildJupyterHubLaunchUrl({
 
 function LaunchPanel() {
   const project = useProjectManifest();
+  const siteOptions = (useSiteManifest()?.options ?? {}) as TemplateOptions;
+  const binderhubUrl = siteOptions.binderhub_url ?? BINDERHUB_DEFAULT_URL;
   const page = usePage();
   const [service, setService] = React.useState<string | undefined>('colab');
   const [privateServiceUrl, setPrivateServiceUrl] = React.useState<string | undefined>();
@@ -42,12 +60,16 @@ function LaunchPanel() {
     if (service === 'colab') {
       const url = `${COLAB_BASE_URL}${orgRepo}${GITHUB_REPO_SUFFIX}/blob/${GITHUB_REPO_BRANCH}${filename}`;
       window.open(url, '_blank');
+    } else if (service === 'binder') {
+      if (!orgRepo) return;
+      const url = buildBinderLaunchUrl({ binderhubUrl, orgRepo, filename });
+      window.open(url, '_blank');
     } else {
       if (!privateServiceUrl || !orgRepo) return;
       const url = buildJupyterHubLaunchUrl({ hubBaseUrl: privateServiceUrl, orgRepo, filename });
       window.open(url, '_blank');
     }
-  }, [privateServiceUrl, service, orgRepo, filename]);
+  }, [privateServiceUrl, service, orgRepo, filename, binderhubUrl]);
 
   return (
     <div className="p-3 space-y-3">
@@ -71,6 +93,15 @@ function LaunchPanel() {
             flex justify-items-center items-center`}
         >
           Google Colab
+        </RadioGroup.Item>
+        <RadioGroup.Item
+          value="binder"
+          id="launch-binder"
+          className={`p-2 border-2 gap-2
+            border-qetoolbar-border data-[state="checked"]:border-qeborder-blue data-[state="checked"]:bg-qeborder-blue/20
+            flex justify-items-center items-center`}
+        >
+          BinderHub
         </RadioGroup.Item>
         <RadioGroup.Item
           value="private"
@@ -103,7 +134,7 @@ function LaunchPanel() {
 export function LaunchButton({ size, showLabel }: { size: number; showLabel?: boolean }) {
   return (
     <Popover.Root>
-      <Popover.Trigger className="flex items-center cursor-pointer">
+      <Popover.Trigger aria-label="Launch notebook" className="flex items-center cursor-pointer">
         <Tooltip label="Launch Notebook">
           <CirclePlay
             className="opacity-90 hover:scale-110"

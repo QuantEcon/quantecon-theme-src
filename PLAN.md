@@ -272,8 +272,10 @@ stripping) + `docs/user/launch.md`.
       in (`PageContent.tsx` uses `ExecuteScopeProvider`, `NotebookToolbar`). Confirm/enable
       `myst.yml` `project.jupyter`/`thebe` config path and surface a "live compute" toggle
       consistent with the toolbar.
-- [ ] **BinderHub:** add a Binder option to the `LaunchButton` radio group; build
-      `…/v2/gh/{org}/{repo}/{branch}?urlpath=…` URLs.
+- [x] **BinderHub:** add a Binder option to the `LaunchButton` radio group; build
+      `…/v2/gh/{org}/{repo}/{branch}?urlpath=…` URLs. *(Done for #26 — new
+      `site.options.binderhub_url` option, default mybinder.org; uses the shared
+      `.notebooks`/`main` constants pending the generalisation item below.)*
 - [ ] Generalise the hardcoded `.notebooks` suffix and `main` branch
       (`LaunchButton.tsx:9–11`) into config read from project frontmatter / `myst.yml`,
       so non-default branches and naming work.
