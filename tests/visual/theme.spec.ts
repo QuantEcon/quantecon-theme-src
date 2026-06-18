@@ -34,10 +34,10 @@ test.describe("QuantEcon theme — visual regression", () => {
     });
   }
 
-  // The "Last changed" header control and its changelog dropdown. The fixture
-  // pins git_metadata in features.md frontmatter and the clock is frozen, so
-  // the relative times ("4 months ago") are deterministic. Viewport snapshot,
-  // not fullPage — the dropdown is a fixed-position portal overlay.
+  // The "Last changed" header control and its centred changelog modal. The
+  // fixture pins git_metadata in features.md frontmatter and the clock is
+  // frozen, so the relative times ("4 months ago") are deterministic. Viewport
+  // snapshot, not fullPage — the modal is a fixed-position portal overlay.
   test("history-open", async ({ page }) => {
     await page.clock.setFixedTime(new Date("2026-06-12T00:00:00Z"));
     await page.goto("/features", { waitUntil: "domcontentloaded" });
@@ -62,7 +62,7 @@ test.describe("QuantEcon theme — visual regression", () => {
       maxDiffPixelRatio: 0.01,
       animations: "disabled",
     });
-    // Esc closes the dropdown (Radix popover behavior the header relies on).
+    // Esc closes the modal (Radix dialog behavior the header relies on).
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
   });

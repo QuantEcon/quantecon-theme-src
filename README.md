@@ -60,10 +60,11 @@ kept open as a demand-driven future request.
 
 ### Git history in page headers
 
-The page header shows a "Last changed: ⟨date⟩" control that expands into a
-changelog of the most recent commits touching that page — commit hashes link to
-GitHub, and a "full history" link opens the file's complete commit log
-(mirroring the `quantecon-book-theme` header).
+The page header shows a "Last changed: ⟨date⟩" control (aligned to the right of
+the author line) that opens a centred changelog modal listing the most recent
+commits touching that page — commit hashes link to GitHub, and a "full history"
+link opens the file's complete commit log (mirroring the `quantecon-book-theme`
+header).
 
 The data is injected at build time by [`plugins/git-metadata.mjs`](./plugins/git-metadata.mjs),
 a MyST transform that runs `git log --follow` per source file and attaches

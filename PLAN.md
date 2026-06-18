@@ -258,9 +258,10 @@ and a "full history" link.
 **Theme (render) deliverable:**
 - [x] New `app/components/PageHeaderHistory.tsx` (rendered from `ProjectFrontmatter.tsx`)
       that reads the injected AST data (or the `site.git_metadata` page-frontmatter
-      override) and renders the button + collapsible dropdown,
-      with the QuantEcon blue accent, dark mode, keyboard (Esc to close), and ARIA
-      via the Radix popover used by the existing toolbar components.
+      override) and renders the button (aligned right of the author line) + a
+      centred changelog modal, with the QuantEcon blue accent, dark mode, keyboard
+      (Esc to close), and ARIA via Radix Dialog. A modal (not an anchored popover)
+      keeps the changelog clear of the left/right page menus and centres on mobile.
 - [x] Build commit/history URLs from the project `github` field — commit links keep the
       `.myst` suffix (they target the source repo, unlike `LaunchButton.tsx`'s notebook
       URLs), and the full-history link derives from the mystmd-computed `source_url`.

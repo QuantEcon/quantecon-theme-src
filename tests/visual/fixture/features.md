@@ -1,4 +1,9 @@
 ---
+# Authors exercise the header layout: names on the left, the "Last changed"
+# control aligned to the right of the same row.
+authors:
+  - name: Thomas J. Sargent
+  - name: John Stachurski
 site:
   # Deterministic stand-in for plugins/git-metadata.mjs output, so the header
   # history control renders identically on every run (real git dates would

@@ -1,5 +1,5 @@
-import * as Popover from "@radix-ui/react-popover";
-import { ChevronDown } from "lucide-react";
+import * as Dialog from "@radix-ui/react-dialog";
+import { ChevronDown, X } from "lucide-react";
 import React from "react";
 import { usePage } from "./PageProvider";
 
@@ -52,8 +52,10 @@ function relativeTime(iso: string, now: number) {
 }
 
 /**
- * "Last changed" page-header control with a changelog dropdown, mirroring the
- * quantecon-book-theme header.
+ * "Last changed" page-header control that opens a centred changelog modal,
+ * mirroring the quantecon-book-theme header. A modal (rather than an anchored
+ * popover) keeps the changelog clear of the left/right page menus and centres
+ * cleanly on mobile.
  *
  * Data sources, in order of precedence:
  *  1. `site.git_metadata` in the page frontmatter (manual override, and how
@@ -101,8 +103,8 @@ export function PageHeaderHistory() {
   }
 
   return (
-    <Popover.Root>
-      <Popover.Trigger
+    <Dialog.Root>
+      <Dialog.Trigger
         className="group flex items-center gap-1 text-sm cursor-pointer
           text-qetext-light/70 dark:text-qetext-dark-muted
           hover:text-qeborder-blue dark:hover:text-qeborder-blue"
@@ -113,33 +115,46 @@ export function PageHeaderHistory() {
           aria-hidden
           className="transition-transform group-data-[state=open]:rotate-180"
         />
-      </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Content
-          align="start"
-          sideOffset={3}
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        {/* Dim backdrop so the centred modal stands out across browsers
+            (Chrome lacks Safari's default dialog outline) and reads clearly
+            over the left/right page menus. */}
+        <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
+        <Dialog.Content
+          aria-describedby={undefined}
           className={`
-              z-10 w-[420px] max-w-[90vw] rounded bg-white dark:bg-qepage-dark p-4
+              fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2
+              w-[440px] max-w-[90vw] rounded
+              border border-qeborder-blue
+              bg-white dark:bg-qepage-dark p-4
               text-qetext-light dark:text-qetext-dark
-              will-change-[transform,opacity]
-              shadow-md
-              dark:shadow-sm
-              dark:shadow-white/20
+              shadow-lg focus:outline-none
               `}
         >
-          <Popover.Arrow className="shadow-md stroke-2 fill-white dark:fill-qepage-dark" />
-          <div className="flex items-baseline justify-between pb-2 border-b border-qetoolbar-border">
-            <span className="text-base font-medium">Changelog</span>
-            {historyUrl && (
-              <a
-                href={historyUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-qeborder-blue hover:underline"
+          <div className="flex items-center justify-between gap-3 pb-2 border-b border-qetoolbar-border">
+            <Dialog.Title className="text-base font-medium">
+              Changelog
+            </Dialog.Title>
+            <div className="flex items-center gap-3">
+              {historyUrl && (
+                <a
+                  href={historyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-qeborder-blue hover:underline"
+                >
+                  full history
+                </a>
+              )}
+              <Dialog.Close
+                aria-label="Close"
+                className="text-qetext-light/60 dark:text-qetext-dark-muted
+                  hover:text-qeborder-blue cursor-pointer"
               >
-                full history
-              </a>
-            )}
+                <X size={16} aria-hidden />
+              </Dialog.Close>
+            </div>
           </div>
           <ol
             className="m-0 p-0 list-none max-h-80 overflow-y-auto"
@@ -184,8 +199,8 @@ export function PageHeaderHistory() {
               </li>
             ))}
           </ol>
-        </Popover.Content>
-      </Popover.Portal>
-    </Popover.Root>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

@@ -25,8 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Git history in page headers (Phase 1 of [`PLAN.md`](./PLAN.md)): a "Last
-  changed" control in the page header expands into a changelog dropdown with
-  GitHub-linked commit hashes and a full-history link, mirroring the
+  changed" control on the page-header author line opens a centred changelog
+  modal with GitHub-linked commit hashes and a full-history link, mirroring the
   `quantecon-book-theme` header. Data is injected at build time by a new MyST
   transform plugin (`plugins/git-metadata.mjs`, `git log --follow` per page →
   `mdast.data.git_metadata`), with a `site.git_metadata` page-frontmatter
