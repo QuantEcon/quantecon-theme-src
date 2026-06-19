@@ -87,5 +87,9 @@ export function buildJupyterHubUrl(
   const repoName = orgRepo.split('/')[1] ?? '';
   const branch = config.branch ?? DEFAULT_BRANCH;
   const relPath = notebookRelPath(location, config);
-  return `${hubBaseUrl}/jupyter/hub/user-redirect/git-pull?repo=https://github.com/${orgRepo}&branch=${branch}&urlpath=tree/${repoName}/${relPath}`;
+  // Drop a trailing slash on the user-provided hub URL to avoid `//jupyter`.
+  // Query values are left unencoded to match the book-theme `launch.py` /
+  // nbgitpuller format that the production QuantEcon hubs already accept.
+  const base = hubBaseUrl.replace(/\/+$/, '');
+  return `${base}/jupyter/hub/user-redirect/git-pull?repo=https://github.com/${orgRepo}&branch=${branch}&urlpath=tree/${repoName}/${relPath}`;
 }

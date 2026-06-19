@@ -7,6 +7,11 @@
  * step. Covers the generalisation of the previously hardcoded `.notebooks`
  * suffix / `main` branch and the nested lecture-dir path handling.
  *
+ * Requires Node >= 23.6 (type stripping of the imported `.ts` is on by
+ * default), matching the CI Node 24 runner. The theme runtime itself still
+ * supports Node >= 20 (`engines.node`); only this dev test needs the newer
+ * Node.
+ *
  * Run with: npm run test:unit
  */
 import assert from 'node:assert/strict';
@@ -32,6 +37,13 @@ test('defaults reproduce the historical Colab URL (backward-compat)', () => {
 test('defaults reproduce the historical JupyterHub URL (backward-compat)', () => {
   assert.equal(
     buildJupyterHubUrl(HUB, SOURCE, '/notebook.ipynb'),
+    'https://hub.example.org/jupyter/hub/user-redirect/git-pull?repo=https://github.com/QuantEcon/lecture-foo.notebooks&branch=main&urlpath=tree/lecture-foo.notebooks/notebook.ipynb',
+  );
+});
+
+test('a trailing slash on the hub URL does not produce a double slash', () => {
+  assert.equal(
+    buildJupyterHubUrl(`${HUB}/`, SOURCE, '/notebook.ipynb'),
     'https://hub.example.org/jupyter/hub/user-redirect/git-pull?repo=https://github.com/QuantEcon/lecture-foo.notebooks&branch=main&urlpath=tree/lecture-foo.notebooks/notebook.ipynb',
   );
 });

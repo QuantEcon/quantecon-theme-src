@@ -10,7 +10,8 @@ export interface TemplateOptions {
   // Generalises the previously hardcoded Colab/JupyterHub launch URLs so
   // non-default branches, repo naming and nested lecture dirs work. All keys
   // are optional; the defaults reproduce the historical behaviour
-  // (`<github>.notebooks`, branch `main`, flat paths). Mirrors the book-theme
+  // (`<github>.notebooks`, branch `main`, and no source/notebooks path
+  // prefixing — the page path is used as-is). Mirrors the book-theme
   // `html_theme_options.launch_buttons` config.
   launch_repo_url?: string; // explicit notebook repo URL; overrides `<github> + launch_repo_suffix`
   launch_repo_suffix?: string; // suffix appended to the source repo to locate the notebook repo (default ".notebooks")

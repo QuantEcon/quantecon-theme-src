@@ -15,7 +15,7 @@ function LaunchPanel() {
   const launchOptions: TemplateOptions =
     (useSiteManifest() as SiteManifest & TemplateOptions)?.options ?? {};
   const [service, setService] = React.useState<string | undefined>('colab');
-  const [privateServiceUrl, setPrivateServiceUrl] = React.useState<string | undefined>();
+  const [privateServiceUrl, setPrivateServiceUrl] = React.useState<string>('');
 
   const hasGitHub = !!project?.github;
   // Source org/repo from `project.github`, minus the `.myst` suffix if present.

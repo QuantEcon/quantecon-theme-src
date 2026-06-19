@@ -51,12 +51,24 @@ downloads:
 
 ### Launch Notebooks
 
-The launch notebooks capability has been developed to mirror capabilities in the previous QuantEcon theme. It is assumed that the `.notebooks` suffix convention for repository naming is used when launching both Google Colab and Private Jupyter Hub sessions.
+The launch notebooks capability has been developed to mirror capabilities in the previous QuantEcon theme. By default it assumes the `.notebooks` suffix convention for repository naming when launching both Google Colab and Private Jupyter Hub sessions.
 
 Colab is the primary launch target (it provides GPU access for the lectures that
 need it). BinderHub is deliberately not offered — it proved flaky in practice;
 see issue [#26](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/26),
 kept open as a demand-driven future request.
+
+The repo/branch/path conventions are configurable under `site.options` in
+`myst.yml` (MyST's theme-options section). All keys are optional and the
+defaults reproduce the behaviour above, so existing projects need no changes:
+
+| Option | Default | Purpose |
+| ------ | ------- | ------- |
+| `launch_repo_suffix` | `.notebooks` | Suffix appended to the source repo to locate the notebook repo |
+| `launch_branch` | `main` | Branch in the notebook repo to launch from |
+| `launch_repo_url` | _(derived from `github` + suffix)_ | Explicit notebook repo, for when it isn't `<source>.notebooks` |
+| `launch_notebooks_path` | _(none)_ | Sub-directory within the notebook repo where the notebooks live |
+| `launch_source_path` | _(none)_ | Path prefix stripped from the page location (e.g. a `lectures/` source dir) |
 
 ## Usage with MyST
 
