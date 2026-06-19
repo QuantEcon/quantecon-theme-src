@@ -283,7 +283,9 @@ stripping) + `docs/user/launch.md`.
       browser via Pyodide, no server/Binder (avoids the flaky Binder, see #26). Verified
       end-to-end (Power → Pyodide kernel boots in-browser). Pyodide caveat documented in the README
       (numba/JAX unavailable). Fixture sets `thebe.lite`; `tests/visual/theme.spec.ts` asserts the
-      toggle renders; `notebook.png`/`launch-open.png` snapshots refreshed.
+      toggle renders; `notebook.png`/`launch-open.png` snapshots refreshed. A second fixture
+      (`tests/visual/fixture-no-thebe/`, served on a second port) asserts the toggle is **absent**
+      on a notebook page when a project doesn't set `project.thebe` (the disabled path).
 - [x] ~~**BinderHub:** add a Binder option to the `LaunchButton` radio group~~
       **Decided against (2026-06-12):** BinderHub proved flaky in practice, and Colab
       is the launch target QuantEcon standardises on — primarily because it provides

@@ -15,6 +15,10 @@ import { defineConfig, devices } from "@playwright/test";
  */
 const PORT = process.env.PORT || "3111";
 const baseURL = `http://localhost:${PORT}`;
+// Second fixture project WITHOUT `project.thebe`, used to assert the
+// live-compute toggle is absent when a project hasn't opted into Thebe.
+const NO_THEBE_PORT = process.env.NO_THEBE_PORT || "3112";
+const noThebeURL = `http://localhost:${NO_THEBE_PORT}`;
 
 export default defineConfig({
   testDir: "./tests/visual",
@@ -54,10 +58,20 @@ export default defineConfig({
       use: { ...devices["Desktop Safari"] },
     },
   ],
-  webServer: {
-    command: "bash tests/visual/serve.sh",
-    url: baseURL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 300 * 1000,
-  },
+  webServer: [
+    {
+      command: "bash tests/visual/serve.sh",
+      url: baseURL,
+      reuseExistingServer: !process.env.CI,
+      timeout: 300 * 1000,
+    },
+    {
+      // Thebe-disabled fixture (no `project.thebe`) on a second port, for the
+      // `live-compute-toggle-absent-without-thebe` test in theme.spec.ts.
+      command: `FIXTURE_DIR=fixture-no-thebe PORT=${NO_THEBE_PORT} bash tests/visual/serve.sh`,
+      url: noThebeURL,
+      reuseExistingServer: !process.env.CI,
+      timeout: 300 * 1000,
+    },
+  ],
 });

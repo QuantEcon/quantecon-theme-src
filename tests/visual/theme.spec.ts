@@ -105,4 +105,22 @@ test.describe("QuantEcon theme — visual regression", () => {
       page.getByRole("button", { name: /start compute/i })
     ).toBeVisible();
   });
+
+  // Disabled path: a second fixture project WITHOUT `project.thebe` (served on
+  // NO_THEBE_PORT). On a real notebook page there the live-compute toggle must
+  // NOT appear, proving it's gated on the project opting into Thebe — not just
+  // on the page being a notebook.
+  test("live-compute-toggle-absent-without-thebe", async ({ page }, testInfo) => {
+    test.skip(
+      testInfo.project.name !== "desktop-chrome",
+      "the live-compute toggle lives in the desktop header toolbar"
+    );
+    const noThebeBase = `http://localhost:${process.env.NO_THEBE_PORT ?? "3112"}`;
+    await page.goto(`${noThebeBase}/notebook`, { waitUntil: "domcontentloaded" });
+    await settle(page);
+    // Sanity-check we actually loaded the notebook page (so the count-0 below
+    // isn't a false pass from a 404 / wrong page).
+    await expect(page.getByText("Notebook outputs").first()).toBeVisible();
+    await expect(page.getByRole("button", { name: /start compute/i })).toHaveCount(0);
+  });
 });
