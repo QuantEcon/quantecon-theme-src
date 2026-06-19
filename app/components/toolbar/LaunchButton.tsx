@@ -1,53 +1,65 @@
-import { useProjectManifest } from '@myst-theme/providers';
+import { useProjectManifest, useSiteManifest } from '@myst-theme/providers';
 import * as Popover from '@radix-ui/react-popover';
 import * as RadioGroup from '@radix-ui/react-radio-group';
 import { CirclePlay } from 'lucide-react';
+import type { SiteManifest } from 'myst-config';
 import React from 'react';
 import { usePage } from '../PageProvider';
+import type { TemplateOptions } from '~/types';
+import { buildColabUrl, buildJupyterHubUrl, type LaunchConfig } from './launchUrls';
 import { Tooltip } from './Tooltip';
-
-const COLAB_BASE_URL = 'https://colab.research.google.com/github/';
-const GITHUB_REPO_SUFFIX = '.notebooks';
-const GITHUB_REPO_BRANCH = 'main';
-
-function buildJupyterHubLaunchUrl({
-  hubBaseUrl,
-  orgRepo,
-  filename,
-}: {
-  hubBaseUrl: string;
-  orgRepo: string;
-  filename: string;
-}) {
-  return `${hubBaseUrl}/jupyter/hub/user-redirect/git-pull?repo=https://github.com/${orgRepo}${GITHUB_REPO_SUFFIX}&branch=${GITHUB_REPO_BRANCH}&urlpath=tree/${
-    orgRepo.split('/')[1]
-  }${GITHUB_REPO_SUFFIX}${filename}`;
-}
 
 function LaunchPanel() {
   const project = useProjectManifest();
   const page = usePage();
+  const launchOptions: TemplateOptions =
+    (useSiteManifest() as SiteManifest & TemplateOptions)?.options ?? {};
   const [service, setService] = React.useState<string | undefined>('colab');
   const [privateServiceUrl, setPrivateServiceUrl] = React.useState<string | undefined>();
 
   const hasGitHub = !!project?.github;
-  // Remove the `.myst` suffix from the orgRepo URL if present.
-  const orgRepo = project?.github 
-                    ? new URL(project?.github).pathname.slice(1).replace(/\.myst$/, '') 
-                    : undefined;
-  const filename = `${page?.location.split('.')[0]}.ipynb`;
+  // Source org/repo from `project.github`, minus the `.myst` suffix if present.
+  const orgRepo = project?.github
+    ? new URL(project.github).pathname.slice(1).replace(/\.myst$/, '')
+    : undefined;
+  const location = page?.location;
+
+  const {
+    launch_repo_url,
+    launch_repo_suffix,
+    launch_branch,
+    launch_notebooks_path,
+    launch_source_path,
+  } = launchOptions;
 
   const handleSelect = React.useCallback((value: string) => setService(value), []);
   const handleLaunch = React.useCallback(() => {
+    if (!orgRepo || !location) return;
+    const config: LaunchConfig = {
+      repoUrl: launch_repo_url,
+      repoSuffix: launch_repo_suffix,
+      branch: launch_branch,
+      notebooksPath: launch_notebooks_path,
+      sourcePath: launch_source_path,
+    };
+    let url: string | undefined;
     if (service === 'colab') {
-      const url = `${COLAB_BASE_URL}${orgRepo}${GITHUB_REPO_SUFFIX}/blob/${GITHUB_REPO_BRANCH}${filename}`;
-      window.open(url, '_blank');
-    } else {
-      if (!privateServiceUrl || !orgRepo) return;
-      const url = buildJupyterHubLaunchUrl({ hubBaseUrl: privateServiceUrl, orgRepo, filename });
-      window.open(url, '_blank');
+      url = buildColabUrl(orgRepo, location, config);
+    } else if (privateServiceUrl) {
+      url = buildJupyterHubUrl(privateServiceUrl, orgRepo, location, config);
     }
-  }, [privateServiceUrl, service, orgRepo, filename]);
+    if (url) window.open(url, '_blank');
+  }, [
+    service,
+    privateServiceUrl,
+    orgRepo,
+    location,
+    launch_repo_url,
+    launch_repo_suffix,
+    launch_branch,
+    launch_notebooks_path,
+    launch_source_path,
+  ]);
 
   return (
     <div className="p-3 space-y-3">

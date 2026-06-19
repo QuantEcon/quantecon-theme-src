@@ -16,6 +16,7 @@
     "dev:css": "tailwindcss -w -i ./styles/app.css -o app/styles/app.css",
     "dev": "npm run dev:copy && npm run build:thebe && concurrently \"npm run dev:css\" \"remix dev\"",
     "start": "npm run build:css && remix dev",
+    "test:unit": "node --test \"tests/unit/**/*.test.mjs\"",
     "test:visual": "playwright test",
     "test:visual:update": "playwright test --update-snapshots",
     "test:fouc": "playwright test --project=webkit-fouc"
