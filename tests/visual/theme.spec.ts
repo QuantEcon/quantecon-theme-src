@@ -88,11 +88,16 @@ test.describe("QuantEcon theme — visual regression", () => {
   });
 
   // Live compute: the fixture sets `project.thebe: { lite: true }`, which
-  // surfaces the @myst-theme/jupyter NotebookToolbar on notebook pages. Assert
-  // the Power toggle ("start compute environment") renders. Actually booting
-  // the Pyodide kernel is a heavy in-browser download, so that end-to-end check
-  // is done manually rather than in CI.
-  test("live-compute-toggle", async ({ page }) => {
+  // surfaces the @myst-theme/jupyter NotebookToolbar. It's portaled into the
+  // desktop header toolbar (next to Launch), so assert the Power toggle
+  // ("start compute environment") renders there. Actually booting the Pyodide
+  // kernel is a heavy in-browser download, so that end-to-end check is done
+  // manually rather than in CI.
+  test("live-compute-toggle", async ({ page }, testInfo) => {
+    test.skip(
+      testInfo.project.name !== "desktop-chrome",
+      "the live-compute toggle lives in the desktop header toolbar; mobile uses MobileActionsMenu"
+    );
     await page.goto("/notebook", { waitUntil: "domcontentloaded" });
     await settle(page);
     await expect(

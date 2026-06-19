@@ -54,6 +54,9 @@ export function Toolbar() {
         <li className="hidden md:block">
           <DownloadsButton size={iconSize} />
         </li>
+        {/* Portal target for the live-compute toggle (see ComputeToolbarSlot).
+            `empty:hidden` keeps it from adding a gap on non-notebook pages. */}
+        <li id="qe-compute-slot" className="hidden md:flex items-center empty:hidden" />
         <li className="hidden md:block">
           <LaunchButton size={iconSize} />
         </li>

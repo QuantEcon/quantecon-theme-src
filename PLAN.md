@@ -273,11 +273,13 @@ stripping) + `docs/user/launch.md`.
       `PageContent.tsx` `ExecuteScopeProvider` + `NotebookToolbar`); enablement is config-derived
       (`compute.enabled = !!thebeFrontmatterToOptions(project.thebe)`, no runtime setter), so
       setting `project.thebe` surfaces the `@myst-theme/jupyter` NotebookToolbar (the **Power**
-      toggle, then Run/Restart/Clear once a kernel connects) on notebook pages — relocated/relabelled
-      into a **"JupyterLite · live compute"** bar (`PageContent.tsx` wrapper + `app.css`
-      neutralises the default right-aligned floating pill) so all execution controls group
-      together. That per-notebook bar **is** the "live compute toggle" (no extra top-bar control,
-      consistent with the framework). QuantEcon default is **JupyterLite** (`thebe: { lite: true }`): Python in the
+      toggle, then Run/Restart/Clear once a kernel connects) on notebook pages — **portaled into
+      the QuantEcon header toolbar** next to Launch (`ComputeToolbarSlot.tsx` renders it via
+      `createPortal` into `#qe-compute-slot` in `Toolbar.tsx`; `app.css` neutralises the default
+      floating pill and matches the 20px header icons), so it sits in the fixed header always
+      visible while scrolling. The portal keeps the component inside the Thebe providers (React
+      context flows through the React tree, not the DOM) even though the header is mounted outside
+      them — avoiding a provider-tree lift. That header toggle **is** the "live compute" control, QuantEcon default is **JupyterLite** (`thebe: { lite: true }`): Python in the
       browser via Pyodide, no server/Binder (avoids the flaky Binder, see #26). Verified
       end-to-end (Power → Pyodide kernel boots in-browser). Pyodide caveat documented in the README
       (numba/JAX unavailable). Fixture sets `thebe.lite`; `tests/visual/theme.spec.ts` asserts the

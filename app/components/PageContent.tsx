@@ -19,7 +19,6 @@ import { SourceFileKind } from 'myst-spec-ext';
 import {
   ExecuteScopeProvider,
   BusyScopeProvider,
-  NotebookToolbar,
   ConnectionStatusTray,
   ErrorTray,
   useComputeOptions,
@@ -27,6 +26,7 @@ import {
 import { ProjectFrontmatter } from './ProjectFrontmatter.js';
 import { BackToTop, Outline } from './Outline.js';
 import { SiteFooter } from './SiteFooter.js';
+import { ComputeToolbarSlot } from './ComputeToolbarSlot.js';
 
 export const PageContent = React.memo(function ({ article }: { article: PageLoader }) {
   const config = useSiteManifest();
@@ -59,19 +59,11 @@ export const PageContent = React.memo(function ({ article }: { article: PageLoad
                 containerClassName="hidden lg:col-margin"
                 pageEnumerator={article.frontmatter.enumerator}
               />
+              {/* Live-compute toggle: portaled into the header toolbar (next to
+                  Launch) rather than rendered here in the article body. */}
               {compute?.enabled &&
                 compute.features.notebookCompute &&
-                article.kind === SourceFileKind.Notebook && (
-                  // Group the live-compute controls in a labelled bar instead of
-                  // the toolbar's default right-aligned floating pill. The
-                  // `qe-compute-bar` class neutralises that layout in app.css.
-                  <div className="qe-compute-bar col-body flex items-center gap-2 my-2">
-                    <span className="text-sm font-medium whitespace-nowrap text-qetext-light dark:text-qetext-dark">
-                      JupyterLite · live compute
-                    </span>
-                    <NotebookToolbar showLaunch />
-                  </div>
-                )}
+                article.kind === SourceFileKind.Notebook && <ComputeToolbarSlot />}
               {compute?.enabled && article.kind === SourceFileKind.Article && (
                 <ErrorTray pageSlug={article.slug} />
               )}

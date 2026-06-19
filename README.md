@@ -87,12 +87,12 @@ project:
     lite: true
 ```
 
-With this set, notebook pages show a labelled **JupyterLite · live compute** bar
-with a **Power** toggle (then **Run / Restart / Clear** once a kernel connects),
-grouping all execution controls together near the top of the article. Clicking
-Power boots the in-browser kernel; cells then execute live. No top-bar toggle is
-added — this per-notebook bar is the on/off control, consistent with
-`@myst-theme`.
+With this set, a **Power** toggle appears in the header toolbar (next to the
+Launch button) on notebook pages. Clicking it boots the in-browser kernel, after
+which **Run / Restart / Clear** take its place; cells then execute live. The
+toggle lives in the fixed header so it stays visible while scrolling, and only
+appears on notebook pages (desktop). It is the `@myst-theme/jupyter` notebook
+toolbar, relocated into the header via a portal.
 
 **Caveat:** Pyodide runs pure-Python plus packages compiled for it (numpy,
 scipy, pandas, matplotlib, sympy). Packages that aren't available for Pyodide
