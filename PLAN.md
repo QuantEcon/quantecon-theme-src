@@ -46,7 +46,7 @@ Derived from `quantecon-book-theme` v0.20.3 (see its `README.md`, `docs/user/*`,
 | # | Feature | Book-theme | MyST theme | Phase |
 | --- | --- | :---: | :---: | :---: |
 | Git history in lecture headers (last-modified + changelog dropdown) | ✅ | ❌ | **1** |
-| Launch parity — BinderHub + Thebe (live compute) in addition to Colab / private hub | ✅ | ⚠️ partial | **2** |
+| Launch parity — Thebe (live compute) in addition to Colab / private hub (BinderHub dropped, #26) | ✅ | ✅ | **2** |
 | Configurable code highlighting (custom QE tokens vs Pygments styles) | ✅ | ❌ | **3** |
 | Text colour schemes (`seoul256` / `gruvbox` / `none` + custom) | ✅ | ❌ | **3** |
 | Language switcher (multilingual) + `hreflang` SEO tags | ✅ | ❌ | **4** |
@@ -268,10 +268,18 @@ in-page **Thebe** live compute.
 Colab URL construction, `notebook_interface`, `nb_path_to_notebooks`, `path_to_docs`
 stripping) + `docs/user/launch.md`.
 
-- [ ] **Thebe:** the bundle already ships Thebe assets and `@myst-theme/jupyter` is wired
-      in (`PageContent.tsx` uses `ExecuteScopeProvider`, `NotebookToolbar`). Confirm/enable
-      `myst.yml` `project.jupyter`/`thebe` config path and surface a "live compute" toggle
-      consistent with the toolbar.
+- [x] **Thebe:** in-page live compute enabled via the standard MyST `thebe` frontmatter.
+      The infra was already wired (`Page.tsx` `ComputeOptionsProvider` + `ThebeLoaderAndServer`;
+      `PageContent.tsx` `ExecuteScopeProvider` + `NotebookToolbar`); enablement is config-derived
+      (`compute.enabled = !!thebeFrontmatterToOptions(project.thebe)`, no runtime setter), so
+      setting `project.thebe` surfaces the `@myst-theme/jupyter` NotebookToolbar (the **Power**
+      toggle, then Run/Restart/Clear once a kernel connects) on notebook pages — that per-notebook
+      toolbar **is** the "live compute toggle" (no extra top-bar control, consistent with the
+      framework). QuantEcon default is **JupyterLite** (`thebe: { lite: true }`): Python in the
+      browser via Pyodide, no server/Binder (avoids the flaky Binder, see #26). Verified
+      end-to-end (Power → Pyodide kernel boots in-browser). Pyodide caveat documented in the README
+      (numba/JAX unavailable). Fixture sets `thebe.lite`; `tests/visual/theme.spec.ts` asserts the
+      toggle renders; `notebook.png`/`launch-open.png` snapshots refreshed.
 - [x] ~~**BinderHub:** add a Binder option to the `LaunchButton` radio group~~
       **Decided against (2026-06-12):** BinderHub proved flaky in practice, and Colab
       is the launch target QuantEcon standardises on — primarily because it provides

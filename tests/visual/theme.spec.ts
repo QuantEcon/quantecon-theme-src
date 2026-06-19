@@ -86,4 +86,17 @@ test.describe("QuantEcon theme — visual regression", () => {
       /^https:\/\/colab\.research\.google\.com\/github\/QuantEcon\/[\w.-]+\.notebooks\/blob\/main\/notebook\.ipynb$/
     );
   });
+
+  // Live compute: the fixture sets `project.thebe: { lite: true }`, which
+  // surfaces the @myst-theme/jupyter NotebookToolbar on notebook pages. Assert
+  // the Power toggle ("start compute environment") renders. Actually booting
+  // the Pyodide kernel is a heavy in-browser download, so that end-to-end check
+  // is done manually rather than in CI.
+  test("live-compute-toggle", async ({ page }) => {
+    await page.goto("/notebook", { waitUntil: "domcontentloaded" });
+    await settle(page);
+    await expect(
+      page.getByRole("button", { name: "start compute environment" })
+    ).toBeVisible();
+  });
 });
