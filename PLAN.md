@@ -280,12 +280,24 @@ stripping) + `docs/user/launch.md`.
       merge — recoverable from that history if demand appears). The Private
       JupyterHub option remains for now; its possible removal (collapsing the
       launcher to a direct Colab button) is tracked in #87.
-- [ ] Generalise the hardcoded `.notebooks` suffix and `main` branch
-      (`LaunchButton.tsx:9–11`) into config read from project frontmatter / `myst.yml`,
-      so non-default branches and naming work.
-- [ ] Verify Colab path handling for **nested** lecture dirs (book-theme strips
-      `path_to_docs` and applies `nb_path_to_notebooks`; the MyST version currently uses
-      only `page.location.split('.')[0]`).
+- [x] Generalise the hardcoded `.notebooks` suffix and `main` branch into config under
+      `site.options` in `myst.yml` (MyST's analog of the book-theme `html_theme_options`),
+      so non-default branches and naming work. New optional keys (defaults reproduce the
+      historical behaviour, so existing lectures are unchanged): `launch_repo_suffix`
+      (default `.notebooks`), `launch_branch` (default `main`), plus `launch_repo_url`
+      to point at an arbitrary notebook repo (book-theme `nb_repository_url` parity).
+      URL logic extracted to pure, unit-tested builders in `launchUrls.ts`; applies to
+      **both** the Colab and the Private-JupyterHub launch URLs. Done in
+      `feat/launch-parity-phase2`.
+- [x] Fix Colab/JupyterHub path handling for **nested** lecture dirs: strip the source
+      extension robustly (the old `page.location.split('.')[0]` truncated paths/dirs
+      containing a dot), strip `launch_source_path` (book-theme `path_to_docs`) and
+      prepend `launch_notebooks_path` (book-theme `nb_path_to_notebooks`). Covered by
+      `tests/unit/launch-urls.test.mjs`.
+
+**Note:** removing the Private JupyterHub option (collapse to a single Colab button, #87)
+is deliberately kept out of this work — it's gated on a maintainer demand signal — so the
+generalisation above covers both Colab and the hub. See #87.
 
 **Effort:** M. **Risk:** low–medium. **Deps:** Phase 0.
 

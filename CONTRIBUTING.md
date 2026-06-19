@@ -4,7 +4,10 @@ Thank you for your interest in contributing to the QuantEcon theme!
 
 ## Prerequisites
 
-- **Node.js** ≥ 18 (see `.nvmrc`)
+- **Node.js** ≥ 18 (see `.nvmrc`). Running the unit tests (`npm run test:unit`)
+  additionally requires **Node ≥ 23.6**, which strips TypeScript on the fly so the
+  tests can import the `.ts` builders without a build step — this matches the CI
+  Node 24 runner. The built theme itself still supports Node ≥ 20 (`engines.node`).
 - **npm** 8.x (see `packageManager` in `package.json`)
 
 ## Development Setup
@@ -30,6 +33,7 @@ The dev server runs at `http://localhost:3000` by default.
 | `npm run dev`       | Start dev server with CSS watch + hot reload     |
 | `npm run prod:build`| Production build (CSS + Thebe assets + Remix)    |
 | `npm run compile`   | TypeScript type-check (`tsc --noEmit`)           |
+| `npm run test:unit` | Pure-function unit tests (`node --test`, Node ≥ 23.6) |
 | `npm run format`    | Format code with Prettier                        |
 | `npm run clean`     | Remove build artifacts                           |
 
