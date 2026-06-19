@@ -74,9 +74,11 @@ defaults reproduce the behaviour above, so existing projects need no changes:
 
 In addition to launching a notebook elsewhere (Colab/Hub), the theme can run
 notebook cells **in place** via [Thebe](https://thebe.readthedocs.io). This is
-opt-in per project through the standard MyST `thebe` frontmatter. The QuantEcon
-default is **JupyterLite** — Python runs entirely in the browser via Pyodide,
-with no server or Binder to host:
+opt-in per project through the standard MyST `thebe` config, set under
+`project.thebe` in `myst.yml` (the theme reads it from the project manifest, so
+it is project-level — not per-page frontmatter). The QuantEcon default is
+**JupyterLite** — Python runs entirely in the browser via Pyodide, with no
+server or Binder to host:
 
 ```yaml
 # myst.yml

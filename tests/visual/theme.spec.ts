@@ -96,7 +96,8 @@ test.describe("QuantEcon theme — visual regression", () => {
     await page.goto("/notebook", { waitUntil: "domcontentloaded" });
     await settle(page);
     await expect(
-      page.getByRole("button", { name: "start compute environment" })
+      // Substring regex: resilient to upstream label wording/casing changes.
+      page.getByRole("button", { name: /start compute/i })
     ).toBeVisible();
   });
 });

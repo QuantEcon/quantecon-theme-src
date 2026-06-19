@@ -268,7 +268,7 @@ in-page **Thebe** live compute.
 Colab URL construction, `notebook_interface`, `nb_path_to_notebooks`, `path_to_docs`
 stripping) + `docs/user/launch.md`.
 
-- [x] **Thebe:** in-page live compute enabled via the standard MyST `thebe` frontmatter.
+- [x] **Thebe:** in-page live compute enabled via `project.thebe` config in `myst.yml`.
       The infra was already wired (`Page.tsx` `ComputeOptionsProvider` + `ThebeLoaderAndServer`;
       `PageContent.tsx` `ExecuteScopeProvider` + `NotebookToolbar`); enablement is config-derived
       (`compute.enabled = !!thebeFrontmatterToOptions(project.thebe)`, no runtime setter), so
