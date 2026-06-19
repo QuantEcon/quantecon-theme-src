@@ -23,6 +23,13 @@
     @apply hidden xl:block;
   }
 
+  /* Live-compute bar: render the @myst-theme/jupyter NotebookToolbar inline
+     next to a label (see PageContent.tsx) rather than as its default
+     right-aligned, sticky, full-width floating pill. */
+  .qe-compute-bar .myst-jp-nb-toolbar {
+    @apply static top-auto z-auto w-auto pb-0 justify-start;
+  }
+
   html {
     scroll-behavior: smooth;
   }

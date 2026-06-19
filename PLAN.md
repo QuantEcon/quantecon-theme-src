@@ -273,9 +273,11 @@ stripping) + `docs/user/launch.md`.
       `PageContent.tsx` `ExecuteScopeProvider` + `NotebookToolbar`); enablement is config-derived
       (`compute.enabled = !!thebeFrontmatterToOptions(project.thebe)`, no runtime setter), so
       setting `project.thebe` surfaces the `@myst-theme/jupyter` NotebookToolbar (the **Power**
-      toggle, then Run/Restart/Clear once a kernel connects) on notebook pages — that per-notebook
-      toolbar **is** the "live compute toggle" (no extra top-bar control, consistent with the
-      framework). QuantEcon default is **JupyterLite** (`thebe: { lite: true }`): Python in the
+      toggle, then Run/Restart/Clear once a kernel connects) on notebook pages — relocated/relabelled
+      into a **"JupyterLite · live compute"** bar (`PageContent.tsx` wrapper + `app.css`
+      neutralises the default right-aligned floating pill) so all execution controls group
+      together. That per-notebook bar **is** the "live compute toggle" (no extra top-bar control,
+      consistent with the framework). QuantEcon default is **JupyterLite** (`thebe: { lite: true }`): Python in the
       browser via Pyodide, no server/Binder (avoids the flaky Binder, see #26). Verified
       end-to-end (Power → Pyodide kernel boots in-browser). Pyodide caveat documented in the README
       (numba/JAX unavailable). Fixture sets `thebe.lite`; `tests/visual/theme.spec.ts` asserts the

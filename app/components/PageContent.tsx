@@ -61,7 +61,17 @@ export const PageContent = React.memo(function ({ article }: { article: PageLoad
               />
               {compute?.enabled &&
                 compute.features.notebookCompute &&
-                article.kind === SourceFileKind.Notebook && <NotebookToolbar showLaunch />}
+                article.kind === SourceFileKind.Notebook && (
+                  // Group the live-compute controls in a labelled bar instead of
+                  // the toolbar's default right-aligned floating pill. The
+                  // `qe-compute-bar` class neutralises that layout in app.css.
+                  <div className="qe-compute-bar col-body flex items-center gap-2 my-2">
+                    <span className="text-sm font-medium whitespace-nowrap text-qetext-light dark:text-qetext-dark">
+                      JupyterLite · live compute
+                    </span>
+                    <NotebookToolbar showLaunch />
+                  </div>
+                )}
               {compute?.enabled && article.kind === SourceFileKind.Article && (
                 <ErrorTray pageSlug={article.slug} />
               )}
