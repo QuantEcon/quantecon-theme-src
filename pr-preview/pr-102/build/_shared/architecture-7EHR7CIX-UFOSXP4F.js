@@ -1,0 +1,1 @@
+import{a as e,b as r}from"/quantecon-theme.mystmd/pr-preview/pr-102/build/_shared/chunk-POMSJXRQ.js";import"/quantecon-theme.mystmd/pr-preview/pr-102/build/_shared/chunk-J33WAAJX.js";import"/quantecon-theme.mystmd/pr-preview/pr-102/build/_shared/chunk-RAQ24GF6.js";export{e as ArchitectureModule,r as createArchitectureServices};
