@@ -17,24 +17,42 @@ import { MyST } from 'myst-to-react';
  * jupyter-book/myst-theme alongside the fancy-lists mystmd upstreaming
  * (QuantEcon/mystmd#51).
  */
-const OL_TYPE: Record<string, 'a' | 'A' | 'i' | 'I'> = {
+type OlStyle = 'lower-alpha' | 'upper-alpha' | 'lower-roman' | 'upper-roman';
+type OlDelimiter = 'paren' | 'parens';
+
+const OL_TYPE: Record<OlStyle, 'a' | 'A' | 'i' | 'I'> = {
   'lower-alpha': 'a',
   'upper-alpha': 'A',
   'lower-roman': 'i',
   'upper-roman': 'I',
 };
 
+// No HTML attribute expresses the delimiter; expose a CSS hook for `(a)` / `a)` markers.
+// The lookup doubles as the allow-list — unknown values (and `period`) emit nothing.
+const DELIMITER_CLASS: Record<OlDelimiter, string> = {
+  paren: 'delimiter-paren',
+  parens: 'delimiter-parens',
+};
+
 export const LIST_RENDERERS: NodeRenderers = {
   list({ node, className }: { node: GenericNode; className?: string }) {
     if (node.ordered) {
+      // The style is mirrored as a `list-*` class because CSS can't target the
+      // `type` attribute reliably: HTML matches [type=...] case-insensitively,
+      // so ol[type='a'] and ol[type='A'] select the same elements.
+      const isKnownStyle = node.style && node.style in OL_TYPE;
+      const olType = isKnownStyle ? OL_TYPE[node.style as OlStyle] : undefined;
+      const styleClass = isKnownStyle ? `list-${node.style}` : undefined;
       const delimiterClass =
-        node.delimiter && node.delimiter !== 'period' ? `delimiter-${node.delimiter}` : undefined;
+        node.delimiter && node.delimiter in DELIMITER_CLASS
+          ? DELIMITER_CLASS[node.delimiter as OlDelimiter]
+          : undefined;
       return (
         <ol
-          start={node.start || undefined}
-          type={node.style ? OL_TYPE[node.style] : undefined}
+          start={node.start ?? undefined}
+          type={olType}
           id={node.html_id}
-          className={[className, delimiterClass].filter(Boolean).join(' ') || undefined}
+          className={[className, styleClass, delimiterClass].filter(Boolean).join(' ') || undefined}
         >
           <MyST ast={node.children} />
         </ol>

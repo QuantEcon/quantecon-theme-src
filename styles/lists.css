@@ -1,20 +1,24 @@
 /* Fancy ordered lists: render the `style` / `delimiter` carried on myst `list` nodes
  * (Pandoc fancy_lists markers such as `a.`, `iv.`, `(i)`) — see app/renderers.tsx.
  *
- * The `<ol type>` attribute set by the list renderer is only a presentational hint,
- * so any author `list-style-type` (e.g. prose typography's `decimal`) overrides it —
- * restate the mapping here with real author rules.
+ * Two traps force the shape of these rules:
+ * - The `<ol type>` attribute is only a presentational hint, so any author
+ *   `list-style-type` (e.g. prose typography's `decimal`) overrides it.
+ * - CSS can't select the attribute reliably anyway: HTML matches [type=...]
+ *   case-insensitively, so ol[type='a'] and ol[type='A'] are the same selector.
+ * The renderer therefore mirrors the style as a case-sensitive `list-*` class,
+ * and everything here keys off classes.
  */
-ol[type='a'] {
+ol.list-lower-alpha {
   list-style-type: lower-alpha;
 }
-ol[type='A'] {
+ol.list-upper-alpha {
   list-style-type: upper-alpha;
 }
-ol[type='i'] {
+ol.list-lower-roman {
   list-style-type: lower-roman;
 }
-ol[type='I'] {
+ol.list-upper-roman {
   list-style-type: upper-roman;
 }
 
@@ -43,27 +47,27 @@ ol.delimiter-parens > li::before {
 ol.delimiter-paren > li::before {
   content: counter(list-item) ')';
 }
-ol[type='a'].delimiter-parens > li::before {
+ol.list-lower-alpha.delimiter-parens > li::before {
   content: '(' counter(list-item, lower-alpha) ')';
 }
-ol[type='a'].delimiter-paren > li::before {
+ol.list-lower-alpha.delimiter-paren > li::before {
   content: counter(list-item, lower-alpha) ')';
 }
-ol[type='A'].delimiter-parens > li::before {
+ol.list-upper-alpha.delimiter-parens > li::before {
   content: '(' counter(list-item, upper-alpha) ')';
 }
-ol[type='A'].delimiter-paren > li::before {
+ol.list-upper-alpha.delimiter-paren > li::before {
   content: counter(list-item, upper-alpha) ')';
 }
-ol[type='i'].delimiter-parens > li::before {
+ol.list-lower-roman.delimiter-parens > li::before {
   content: '(' counter(list-item, lower-roman) ')';
 }
-ol[type='i'].delimiter-paren > li::before {
+ol.list-lower-roman.delimiter-paren > li::before {
   content: counter(list-item, lower-roman) ')';
 }
-ol[type='I'].delimiter-parens > li::before {
+ol.list-upper-roman.delimiter-parens > li::before {
   content: '(' counter(list-item, upper-roman) ')';
 }
-ol[type='I'].delimiter-paren > li::before {
+ol.list-upper-roman.delimiter-paren > li::before {
   content: counter(list-item, upper-roman) ')';
 }
