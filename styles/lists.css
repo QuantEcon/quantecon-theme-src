@@ -1,0 +1,69 @@
+/* Fancy ordered lists: render the `style` / `delimiter` carried on myst `list` nodes
+ * (Pandoc fancy_lists markers such as `a.`, `iv.`, `(i)`) — see app/renderers.tsx.
+ *
+ * The `<ol type>` attribute set by the list renderer is only a presentational hint,
+ * so any author `list-style-type` (e.g. prose typography's `decimal`) overrides it —
+ * restate the mapping here with real author rules.
+ */
+ol[type='a'] {
+  list-style-type: lower-alpha;
+}
+ol[type='A'] {
+  list-style-type: upper-alpha;
+}
+ol[type='i'] {
+  list-style-type: lower-roman;
+}
+ol[type='I'] {
+  list-style-type: upper-roman;
+}
+
+/* Parenthesized delimiters — `(a)` / `a)` — have no native list-style. Hide the marker
+ * and draw one with the built-in `list-item` counter (which honours `<ol start>`),
+ * positioned in the list padding gutter so wrapped lines stay aligned like native markers.
+ */
+ol.delimiter-parens,
+ol.delimiter-paren {
+  list-style: none;
+}
+ol.delimiter-parens > li,
+ol.delimiter-paren > li {
+  position: relative;
+}
+ol.delimiter-parens > li::before,
+ol.delimiter-paren > li::before {
+  position: absolute;
+  left: -0.4em;
+  transform: translateX(-100%);
+  white-space: nowrap;
+}
+ol.delimiter-parens > li::before {
+  content: '(' counter(list-item) ')';
+}
+ol.delimiter-paren > li::before {
+  content: counter(list-item) ')';
+}
+ol[type='a'].delimiter-parens > li::before {
+  content: '(' counter(list-item, lower-alpha) ')';
+}
+ol[type='a'].delimiter-paren > li::before {
+  content: counter(list-item, lower-alpha) ')';
+}
+ol[type='A'].delimiter-parens > li::before {
+  content: '(' counter(list-item, upper-alpha) ')';
+}
+ol[type='A'].delimiter-paren > li::before {
+  content: counter(list-item, upper-alpha) ')';
+}
+ol[type='i'].delimiter-parens > li::before {
+  content: '(' counter(list-item, lower-roman) ')';
+}
+ol[type='i'].delimiter-paren > li::before {
+  content: counter(list-item, lower-roman) ')';
+}
+ol[type='I'].delimiter-parens > li::before {
+  content: '(' counter(list-item, upper-roman) ')';
+}
+ol[type='I'].delimiter-paren > li::before {
+  content: counter(list-item, upper-roman) ')';
+}
