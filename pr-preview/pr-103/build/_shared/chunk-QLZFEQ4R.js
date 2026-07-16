@@ -1,0 +1,1 @@
+import{_ as s}from"/quantecon-theme.mystmd/pr-preview/pr-103/build/_shared/chunk-6HAC4Z5J.js";import{b as n,j as e}from"/quantecon-theme.mystmd/pr-preview/pr-103/build/_shared/chunk-DZ66R7FY.js";var a=n(t=>{let{securityLevel:c}=s(),o=e("body");if(c==="sandbox"){let m=e(`#i${t}`).node()?.contentDocument??document;o=e(m.body)}return o.select(`#${t}`)},"selectSvgElement");export{a};
