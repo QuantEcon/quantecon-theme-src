@@ -38,7 +38,7 @@ remaining advisory needs either a major bump or a manual override.
 
 ## Triage of open Dependabot alerts
 
-Snapshot as of **2026-06-11**. Re-evaluate when the theme migrates off Remix v1.
+Snapshot as of **2026-07-24**. Re-evaluate when the theme migrates off Remix v1.
 
 ### Deferred — patched only in Remix v2 (intentionally not adopted)
 
