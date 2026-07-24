@@ -38,13 +38,13 @@ remaining advisory needs either a major bump or a manual override.
 
 ## Triage of open Dependabot alerts
 
-Snapshot as of **2026-06-11**. Re-evaluate when the theme migrates off Remix v1.
+Snapshot as of **2026-07-24**. Re-evaluate when the theme migrates off Remix v1.
 
 ### Deferred — patched only in Remix v2 (intentionally not adopted)
 
 | Package(s)                                                              | Severity | Status                                                                                                  |
 | ---------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------- |
-| `@remix-run/node` (GHSA-9583-h5hc-x8cw)                                | critical | **Not applicable** — path traversal in *file*-backed session storage (`createFileSessionStorage`), which this theme does not use. The theme's only session is the cookie-backed color-mode session (`createCookieSessionStorage`, via `@myst-theme/site`'s `getThemeSession` in `app/root.tsx`). |
+| `@remix-run/node` (GHSA-9583-h5hc-x8cw / CVE-2025-61686)               | critical | **Not applicable** — path traversal in *file*-backed session storage (`createFileSessionStorage`), which this theme does not use. The theme's only session is the cookie-backed color-mode session (`createCookieSessionStorage`, via `@myst-theme/site`'s `getThemeSession` in `app/root.tsx`). |
 | `@remix-run/react`, `@remix-run/server-runtime`, `@remix-run/router`, `react-router` | high/med | Patched only in Remix v2 / react-router 6.30+ (incl. GHSA-2j2x-hqr9-3h42, the `//` protocol-relative open redirect fixed in 6.30.4). `@remix-run/react@1.17` exact-pins `react-router-dom@6.13.0` + `@remix-run/router@1.6.3`, which ship paired internal APIs, so the routers can't be pulled forward independently. Deferred with the v1 pin. |
 
 ### No upstream fix available
