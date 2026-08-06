@@ -11,7 +11,7 @@ migrating the QuantEcon lectures to MyST (Jupyter Book ≥ 2).
 
 The two themes run in fundamentally different environments:
 
-| | `quantecon-book-theme` (Sphinx) | `quantecon-theme-src` (MyST) |
+| | `quantecon-book-theme` (Sphinx) | `quantecon-theme.mystmd` (MyST) |
 | --- | --- | --- |
 | Runs | At **build time**, inside the lecture repo | As a **runtime Remix server** consuming pre-built content JSON from the MyST content CDN |
 | Has the git repo? | **Yes** — can shell out to `git` | **No** — only sees per-page `mdast` + `frontmatter` JSON |
