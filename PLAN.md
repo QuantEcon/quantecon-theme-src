@@ -258,10 +258,13 @@ and a "full history" link.
 **Theme (render) deliverable:**
 - [x] New `app/components/PageHeaderHistory.tsx` (rendered from `ProjectFrontmatter.tsx`)
       that reads the injected AST data (or the `site.git_metadata` page-frontmatter
-      override) and renders the button (aligned right of the author line) + a
-      centred changelog modal, with the QuantEcon blue accent, dark mode, keyboard
-      (Esc to close), and ARIA via Radix Dialog. A modal (not an anchored popover)
-      keeps the changelog clear of the left/right page menus and centres on mobile.
+      override) and renders the button (aligned right of the author line) + an
+      inline changelog, with the QuantEcon blue accent, dark mode, keyboard
+      (Esc to close, focus returned to the trigger), and the ARIA disclosure
+      pattern. Design settled on review (jstac + DrDrij, 2026-08-04): the panel
+      expands *above* the header's blue divider, pushing it down — adjacent to
+      its toggle and clear of the lecture content, matching the current
+      `quantecon-book-theme` dropdown. An earlier centred modal was rejected.
 - [x] Build commit/history URLs from the project `github` field — commit links keep the
       `.myst` suffix (they target the source repo, unlike `LaunchButton.tsx`'s notebook
       URLs), and the full-history link derives from the mystmd-computed `source_url`.

@@ -37,37 +37,86 @@ test.describe("QuantEcon theme — visual regression", () => {
     });
   }
 
-  // The "Last changed" header control and its centred changelog modal. The
-  // fixture pins git_metadata in features.md frontmatter and the clock is
-  // frozen, so the relative times ("4 months ago") are deterministic. Viewport
-  // snapshot, not fullPage — the modal is a fixed-position portal overlay.
+  // The "Last changed" header control and its inline changelog. The fixture
+  // pins git_metadata in features.md frontmatter and the clock is frozen, so
+  // the relative times ("4 months ago") are deterministic.
+  //
+  // The agreed design (#83) is a disclosure that expands *above* the header's
+  // blue divider, pushing it down — keeping the changelog adjacent to its
+  // toggle and out of the lecture content. The geometry assertions below pin
+  // that, since a panel that rendered below the divider would still look
+  // plausible in isolation.
+  const BLUE_DIVIDER_BLOCK = '[class*="border-b-qeborder-blue"]';
+  const dividerBottom = (page: Page) =>
+    page.evaluate(
+      (sel) => document.querySelector(sel)!.getBoundingClientRect().bottom,
+      BLUE_DIVIDER_BLOCK
+    );
+
   test("history-open", async ({ page }) => {
     await page.clock.setFixedTime(new Date("2026-06-12T00:00:00Z"));
     await page.goto("/features", { waitUntil: "domcontentloaded" });
     await settle(page);
     const trigger = page.getByRole("button", { name: /Last changed/ });
     await expect(trigger).toContainText("Last changed: Jan 15, 2026");
+    await expect(trigger).toHaveAttribute("aria-expanded", "false");
+
+    const closedDivider = await dividerBottom(page);
     await trigger.click();
-    const dialog = page.getByRole("dialog");
-    await expect(dialog.getByText("Changelog", { exact: true })).toBeVisible();
+    await expect(trigger).toHaveAttribute("aria-expanded", "true");
+
+    // The panel is whatever the trigger says it controls — this also checks
+    // the aria wiring rather than assuming a selector.
+    const panelId = await trigger.getAttribute("aria-controls");
+    const panel = page.locator(`[id="${panelId}"]`);
+    await expect(panel).toBeVisible();
+    await expect(panel.getByText("Changelog", { exact: true })).toBeVisible();
     // Commit links point at the source repo (myst.yml `github`), full history
     // at the mystmd-computed source path.
-    await expect(dialog.getByRole("link", { name: "3f9d2c4" })).toHaveAttribute(
+    await expect(panel.getByRole("link", { name: "3f9d2c4" })).toHaveAttribute(
       "href",
       "https://github.com/QuantEcon/quantecon-theme.mystmd/commit/3f9d2c41b8a7e6f5d4c3b2a1908f7e6d5c4b3a29"
     );
-    await expect(dialog.getByRole("link", { name: "full history" })).toHaveAttribute(
+    await expect(panel.getByRole("link", { name: "full history" })).toHaveAttribute(
       "href",
       /\/commits\/.*features\.md$/
     );
-    await expect(dialog.getByText("4 months ago")).toBeVisible();
+    await expect(panel.getByText("4 months ago")).toBeVisible();
+
+    // Opening pushes the blue divider down, and the panel stays above it.
+    const openDivider = await dividerBottom(page);
+    expect(openDivider).toBeGreaterThan(closedDivider);
+    const panelBottom = (await panel.boundingBox())!.y + (await panel.boundingBox())!.height;
+    expect(panelBottom).toBeLessThanOrEqual(openDivider);
+
+    // DrDrij's "keep font sizes consistent": the toggle and the changelog copy
+    // are one type size (0.85rem), so the block reads as a unit.
+    const sizes = await page.evaluate(
+      ({ id }) => {
+        const p = document.getElementById(id)!;
+        const btn = document.querySelector<HTMLElement>(
+          `button[aria-controls="${CSS.escape(id)}"]`
+        )!;
+        return {
+          trigger: getComputedStyle(btn).fontSize,
+          entry: getComputedStyle(p.querySelector("li")!).fontSize,
+        };
+      },
+      { id: panelId! }
+    );
+    expect(sizes.entry).toBe(sizes.trigger);
+
     await expect(page).toHaveScreenshot("history-open.png", {
+      fullPage: true,
       maxDiffPixelRatio: 0.01,
       animations: "disabled",
     });
-    // Esc closes the modal (Radix dialog behavior the header relies on).
+
+    // Esc closes the disclosure and returns focus to the trigger.
     await page.keyboard.press("Escape");
-    await expect(dialog).toBeHidden();
+    await expect(panel).toBeHidden();
+    await expect(trigger).toHaveAttribute("aria-expanded", "false");
+    await expect(trigger).toBeFocused();
   });
 
   // Marker-level assertions for the fancy-list page: a wrong marker case

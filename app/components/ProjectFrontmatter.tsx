@@ -45,11 +45,13 @@ export function ProjectFrontmatter({
       </div>
       {/* Authors on the left, the "Last changed" control aligned to the right
           on the same row (more semantic, saves a header line); it wraps below
-          authors on narrow viewports. With no authors the control stands alone
-          — and it renders nothing at all without git metadata, so author-less
-          pages add no empty row. */}
-      {authors ? (
-        <div className="flex items-baseline gap-x-4 gap-y-1 flex-wrap">
+          authors on narrow viewports. PageHeaderHistory is `display: contents`,
+          so its trigger right-aligns itself here and its expanded changelog
+          wraps onto a full-width line underneath — still inside this bordered
+          block, so opening it pushes the blue divider down. `empty:hidden`
+          keeps pages with neither authors nor git metadata from gaining a row. */}
+      <div className="flex items-baseline gap-x-4 gap-y-1 flex-wrap empty:hidden">
+        {authors && (
           <div aria-label="Author names and links">
             {authors.reduce<React.ReactNode>((acc, a, i, authors) => {
               let chunk: React.ReactNode = a.name;
@@ -75,13 +77,9 @@ export function ProjectFrontmatter({
               );
             }, '')}
           </div>
-          <div className="ml-auto">
-            <PageHeaderHistory />
-          </div>
-        </div>
-      ) : (
+        )}
         <PageHeaderHistory />
-      )}
+      </div>
     </div>
   );
 }

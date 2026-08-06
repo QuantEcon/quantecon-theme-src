@@ -1,5 +1,4 @@
-import * as Dialog from "@radix-ui/react-dialog";
-import { ChevronDown, X } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import React from "react";
 import { usePage } from "./PageProvider";
 
@@ -51,11 +50,20 @@ function relativeTime(iso: string, now: number) {
   }
 }
 
+// Toggle and changelog copy share one size so the block reads as a unit.
+const COPY = "text-[0.85rem]";
+
 /**
- * "Last changed" page-header control that opens a centred changelog modal,
- * mirroring the quantecon-book-theme header. A modal (rather than an anchored
- * popover) keeps the changelog clear of the left/right page menus and centres
- * cleanly on mobile.
+ * "Last changed" page-header control that expands an inline changelog,
+ * mirroring the quantecon-book-theme header.
+ *
+ * Layout: the root is `display: contents`, so the trigger and the panel become
+ * flex items of the header's author row rather than nesting inside a box. The
+ * trigger takes `ml-auto` (right-aligned, inline with the author names) and the
+ * panel takes `w-full`, which wraps it onto its own line directly underneath.
+ * Because the whole thing renders inside ProjectFrontmatter's bordered block,
+ * expanding pushes the blue divider down and keeps the changelog adjacent to
+ * its toggle and clear of the lecture content.
  *
  * Data sources, in order of precedence:
  *  1. `site.git_metadata` in the page frontmatter (manual override, and how
@@ -71,6 +79,9 @@ export function PageHeaderHistory() {
   // and only switch after mount so statically exported HTML hydrates cleanly.
   const [now, setNow] = React.useState<number | null>(null);
   React.useEffect(() => setNow(Date.now()), []);
+  const [open, setOpen] = React.useState(false);
+  const panelId = React.useId();
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
 
   const frontmatter = page?.frontmatter as any;
   const meta: GitMetadata | undefined =
@@ -96,111 +107,106 @@ export function PageHeaderHistory() {
   // not a non-functional interactive control.
   if (changelog.length === 0) {
     return (
-      <div className="text-sm text-qetext-light/70 dark:text-qetext-dark-muted">
+      <div
+        className={`ml-auto ${COPY} text-qetext-light/70 dark:text-qetext-dark-muted`}
+      >
         Last changed: {formatDate(lastModified)}
       </div>
     );
   }
 
   return (
-    <Dialog.Root>
-      <Dialog.Trigger
-        className="group flex items-center gap-1 text-sm cursor-pointer
+    <div
+      className="contents"
+      // Esc closes from anywhere inside, returning focus to the trigger —
+      // the disclosure equivalent of the modal's Esc handling.
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && open) {
+          setOpen(false);
+          triggerRef.current?.focus();
+        }
+      }}
+    >
+      <button
+        ref={triggerRef}
+        type="button"
+        aria-expanded={open}
+        aria-controls={panelId}
+        onClick={() => setOpen((v) => !v)}
+        className={`group ml-auto flex items-center gap-1 ${COPY} cursor-pointer
           text-qetext-light/70 dark:text-qetext-dark-muted
-          hover:text-qeborder-blue dark:hover:text-qeborder-blue"
+          hover:text-qeborder-blue dark:hover:text-qeborder-blue`}
       >
         Last changed: {formatDate(lastModified)}
         <ChevronDown
           size={14}
           aria-hidden
-          className="transition-transform group-data-[state=open]:rotate-180"
+          className={`transition-transform ${open ? "rotate-180" : ""}`}
         />
-      </Dialog.Trigger>
-      <Dialog.Portal>
-        {/* Dim backdrop so the centred modal stands out across browsers
-            (Chrome lacks Safari's default dialog outline) and reads clearly
-            over the left/right page menus. */}
-        <Dialog.Overlay className="fixed inset-0 z-40 bg-black/40" />
-        <Dialog.Content
-          aria-describedby={undefined}
-          className={`
-              fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2
-              w-[440px] max-w-[90vw] rounded
-              border border-qeborder-blue
-              bg-white dark:bg-qepage-dark p-4
-              text-qetext-light dark:text-qetext-dark
-              shadow-lg focus:outline-none
-              `}
+      </button>
+      {open && (
+        <div
+          id={panelId}
+          className="w-full mt-2 rounded border border-qetoolbar-border
+            dark:border-qetoolbar-dark bg-qetoolbar-light/40 dark:bg-qetoolbar-dark/30
+            px-3 py-2 text-qetext-light dark:text-qetext-dark"
         >
-          <div className="flex items-center justify-between gap-3 pb-2 border-b border-qetoolbar-border">
-            <Dialog.Title className="text-base font-medium">
-              Changelog
-            </Dialog.Title>
-            <div className="flex items-center gap-3">
-              {historyUrl && (
-                <a
-                  href={historyUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-qeborder-blue hover:underline"
-                >
-                  full history
-                </a>
-              )}
-              <Dialog.Close
-                aria-label="Close"
-                className="text-qetext-light/60 dark:text-qetext-dark-muted
-                  hover:text-qeborder-blue cursor-pointer"
+          <div
+            className={`flex items-center justify-between gap-3 pb-1.5 mb-1
+              border-b border-qetoolbar-border dark:border-qetoolbar-dark ${COPY}`}
+          >
+            <span className="font-medium">Changelog</span>
+            {historyUrl && (
+              <a
+                href={historyUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-qeborder-blue hover:underline"
               >
-                <X size={16} aria-hidden />
-              </Dialog.Close>
-            </div>
+                full history
+              </a>
+            )}
           </div>
+          {/* Scrolls rather than growing without bound, so a long history
+              doesn't push the lecture content off-screen. */}
           <ol
-            className="m-0 p-0 list-none max-h-80 overflow-y-auto"
+            className={`m-0 p-0 list-none max-h-64 overflow-y-auto ${COPY}`}
             aria-label="Recent changes"
           >
             {changelog.map((entry) => (
               <li
                 key={entry.hash}
-                className="py-1.5 border-b border-qetoolbar-border/50 last:border-b-0"
+                className="flex items-baseline gap-2 py-1
+                  border-b border-qetoolbar-border/40 dark:border-qetoolbar-dark/40
+                  last:border-b-0"
               >
-                <div className="flex items-baseline gap-2">
-                  {repoUrl ? (
-                    <a
-                      href={`${repoUrl}/commit/${entry.hash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-mono text-xs text-qeborder-blue hover:underline"
-                    >
-                      {entry.short_hash}
-                    </a>
-                  ) : (
-                    <span className="font-mono text-xs opacity-70">
-                      {entry.short_hash}
-                    </span>
-                  )}
-                  <span
-                    className="flex-1 text-sm truncate"
-                    title={entry.message}
+                {repoUrl ? (
+                  <a
+                    href={`${repoUrl}/commit/${entry.hash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-qeborder-blue hover:underline shrink-0"
                   >
-                    {entry.message}
+                    {entry.short_hash}
+                  </a>
+                ) : (
+                  <span className="font-mono opacity-70 shrink-0">
+                    {entry.short_hash}
                   </span>
-                </div>
-                <div className="flex gap-1 text-xs opacity-70">
-                  <span>{entry.author}</span>
-                  <span aria-hidden>·</span>
-                  <span>
-                    {now
-                      ? relativeTime(entry.date, now)
-                      : formatDate(entry.date)}
-                  </span>
-                </div>
+                )}
+                <span className="flex-1 truncate" title={entry.message}>
+                  {entry.message}
+                </span>
+                <span className="shrink-0 opacity-70">
+                  {entry.author}
+                  <span aria-hidden> · </span>
+                  {now ? relativeTime(entry.date, now) : formatDate(entry.date)}
+                </span>
               </li>
             ))}
           </ol>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+        </div>
+      )}
+    </div>
   );
 }

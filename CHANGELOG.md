@@ -33,9 +33,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Git history in page headers (Phase 1 of [`PLAN.md`](./PLAN.md)): a "Last
-  changed" control on the page-header author line opens a centred changelog
-  modal with GitHub-linked commit hashes and a full-history link, mirroring the
-  `quantecon-book-theme` header. Data is injected at build time by a new MyST
+  changed" control on the page-header author line expands an inline changelog
+  with GitHub-linked commit hashes and a full-history link, mirroring the
+  `quantecon-book-theme` header. The panel opens above the header's blue
+  divider, pushing it down, so it stays adjacent to its toggle and clear of the
+  lecture content. Data is injected at build time by a new MyST
   transform plugin (`plugins/git-metadata.mjs`, `git log --follow` per page →
   `mdast.data.git_metadata`), with a `site.git_metadata` page-frontmatter
   override for manual pinning. mystmd has no built-in last-modified support
