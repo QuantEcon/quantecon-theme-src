@@ -59,6 +59,9 @@
     <loc>http://localhost:3000/pandas-panel</loc>
   </url>
   <url>
+    <loc>http://localhost:3000/polars</loc>
+  </url>
+  <url>
     <loc>http://localhost:3000/writing-good-code</loc>
   </url>
   <url>
