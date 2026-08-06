@@ -133,13 +133,16 @@ test.describe("QuantEcon theme — visual regression", () => {
   test("live-compute-toggle", async ({ page }, testInfo) => {
     test.skip(
       testInfo.project.name !== "desktop-chrome",
-      "the live-compute toggle lives in the desktop header toolbar; mobile uses MobileActionsMenu"
+      "the live-compute toggle is desktop-only (the slot <li> is hidden below md; MobileActionsMenu does not include it)"
     );
     await page.goto("/notebook", { waitUntil: "domcontentloaded" });
     await settle(page);
     await expect(
-      // Substring regex: resilient to upstream label wording/casing changes.
-      page.getByRole("button", { name: /start compute/i })
+      // Scoped to the header slot: a toggle existing *somewhere* on the page
+      // wouldn't distinguish the final portaled placement from the earlier
+      // in-article iterations. Substring regex: resilient to upstream label
+      // wording/casing changes.
+      page.locator("#qe-compute-slot").getByRole("button", { name: /start compute/i })
     ).toBeVisible();
   });
 
@@ -152,7 +155,9 @@ test.describe("QuantEcon theme — visual regression", () => {
       testInfo.project.name !== "desktop-chrome",
       "the live-compute toggle lives in the desktop header toolbar"
     );
-    const noThebeBase = `http://localhost:${process.env.NO_THEBE_PORT ?? "3112"}`;
+    // Single source of truth: playwright.config.ts resolves the port (with its
+    // default) and writes it back into process.env for the workers.
+    const noThebeBase = `http://localhost:${process.env.NO_THEBE_PORT}`;
     await page.goto(`${noThebeBase}/notebook`, { waitUntil: "domcontentloaded" });
     await settle(page);
     // Sanity-check we actually loaded the notebook page (so the count-0 below

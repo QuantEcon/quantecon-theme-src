@@ -279,8 +279,9 @@ stripping) + `docs/user/launch.md`.
       floating pill and matches the 20px header icons), so it sits in the fixed header always
       visible while scrolling. The portal keeps the component inside the Thebe providers (React
       context flows through the React tree, not the DOM) even though the header is mounted outside
-      them — avoiding a provider-tree lift. That header toggle **is** the "live compute" control, QuantEcon default is **JupyterLite** (`thebe: { lite: true }`): Python in the
-      browser via Pyodide, no server/Binder (avoids the flaky Binder, see #26). Verified
+      them — avoiding a provider-tree lift. That header toggle **is** the "live compute"
+      control. The QuantEcon default is **JupyterLite** (`thebe: { lite: true }`): Python
+      in the browser via Pyodide, no server/Binder (avoids the flaky Binder, see #26). Verified
       end-to-end (Power → Pyodide kernel boots in-browser). Pyodide caveat documented in the README
       (numba/JAX unavailable). Fixture sets `thebe.lite`; `tests/visual/theme.spec.ts` asserts the
       toggle renders; `notebook.png`/`launch-open.png` snapshots refreshed. A second fixture

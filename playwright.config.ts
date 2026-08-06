@@ -19,6 +19,15 @@ const baseURL = `http://localhost:${PORT}`;
 // live-compute toggle is absent when a project hasn't opted into Thebe.
 const NO_THEBE_PORT = process.env.NO_THEBE_PORT || "3112";
 const noThebeURL = `http://localhost:${NO_THEBE_PORT}`;
+// The two fixtures must not share a port: with reuseExistingServer, the second
+// webServer entry would silently "reuse" the first (thebe-enabled) server and
+// the absent-toggle test would assert against the wrong fixture.
+if (NO_THEBE_PORT === PORT) {
+  throw new Error(`NO_THEBE_PORT (${NO_THEBE_PORT}) must differ from PORT (${PORT})`);
+}
+// Write the resolved value back so test workers read one source of truth
+// (tests/visual/theme.spec.ts builds the no-thebe URL from this).
+process.env.NO_THEBE_PORT = NO_THEBE_PORT;
 
 export default defineConfig({
   testDir: "./tests/visual",

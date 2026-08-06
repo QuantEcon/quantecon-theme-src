@@ -6,7 +6,7 @@
 version: 1
 project:
   title: QuantEcon Theme — No-Thebe Fixture
-  github: https://github.com/QuantEcon/quantecon-theme-src
+  github: https://github.com/QuantEcon/quantecon-theme.mystmd
   toc:
     - file: intro.md
     - file: notebook.ipynb
