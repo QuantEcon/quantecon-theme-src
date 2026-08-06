@@ -47,6 +47,8 @@ test.describe("QuantEcon theme — visual regression", () => {
   // that, since a panel that rendered below the divider would still look
   // plausible in isolation.
   const BLUE_DIVIDER_BLOCK = '[class*="border-b-qeborder-blue"]';
+  // Matches `border-b-[5px]` on that block.
+  const BLUE_DIVIDER_PX = 5;
   const dividerBottom = (page: Page) =>
     page.evaluate(
       (sel) => document.querySelector(sel)!.getBoundingClientRect().bottom,
@@ -83,11 +85,23 @@ test.describe("QuantEcon theme — visual regression", () => {
     );
     await expect(panel.getByText("4 months ago")).toBeVisible();
 
-    // Opening pushes the blue divider down, and the panel stays above it.
+    // Opening pushes the blue divider down, and the panel sits flush on it:
+    // the divider is the panel's bottom edge, so the gap between the panel's
+    // bottom and the top of the 5px border is ~0. `pb-4` returning (a broken
+    // `has-[…]:pb-0`) would show up here as a ~16px gap.
     const openDivider = await dividerBottom(page);
     expect(openDivider).toBeGreaterThan(closedDivider);
-    const panelBottom = (await panel.boundingBox())!.y + (await panel.boundingBox())!.height;
-    expect(panelBottom).toBeLessThanOrEqual(openDivider);
+    const box = (await panel.boundingBox())!;
+    const gap = openDivider - BLUE_DIVIDER_PX - (box.y + box.height);
+    expect(Math.abs(gap)).toBeLessThanOrEqual(1);
+
+    // No inner scrollbar — the list grows to fit (entries are capped at the
+    // source by the plugin instead).
+    const scrolls = await page.evaluate((id) => {
+      const ol = document.getElementById(id)!.querySelector("ol")!;
+      return ol.scrollHeight > ol.clientHeight + 1;
+    }, panelId!);
+    expect(scrolls).toBe(false);
 
     // DrDrij's "keep font sizes consistent": the toggle and the changelog copy
     // are one type size (0.85rem), so the block reads as a unit.

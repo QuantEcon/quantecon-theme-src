@@ -147,7 +147,11 @@ export function PageHeaderHistory() {
       {open && (
         <div
           id={panelId}
-          className="w-full mt-2 rounded border border-qetoolbar-border
+          // Sentinel for ProjectFrontmatter's `has-[…]:pb-0`: the panel sits
+          // flush on the blue divider, which serves as its bottom edge — hence
+          // no bottom border and only the top corners rounded.
+          data-qe-history-panel
+          className="w-full mt-2 rounded-t border border-b-0 border-qetoolbar-border
             dark:border-qetoolbar-dark bg-qetoolbar-light/40 dark:bg-qetoolbar-dark/30
             px-3 py-2 text-qetext-light dark:text-qetext-dark"
         >
@@ -167,12 +171,10 @@ export function PageHeaderHistory() {
               </a>
             )}
           </div>
-          {/* Scrolls rather than growing without bound, so a long history
-              doesn't push the lecture content off-screen. */}
-          <ol
-            className={`m-0 p-0 list-none max-h-64 overflow-y-auto ${COPY}`}
-            aria-label="Recent changes"
-          >
+          {/* No scroll — the list grows to fit, so the panel never shows an
+              inner scrollbar. Length is bounded at the source instead: the
+              plugin caps entries per page (QE_GIT_METADATA_MAX, default 6). */}
+          <ol className={`m-0 p-0 list-none ${COPY}`} aria-label="Recent changes">
             {changelog.map((entry) => (
               <li
                 key={entry.hash}

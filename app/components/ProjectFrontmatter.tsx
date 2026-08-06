@@ -23,7 +23,12 @@ export function ProjectFrontmatter({
   return (
     <div
       className={classNames(
-        'col-body border-b-[5px] border-b-qeborder-blue space-y-1 pb-4',
+        // When the changelog is open its panel is the last thing in this
+        // block, and the bottom padding is dropped so the blue divider becomes
+        // the panel's own bottom edge (the tidier "integrated" look of the
+        // Sphinx book-theme header, keeping the blue on the bottom).
+        `col-body border-b-[5px] border-b-qeborder-blue space-y-1
+         pb-4 has-[[data-qe-history-panel]]:pb-0`,
         className
       )}
     >

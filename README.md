@@ -100,8 +100,10 @@ Notes:
 - The plugin is a silent no-op for untracked files, non-git checkouts, missing
   `git`, or a `git log` timeout (5s). Shallow CI clones (`fetch-depth: 1`)
   produce truncated history — use `fetch-depth: 0` when building for deploy.
-- `QE_GIT_METADATA_MAX` caps changelog entries per page (default 10; myst-cli
+- `QE_GIT_METADATA_MAX` caps changelog entries per page (default 6; myst-cli
   does not pass options to transform plugins, hence the environment variable).
+  The expanded changelog does not scroll — it grows to fit — so this value is
+  also what controls how tall it gets.
 - A page can pin or correct its history manually — set the same shape under
   `site.git_metadata` in the page frontmatter, which takes precedence over the
   injected data (this is how the visual fixture keeps snapshots deterministic).

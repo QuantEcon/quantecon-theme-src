@@ -32,7 +32,10 @@
  * Configuration (myst-cli does not pass options to transform plugins, so
  * configuration is via environment variables):
  *
- *   QE_GIT_METADATA_MAX  maximum changelog entries per page (default 10)
+ *   QE_GIT_METADATA_MAX  maximum changelog entries per page (default 6)
+ *
+ * The default is what the header renders, and the header does not scroll — it
+ * grows to fit. Raising this makes the expanded changelog taller.
  */
 import { execFile } from 'node:child_process';
 import path from 'node:path';
@@ -43,7 +46,7 @@ const exec = promisify(execFile);
 const GIT_TIMEOUT_MS = 5000;
 const MAX_ENTRIES = Number(process.env.QE_GIT_METADATA_MAX) > 0
   ? Number(process.env.QE_GIT_METADATA_MAX)
-  : 10;
+  : 6;
 
 // %H full hash | %h short hash | %an author | %cI strict-ISO committer date | %s subject
 const LOG_FORMAT = '%H|%h|%an|%cI|%s';
