@@ -20,8 +20,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-07-16
+
+> Headline: fancy ordered lists — `(a)` / `(i)` / `B)` markers from the QuantEcon
+> mystmd fork's fancy-lists parser now render correctly in HTML site builds
+> (previously they fell back to `1.` / `2.` / `3.`). Consumers upgrade by bumping
+> the pinned release URL in `site.template`.
+
 ### Fixed
 - The notebook-launch toolbar trigger now has an accessible name (`aria-label="Launch notebook"`); previously it exposed no name to assistive technology. Added alongside the first regression coverage of the launch popover (Colab URL + default selection — BinderHub was deliberately not added, see [#26](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/26)).
+- Fancy ordered lists (`(a)`, `iv.`, `B)` — QuantEcon/mystmd#50) now render their markers instead of falling back to decimals: a custom `list` renderer maps the node's `style` to the `<ol type>` attribute plus a case-sensitive `list-*` class (HTML matches `[type=...]` case-insensitively, so CSS keyed off the attribute cannot tell `a` from `A`) and exposes `delimiter` as a `delimiter-paren(s)` class, with counter-based CSS drawing the parenthesized markers ([#100](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/100)). Interim override until the fix lands upstream in `myst-to-react` (tracked in QuantEcon/mystmd#51). Covered by a new `lists` visual-regression fixture page whose markers are stamped by a fixture-local transform (`fancy-lists.mjs`) — so the coverage is independent of whether the building CLI parses fancy-list markers — plus DOM-level marker assertions (`lists-markers`), since a wrong marker case moves too few pixels for the snapshot diff budget.
 
 ### Added
 - Git history in page headers (Phase 1 of [`PLAN.md`](./PLAN.md)): a "Last
@@ -145,7 +153,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial version of the QuantEcon MyST theme: Remix + `@myst-theme` book theme with QuantEcon branding, toolbar (home, search, fullscreen, font scaling, dark mode, downloads, Colab/JupyterHub launch, edit-on-GitHub), content-driven site footer, and bundled brand assets.
 
-[Unreleased]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v1.1.1...v2.0.0
 [1.1.1]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v1.1.0...v1.1.1

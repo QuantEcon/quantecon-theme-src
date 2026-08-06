@@ -18,6 +18,9 @@ async function settle(page: Page) {
 const pages = [
   { name: "intro", path: "/" },
   { name: "features", path: "/features" },
+  // Fancy ordered lists (#100/#101): markers stamped by the fixture's
+  // fancy-lists.mjs plugin, so coverage is independent of the CLI's parser.
+  { name: "lists", path: "/lists" },
   { name: "notebook", path: "/notebook" },
 ];
 
@@ -65,6 +68,40 @@ test.describe("QuantEcon theme — visual regression", () => {
     // Esc closes the modal (Radix dialog behavior the header relies on).
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
+  });
+
+  // Marker-level assertions for the fancy-list page: a wrong marker case
+  // ((A) where (a) is expected) moves far too few pixels for the full-page
+  // snapshot's 1% diff budget, so pin the DOM/computed styles directly.
+  // Ordering matches lists.md: alpha-parens, roman-parens, upper-alpha-paren,
+  // roman-period, decimal control.
+  test("lists-markers", async ({ page }) => {
+    await page.goto("/lists", { waitUntil: "domcontentloaded" });
+    await settle(page);
+    const lists = await page.evaluate(() =>
+      Array.from(document.querySelectorAll("article ol, main ol")).map((ol) => ({
+        type: ol.getAttribute("type"),
+        className: ol.className,
+        listStyleType: getComputedStyle(ol).listStyleType,
+        // Specified `content` of the drawn marker, e.g. `"(" counter(list-item, lower-alpha) ")"`.
+        // Case-sensitive check that the right rule matched — ol[type] selectors
+        // are case-insensitive in HTML, which is exactly the regression this guards.
+        liBefore: getComputedStyle(ol.querySelector("li")!, "::before").content,
+      }))
+    );
+    expect(lists).toHaveLength(5);
+    expect(lists[0]).toMatchObject({ type: "a", listStyleType: "none" });
+    expect(lists[0].className).toContain("list-lower-alpha");
+    expect(lists[0].className).toContain("delimiter-parens");
+    expect(lists[0].liBefore).toBe('"(" counter(list-item, lower-alpha) ")"');
+    expect(lists[1]).toMatchObject({ type: "i", listStyleType: "none" });
+    expect(lists[1].liBefore).toBe('"(" counter(list-item, lower-roman) ")"');
+    expect(lists[2]).toMatchObject({ type: "A", listStyleType: "none" });
+    expect(lists[2].liBefore).toBe('counter(list-item, upper-alpha) ")"');
+    expect(lists[3]).toMatchObject({ type: "i", listStyleType: "lower-roman" });
+    expect(lists[3].liBefore).toBe("none");
+    expect(lists[4]).toMatchObject({ type: null, listStyleType: "decimal" });
+    expect(lists[4].liBefore).toBe("none");
   });
 
   // The Contents sidebar is off-canvas by default, so the full-page snapshots

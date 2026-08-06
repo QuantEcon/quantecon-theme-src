@@ -51,20 +51,33 @@ downloads:
 
 ### Launch Notebooks
 
-The launch notebooks capability has been developed to mirror capabilities in the previous QuantEcon theme. It is assumed that the `.notebooks` suffix convention for repository naming is used when launching both Google Colab and Private Jupyter Hub sessions.
+The launch notebooks capability has been developed to mirror capabilities in the previous QuantEcon theme. By default it assumes the `.notebooks` suffix convention for repository naming when launching both Google Colab and Private Jupyter Hub sessions.
 
 Colab is the primary launch target (it provides GPU access for the lectures that
 need it). BinderHub is deliberately not offered — it proved flaky in practice;
 see issue [#26](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/26),
 kept open as a demand-driven future request.
 
+The repo/branch/path conventions are configurable under `site.options` in
+`myst.yml` (MyST's theme-options section). All keys are optional and the
+defaults reproduce the behaviour above, so existing projects need no changes:
+
+| Option | Default | Purpose |
+| ------ | ------- | ------- |
+| `launch_repo_suffix` | `.notebooks` | Suffix appended to the source repo to locate the notebook repo |
+| `launch_branch` | `main` | Branch in the notebook repo to launch from |
+| `launch_repo_url` | _(derived from `github` + suffix)_ | Explicit notebook repo, for when it isn't `<source>.notebooks` |
+| `launch_notebooks_path` | _(none)_ | Sub-directory within the notebook repo where the notebooks live |
+| `launch_source_path` | _(none)_ | Path prefix stripped from the page location (e.g. a `lectures/` source dir) |
+
 ### Git history in page headers
 
 The page header shows a "Last changed: ⟨date⟩" control (aligned to the right of
-the author line) that opens a centred changelog modal listing the most recent
+the author line) that expands an inline changelog listing the most recent
 commits touching that page — commit hashes link to GitHub, and a "full history"
 link opens the file's complete commit log (mirroring the `quantecon-book-theme`
-header).
+header). The changelog opens in place above the header's blue divider, pushing
+it down, so it stays adjacent to its toggle and clear of the lecture content.
 
 The data is injected at build time by [`plugins/git-metadata.mjs`](./plugins/git-metadata.mjs),
 a MyST transform that runs `git log --follow` per source file and attaches

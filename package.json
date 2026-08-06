@@ -1,6 +1,6 @@
 {
   "name": "@quantecon/lecture-theme",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "private": true,
   "sideEffects": false,
   "scripts": {
@@ -16,6 +16,7 @@
     "dev:css": "tailwindcss -w -i ./styles/app.css -o app/styles/app.css",
     "dev": "npm run dev:copy && npm run build:thebe && concurrently \"npm run dev:css\" \"remix dev\"",
     "start": "npm run build:css && remix dev",
+    "test:unit": "node --test \"tests/unit/**/*.test.mjs\"",
     "test:visual": "playwright test",
     "test:visual:update": "playwright test --update-snapshots",
     "test:plugin": "node --test \"tests/plugin/**/*.test.mjs\"",
@@ -69,7 +70,7 @@
     "uuid": "^11.1.1",
     "ajv": "^8.18.0",
     "cookie": "^0.7.0",
-    "shell-quote": "^1.8.4",
+    "shell-quote": "^1.10.0",
     "ws@^8.0.0": "^8.20.1"
   },
   "engines": {
