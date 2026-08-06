@@ -1,6 +1,6 @@
 {
   "name": "@quantecon/lecture-theme",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "private": true,
   "sideEffects": false,
   "scripts": {
@@ -68,7 +68,7 @@
     "uuid": "^11.1.1",
     "ajv": "^8.18.0",
     "cookie": "^0.7.0",
-    "shell-quote": "^1.8.4",
+    "shell-quote": "^1.10.0",
     "ws@^8.0.0": "^8.20.1"
   },
   "engines": {

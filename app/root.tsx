@@ -20,9 +20,14 @@ import type { ISearch, MystSearchIndex } from '@myst-theme/search';
 import { SEARCH_ATTRIBUTES_ORDERED } from '@myst-theme/search';
 import { useCallback } from 'react';
 import { JUPYTER_RENDERERS } from '@myst-theme/jupyter';
+import { LIST_RENDERERS } from './renderers';
 export { AppErrorBoundary as ErrorBoundary } from '@myst-theme/site';
 
-const RENDERERS: NodeRenderers = mergeRenderers([defaultRenderers, JUPYTER_RENDERERS]);
+const RENDERERS: NodeRenderers = mergeRenderers([
+  defaultRenderers,
+  JUPYTER_RENDERERS,
+  LIST_RENDERERS,
+]);
 
 export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
   return getMetaTagsForSite({

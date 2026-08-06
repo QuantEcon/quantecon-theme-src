@@ -5,6 +5,8 @@ version: 1
 project:
   title: QuantEcon Theme — Visual Fixture
   github: https://github.com/QuantEcon/quantecon-theme-src
+  plugins:
+    - fancy-lists.mjs
   # In-browser live compute (Pyodide). Surfaces the @myst-theme/jupyter
   # NotebookToolbar (Power/Run/Restart/Clear) on notebook pages.
   thebe:
@@ -12,6 +14,7 @@ project:
   toc:
     - file: intro.md
     - file: features.md
+    - file: lists.md
     - file: notebook.ipynb
 site:
   title: QE Theme Visual Fixture
