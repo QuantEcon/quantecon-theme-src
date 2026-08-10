@@ -41,6 +41,13 @@ jobs:
       # Builds the candidate theme from this branch into .deploy/quantecon-theme.
       - name: Build theme template
         run: make build-theme
+      # Node-level e2e of the build-time plugin: builds a throwaway MyST
+      # project with the CLI installed above and asserts the git history
+      # injected into the page AST.
+      - name: Plugin tests (git-metadata)
+        run: npm run test:plugin
+        env:
+          THEME_TEMPLATE: ${{ github.workspace }}/.deploy/quantecon-theme
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
       - name: Run visual regression tests

@@ -1,3 +1,33 @@
+---
+# Authors exercise the header layout: names on the left, the "Last changed"
+# control aligned to the right of the same row.
+authors:
+  - name: Thomas J. Sargent
+  - name: John Stachurski
+site:
+  # Deterministic stand-in for plugins/git-metadata.mjs output, so the header
+  # history control renders identically on every run (real git dates would
+  # change with each commit and churn the snapshots).
+  git_metadata:
+    last_modified: '2026-01-15T10:30:00Z'
+    changelog:
+      - hash: 3f9d2c41b8a7e6f5d4c3b2a1908f7e6d5c4b3a29
+        short_hash: 3f9d2c4
+        author: Matt McKay
+        date: '2026-01-15T10:30:00Z'
+        message: 'Update features page: add numbered equation'
+      - hash: 8e7d6c5b4a392817f6e5d4c3b2a190817263f4e5
+        short_hash: 8e7d6c5
+        author: Jane Economist
+        date: '2025-12-01T09:00:00Z'
+        message: Improve code examples
+      - hash: a1b2c3d4e5f60718293a4b5c6d7e8f9012345678
+        short_hash: a1b2c3d
+        author: Matt McKay
+        date: '2025-09-20T14:45:00Z'
+        message: Initial features fixture
+---
+
 # Features
 
 Pages here exercise math, code, admonitions, tables and figures.
