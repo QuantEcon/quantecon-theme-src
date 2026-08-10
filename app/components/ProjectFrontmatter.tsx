@@ -32,12 +32,13 @@ export function ProjectFrontmatter({
         className
       )}
     >
-      <div className="space-x-4">
+      <div>
         <div
           aria-label="Book title"
           className={classNames('block font-bold lg:inline prose-a:text-inherit', {
             'text-lg': pageTitle,
             'text-4xl': !pageTitle,
+            'mr-4': pageTitle,
           })}
         >
           <Link to={baseurl ?? '/'}>{projectTitle}</Link>
