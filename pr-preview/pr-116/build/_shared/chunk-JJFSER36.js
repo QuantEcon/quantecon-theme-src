@@ -1,1 +1,0 @@
-import{_ as s}from"/quantecon-theme.mystmd/pr-preview/pr-116/build/_shared/chunk-7W376NUZ.js";import{a as n,i as e}from"/quantecon-theme.mystmd/pr-preview/pr-116/build/_shared/chunk-IP623CVD.js";var a=n(t=>{let{securityLevel:c}=s(),o=e("body");if(c==="sandbox"){let m=e(`#i${t}`).node()?.contentDocument??document;o=e(m.body)}return o.select(`#${t}`)},"selectSvgElement");export{a};
