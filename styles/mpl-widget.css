@@ -1,0 +1,72 @@
+/**
+ * jupyter-matplotlib (ipympl) widget styles — vendored.
+ *
+ * Verbatim copy of jupyter-matplotlib@0.11.3 `css/mpl_widget.css`, which the
+ * theme previously loaded from jsdelivr as a render-blocking <link>. It is
+ * inlined into the Tailwind bundle instead so that:
+ *   - it costs no extra request (this file is @imported by styles/app.css), and
+ *   - the page does not depend on a third-party CDN, which is intermittently
+ *     unreachable in mainland China (a significant share of QuantEcon readers).
+ *
+ * These rules only apply to `%matplotlib widget` output. They are kept even
+ * though the current lecture sets render none, because the theme is shared
+ * across lecture repos and any of them may enable ipympl.
+ *
+ * The `--jp-widgets-*` custom properties are defined by @jupyter-widgets, which
+ * Thebe loads alongside the widget itself.
+ *
+ * Upstream: https://github.com/matplotlib/ipympl/blob/main/css/mpl_widget.css
+ */
+
+.jupyter-matplotlib {
+  width: auto;
+  height: auto;
+  flex: 1 1 auto;
+}
+
+/* Toolbar */
+
+.jupyter-matplotlib-toolbar {
+  position: absolute;
+  overflow: visible;
+  z-index: 100;
+}
+
+.jupyter-matplotlib-toolbar-fadein-fadeout {
+  transition: visibility 0.5s linear, opacity 0.5s linear;
+}
+
+.jupyter-matplotlib-button {
+  width: calc(var(--jp-widgets-inline-width-tiny) / 2 - 2px);
+  padding: 0 !important;
+}
+
+/* Figure */
+
+.jupyter-matplotlib-figure {
+  width: fit-content;
+  height: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.jupyter-matplotlib-canvas-container {
+  overflow: auto;
+}
+
+.jupyter-matplotlib-canvas-div {
+  margin: 2px;
+  flex: 1 1 auto;
+}
+
+.jupyter-matplotlib-header {
+  width: 100%;
+  text-align: center;
+}
+
+.jupyter-matplotlib-footer {
+  width: 100%;
+  text-align: center;
+  min-height: var(--jp-widgets-inline-height);
+}

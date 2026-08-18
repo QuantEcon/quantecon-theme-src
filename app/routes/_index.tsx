@@ -1,9 +1,6 @@
-import {
-  KatexCSS,
-  getMetaTagsForArticle,
-  responseNoArticle,
-  responseNoSite,
-} from '@myst-theme/site';
+import { getMetaTagsForArticle, responseNoArticle, responseNoSite } from '@myst-theme/site';
+// Self-hosted, not the CDN-backed KatexCSS from @myst-theme/site — see app/links.ts.
+import { KatexCSS } from '~/links';
 import type { LinksFunction, LoaderFunction, V2_MetaFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { getConfig, getPage } from '~/backend/loaders.server';
