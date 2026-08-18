@@ -55,6 +55,11 @@ export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
  * arrives. This keeps the inline block from overriding the live cascade despite
  * being emitted after <Links /> in the document head.
  *
+ * Because these rules carry no specificity, every property set here MUST also
+ * be declared by the real stylesheet, otherwise it can never be overridden.
+ * (E.g. parking the nav panel off-screen with `visibility:hidden` would stick
+ * forever, since no Tailwind class sets `visibility` — hence the transform.)
+ *
  * Keep the values in sync with their sources of truth:
  *   - font stack:    tailwind.config.js  -> theme.extend.fontFamily.sans
  *   - grid columns:  tailwind.config.js  -> theme.extend.gridTemplateColumns
@@ -65,6 +70,10 @@ export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
  *                    page background; the inner content panel uses `qepage-dark`
  *                    #222, see app/components/Page.tsx — intentionally not set here
  *                    since these rules target <body>.)
+ *   - nav panel:     app/components/ContentsSidebar.tsx -> `.qe-contents-sidebar`
+ *                    (width/height/position must match its Tailwind classes so
+ *                    the resolved transform is identical before and after
+ *                    app.css lands, and nothing animates on arrival)
  */
 const CRITICAL_CSS = `
 :where(html){font-family:"Source Sans 3",sans-serif}
@@ -74,6 +83,7 @@ const CRITICAL_CSS = `
 :where(.simple-center-grid){display:grid;grid-template-columns:[screen-start] 1fr [body-start] minmax(300px,800px) [body-end] 1fr [screen-end]}
 :where(.simple-center-grid) > *{grid-column:body-start / body-end}
 @media (min-width:1280px){:where(.simple-center-grid){grid-template-columns:[screen-start] 1fr 200px 20px [body-start] 800px [body-end] 20px [margin-start] 200px [margin-end] 1fr [screen-end]}}
+:where(.qe-contents-sidebar){position:fixed;left:0;width:250px;height:100vh;transform:translateX(-100%)}
 `;
 
 export const links: LinksFunction = () => {

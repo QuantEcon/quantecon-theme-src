@@ -9,6 +9,11 @@ import { test, expect, type Page, type Route } from "@playwright/test";
  * grid collapsed to `display: block`. The fix inlines critical CSS into `<head>`
  * (see `app/root.tsx`), which parses synchronously and styles that first paint.
  *
+ * The same unstyled frame also exposed the contents sidebar: `-translate-x-full`
+ * does nothing until app.css lands, so the panel painted in-flow and visible,
+ * then slid shut once the stylesheet arrived — the "menu opens on load" report.
+ * It is covered here too, since the cause and the guard are the same.
+ *
  * This test makes the failure mode deterministic by **aborting all external
  * stylesheets**, so the only styling that can reach the page is the inline
  * `<style>`. If the inline critical CSS regresses, the "styled first paint"
@@ -49,6 +54,7 @@ async function firstPaintState(page: Page) {
   await page.waitForSelector(".simple-center-grid", { timeout: 5000 }).catch(() => {});
   return page.evaluate(() => {
     const grid = document.querySelector(".simple-center-grid");
+    const sidebar = document.querySelector(".qe-contents-sidebar");
     const applied = Array.from(document.styleSheets).filter((sheet) => {
       try {
         return !!sheet.cssRules && sheet.cssRules.length > 0; // applied, not pending
@@ -59,6 +65,9 @@ async function firstPaintState(page: Page) {
     return {
       gridDisplay: grid ? getComputedStyle(grid).display : "(absent)",
       bodyFont: getComputedStyle(document.body).fontFamily,
+      // The nav panel is closed on load, so it must start fully off-screen to
+      // the left. If it is on-screen here the menu visibly flashes open.
+      sidebarOnScreen: sidebar ? sidebar.getBoundingClientRect().right > 0 : false,
       // null href == an inline <style>; any string == an external sheet that applied
       appliedExternal: applied.some((sheet) => !!sheet.href),
     };
@@ -72,9 +81,10 @@ test.describe("FOUC guard (WebKit) — inline critical CSS styles the first pain
 
     // No external sheet applied, so anything styled below comes from inline CSS.
     expect(state.appliedExternal).toBe(false);
-    // The two reported FOUC symptoms must be absent on first paint:
+    // The reported FOUC symptoms must be absent on first paint:
     expect(state.gridDisplay).toBe("grid"); // grid not collapsed to block
     expect(state.bodyFont).toMatch(/Source Sans 3/); // sans, not the serif default
+    expect(state.sidebarOnScreen).toBe(false); // nav panel parked off-screen
   });
 
   test("control: removing the inline critical CSS reproduces the FOUC", async ({ page }) => {
@@ -86,5 +96,8 @@ test.describe("FOUC guard (WebKit) — inline critical CSS styles the first pain
     expect(state.appliedExternal).toBe(false);
     expect(state.gridDisplay).toBe("block");
     expect(state.bodyFont).not.toMatch(/Source Sans 3/);
+    // Without the inline rule the nav panel lays out in-flow and fully visible —
+    // this is the "menu flashes open on load" symptom.
+    expect(state.sidebarOnScreen).toBe(true);
   });
 });
