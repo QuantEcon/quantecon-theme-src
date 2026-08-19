@@ -48,6 +48,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fancy ordered lists (`(a)`, `iv.`, `B)` — QuantEcon/mystmd#50) now render their markers instead of falling back to decimals: a custom `list` renderer maps the node's `style` to the `<ol type>` attribute plus a case-sensitive `list-*` class (HTML matches `[type=...]` case-insensitively, so CSS keyed off the attribute cannot tell `a` from `A`) and exposes `delimiter` as a `delimiter-paren(s)` class, with counter-based CSS drawing the parenthesized markers ([#100](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/100)). Interim override until the fix lands upstream in `myst-to-react` (tracked in QuantEcon/mystmd#51). Covered by a new `lists` visual-regression fixture page whose markers are stamped by a fixture-local transform (`fancy-lists.mjs`) — so the coverage is independent of whether the building CLI parses fancy-list markers — plus DOM-level marker assertions (`lists-markers`), since a wrong marker case moves too few pixels for the snapshot diff budget.
 
 ### Added
+- Git history in page headers (Phase 1 of [`PLAN.md`](./PLAN.md)): a "Last
+  changed" control on the page-header author line expands an inline changelog
+  with GitHub-linked commit hashes and a full-history link, mirroring the
+  `quantecon-book-theme` header. The panel opens above the header's blue
+  divider, pushing it down and sitting flush on it, so the divider reads as the
+  panel's own bottom edge and the changelog stays clear of the lecture content.
+  It grows to fit rather than scrolling — length is bounded at the source, with
+  the plugin capping entries per page (default 6). Data is injected at build
+  time by a new MyST
+  transform plugin (`plugins/git-metadata.mjs`, `git log --follow` per page →
+  `mdast.data.git_metadata`), with a `site.git_metadata` page-frontmatter
+  override for manual pinning. mystmd has no built-in last-modified support
+  (jupyter-book/mystmd#2213), and plugin transforms cannot modify page
+  frontmatter, hence the AST channel.
 - Per-PR rendered previews on GitHub Pages (`.github/workflows/preview.yml`): each PR statically builds the real `lecture-python-programming` lectures with the candidate theme (`myst build --html`, including the build-time Jupyter Book → MyST upgrade) and publishes to `gh-pages` at `pr-preview/pr-<n>/` with a sticky link comment and teardown on close. Self-contained on `GITHUB_TOKEN` — no external preview service.
 
 ### Removed

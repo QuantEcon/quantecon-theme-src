@@ -101,6 +101,44 @@ stack is Pyodide-compatible. Other backends are available through the same
 `thebe` config (`binder:` for BinderHub, `server:` for a hosted Jupyter
 server) if a project needs a full environment.
 
+### Git history in page headers
+
+The page header shows a "Last changed: ⟨date⟩" control (aligned to the right of
+the author line) that expands an inline changelog listing the most recent
+commits touching that page — commit hashes link to GitHub, and a "full history"
+link opens the file's complete commit log (mirroring the `quantecon-book-theme`
+header). The changelog opens in place above the header's blue divider, pushing
+it down, so it stays adjacent to its toggle and clear of the lecture content.
+
+The data is injected at build time by [`plugins/git-metadata.mjs`](./plugins/git-metadata.mjs),
+a MyST transform that runs `git log --follow` per source file and attaches
+`{ last_modified, changelog: [{hash, short_hash, author, date, message}] }`
+to the page AST. Copy the plugin into a lecture repo (or reference a checkout)
+and register it:
+
+```yaml
+# myst.yml
+project:
+  github: https://github.com/QuantEcon/lecture-python.myst # commit links target this repo
+  plugins:
+    - git-metadata.mjs
+```
+
+Notes:
+
+- The header control renders nothing when no metadata is present, so projects
+  without the plugin are unaffected.
+- The plugin is a silent no-op for untracked files, non-git checkouts, missing
+  `git`, or a `git log` timeout (5s). Shallow CI clones (`fetch-depth: 1`)
+  produce truncated history — use `fetch-depth: 0` when building for deploy.
+- `QE_GIT_METADATA_MAX` caps changelog entries per page (default 6; myst-cli
+  does not pass options to transform plugins, hence the environment variable).
+  The expanded changelog does not scroll — it grows to fit — so this value is
+  also what controls how tall it gets.
+- A page can pin or correct its history manually — set the same shape under
+  `site.git_metadata` in the page frontmatter, which takes precedence over the
+  injected data (this is how the visual fixture keeps snapshots deterministic).
+
 ## Usage with MyST
 
 Point your project's `site.template` at a **pinned release** zip:

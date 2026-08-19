@@ -19,6 +19,7 @@
     "test:unit": "node --test \"tests/unit/**/*.test.mjs\"",
     "test:visual": "playwright test",
     "test:visual:update": "playwright test --update-snapshots",
+    "test:plugin": "node --test \"tests/plugin/**/*.test.mjs\"",
     "test:fouc": "playwright test --project=webkit-fouc"
   },
   "dependencies": {
@@ -69,7 +70,13 @@
     "ajv": "^8.18.0",
     "cookie": "^0.7.0",
     "shell-quote": "^1.10.0",
-    "ws@^8.0.0": "^8.20.1"
+    "ws@^8.0.0": "^8.20.1",
+    "brace-expansion@^1.0.0": "^1.1.18",
+    "brace-expansion@^5.0.0": "^5.0.9",
+    "js-yaml@^3.0.0": "^3.15.0",
+    "js-yaml@^4.0.0": "^4.3.0",
+    "sanitize-html": "2.17.5",
+    "@babel/core": "^7.29.6"
   },
   "engines": {
     "node": ">=20"

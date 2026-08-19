@@ -4,7 +4,7 @@
 version: 1
 project:
   title: QuantEcon Theme — Visual Fixture
-  github: https://github.com/QuantEcon/quantecon-theme-src
+  github: https://github.com/QuantEcon/quantecon-theme.mystmd
   plugins:
     - fancy-lists.mjs
   # In-browser live compute (Pyodide). Surfaces the @myst-theme/jupyter

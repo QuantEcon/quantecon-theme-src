@@ -37,6 +37,102 @@ test.describe("QuantEcon theme — visual regression", () => {
     });
   }
 
+  // The "Last changed" header control and its inline changelog. The fixture
+  // pins git_metadata in features.md frontmatter and the clock is frozen, so
+  // the relative times ("4 months ago") are deterministic.
+  //
+  // The agreed design (#83) is a disclosure that expands *above* the header's
+  // blue divider, pushing it down — keeping the changelog adjacent to its
+  // toggle and out of the lecture content. The geometry assertions below pin
+  // that, since a panel that rendered below the divider would still look
+  // plausible in isolation.
+  const BLUE_DIVIDER_BLOCK = '[class*="border-b-qeborder-blue"]';
+  // Matches `border-b-[5px]` on that block.
+  const BLUE_DIVIDER_PX = 5;
+  const dividerBottom = (page: Page) =>
+    page.evaluate(
+      (sel) => document.querySelector(sel)!.getBoundingClientRect().bottom,
+      BLUE_DIVIDER_BLOCK
+    );
+
+  test("history-open", async ({ page }) => {
+    await page.clock.setFixedTime(new Date("2026-06-12T00:00:00Z"));
+    await page.goto("/features", { waitUntil: "domcontentloaded" });
+    await settle(page);
+    const trigger = page.getByRole("button", { name: /Last changed/ });
+    await expect(trigger).toContainText("Last changed: Jan 15, 2026");
+    await expect(trigger).toHaveAttribute("aria-expanded", "false");
+
+    const closedDivider = await dividerBottom(page);
+    await trigger.click();
+    await expect(trigger).toHaveAttribute("aria-expanded", "true");
+
+    // The panel is whatever the trigger says it controls — this also checks
+    // the aria wiring rather than assuming a selector.
+    const panelId = await trigger.getAttribute("aria-controls");
+    const panel = page.locator(`[id="${panelId}"]`);
+    await expect(panel).toBeVisible();
+    await expect(panel.getByText("Changelog", { exact: true })).toBeVisible();
+    // Commit links point at the source repo (myst.yml `github`), full history
+    // at the mystmd-computed source path.
+    await expect(panel.getByRole("link", { name: "3f9d2c4" })).toHaveAttribute(
+      "href",
+      "https://github.com/QuantEcon/quantecon-theme.mystmd/commit/3f9d2c41b8a7e6f5d4c3b2a1908f7e6d5c4b3a29"
+    );
+    await expect(panel.getByRole("link", { name: "full history" })).toHaveAttribute(
+      "href",
+      /\/commits\/.*features\.md$/
+    );
+    await expect(panel.getByText("4 months ago")).toBeVisible();
+
+    // Opening pushes the blue divider down, and the panel sits flush on it:
+    // the divider is the panel's bottom edge, so the gap between the panel's
+    // bottom and the top of the 5px border is ~0. `pb-4` returning (a broken
+    // `has-[…]:pb-0`) would show up here as a ~16px gap.
+    const openDivider = await dividerBottom(page);
+    expect(openDivider).toBeGreaterThan(closedDivider);
+    const box = (await panel.boundingBox())!;
+    const gap = openDivider - BLUE_DIVIDER_PX - (box.y + box.height);
+    expect(Math.abs(gap)).toBeLessThanOrEqual(1);
+
+    // No inner scrollbar — the list grows to fit (entries are capped at the
+    // source by the plugin instead).
+    const scrolls = await page.evaluate((id) => {
+      const ol = document.getElementById(id)!.querySelector("ol")!;
+      return ol.scrollHeight > ol.clientHeight + 1;
+    }, panelId!);
+    expect(scrolls).toBe(false);
+
+    // DrDrij's "keep font sizes consistent": the toggle and the changelog copy
+    // are one type size (0.85rem), so the block reads as a unit.
+    const sizes = await page.evaluate(
+      ({ id }) => {
+        const p = document.getElementById(id)!;
+        const btn = document.querySelector<HTMLElement>(
+          `button[aria-controls="${CSS.escape(id)}"]`
+        )!;
+        return {
+          trigger: getComputedStyle(btn).fontSize,
+          entry: getComputedStyle(p.querySelector("li")!).fontSize,
+        };
+      },
+      { id: panelId! }
+    );
+    expect(sizes.entry).toBe(sizes.trigger);
+
+    await expect(page).toHaveScreenshot("history-open.png", {
+      fullPage: true,
+      maxDiffPixelRatio: 0.01,
+      animations: "disabled",
+    });
+
+    // Esc closes the disclosure and returns focus to the trigger.
+    await page.keyboard.press("Escape");
+    await expect(panel).toBeHidden();
+    await expect(trigger).toHaveAttribute("aria-expanded", "false");
+    await expect(trigger).toBeFocused();
+  });
+
   // Marker-level assertions for the fancy-list page: a wrong marker case
   // ((A) where (a) is expected) moves far too few pixels for the full-page
   // snapshot's 1% diff budget, so pin the DOM/computed styles directly.
