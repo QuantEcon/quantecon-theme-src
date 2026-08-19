@@ -71,9 +71,14 @@ export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
  *                    #222, see app/components/Page.tsx — intentionally not set here
  *                    since these rules target <body>.)
  *   - nav panel:     app/components/ContentsSidebar.tsx -> `.qe-contents-sidebar`
- *                    (width/height/position must match its Tailwind classes so
- *                    the resolved transform is identical before and after
- *                    app.css lands, and nothing animates on arrival)
+ *                    (only the class name needs to stay in sync; see below)
+ *
+ * The nav-panel rule deliberately sets no width. `translateX(-100%)` resolves
+ * against the element's own border box, so its right edge lands at `left + W -
+ * W` = 0 for **any** width W — it is off-screen before app.css arrives and
+ * stays off-screen after, even though the resolved width differs between the
+ * two (350/250/350 across the base/lg/2xl bands). `position:fixed` is set so
+ * the panel does not push the article down while it waits.
  */
 const CRITICAL_CSS = `
 :where(html){font-family:"Source Sans 3",sans-serif}
@@ -83,7 +88,7 @@ const CRITICAL_CSS = `
 :where(.simple-center-grid){display:grid;grid-template-columns:[screen-start] 1fr [body-start] minmax(300px,800px) [body-end] 1fr [screen-end]}
 :where(.simple-center-grid) > *{grid-column:body-start / body-end}
 @media (min-width:1280px){:where(.simple-center-grid){grid-template-columns:[screen-start] 1fr 200px 20px [body-start] 800px [body-end] 20px [margin-start] 200px [margin-end] 1fr [screen-end]}}
-:where(.qe-contents-sidebar){position:fixed;left:0;width:250px;height:100vh;transform:translateX(-100%)}
+:where(.qe-contents-sidebar){position:fixed;left:0;transform:translateX(-100%)}
 `;
 
 export const links: LinksFunction = () => {

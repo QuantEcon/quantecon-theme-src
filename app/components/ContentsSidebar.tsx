@@ -108,14 +108,17 @@ export function ContentsSidebar() {
         'bg-qetoolbar-light dark:bg-qetoolbar-dark ',
         'border-r-[1px] border-qetoolbar-border',
         'overflow-y-auto',
-        // Only animate once we are mounted. On a static build every navigation
-        // is a full document load, and the first paint can happen before
-        // app.css applies. At that point `-translate-x-full` means nothing, so
-        // the panel paints in-flow and fully visible; when app.css finally
-        // arrives the transform resolves and a `transition` present since the
-        // first paint would animate it — the menu appears to open, then slide
-        // shut over 300ms. Withholding the transition until after mount means
-        // that correction is applied instantly instead of being animated.
+        // Belt and braces, not the primary guard. The critical CSS above is
+        // what actually prevents the flash; because both states are a -100%
+        // translate there is nothing for a transition to interpolate, so
+        // removing this gate does not by itself reintroduce it (measured).
+        //
+        // It is kept because the transition is only ever wanted in response to
+        // a click: withholding it until after mount means any correction made
+        // when app.css lands is applied instantly rather than animated, which
+        // keeps this component correct even if the critical rule is later
+        // changed or dropped.
+        //
         // `transform` (not `all`) so only the slide animates, on the compositor.
         mounted && 'transition-transform duration-300 ease-in-out',
         { 'translate-x-0': open, '-translate-x-full': !open }

@@ -67,7 +67,10 @@ async function firstPaintState(page: Page) {
       bodyFont: getComputedStyle(document.body).fontFamily,
       // The nav panel is closed on load, so it must start fully off-screen to
       // the left. If it is on-screen here the menu visibly flashes open.
-      sidebarOnScreen: sidebar ? sidebar.getBoundingClientRect().right > 0 : false,
+      // `null` (not `false`) when the element is missing: `false` is the value
+      // that *passes* the guard below, so a renamed hook would slip through it
+      // and surface as a confusing failure in the control instead.
+      sidebarOnScreen: sidebar ? sidebar.getBoundingClientRect().right > 0 : null,
       // null href == an inline <style>; any string == an external sheet that applied
       appliedExternal: applied.some((sheet) => !!sheet.href),
     };
@@ -84,6 +87,10 @@ test.describe("FOUC guard (WebKit) — inline critical CSS styles the first pain
     // The reported FOUC symptoms must be absent on first paint:
     expect(state.gridDisplay).toBe("grid"); // grid not collapsed to block
     expect(state.bodyFont).toMatch(/Source Sans 3/); // sans, not the serif default
+    expect(
+      state.sidebarOnScreen,
+      "`.qe-contents-sidebar` not found — the hook the critical CSS targets was renamed or removed"
+    ).not.toBeNull();
     expect(state.sidebarOnScreen).toBe(false); // nav panel parked off-screen
   });
 
@@ -98,6 +105,10 @@ test.describe("FOUC guard (WebKit) — inline critical CSS styles the first pain
     expect(state.bodyFont).not.toMatch(/Source Sans 3/);
     // Without the inline rule the nav panel lays out in-flow and fully visible —
     // this is the "menu flashes open on load" symptom.
+    expect(
+      state.sidebarOnScreen,
+      "`.qe-contents-sidebar` not found — the hook the critical CSS targets was renamed or removed"
+    ).not.toBeNull();
     expect(state.sidebarOnScreen).toBe(true);
   });
 });
