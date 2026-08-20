@@ -31,9 +31,11 @@ import path from 'node:path';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { publicPath = '/' } = require('../remix.config.prod.js');
+// Both read from the Remix config rather than hardcoded, so this cannot drift
+// out of step with where the build actually puts things.
+const { publicPath = '/', assetsBuildDirectory = 'public/build' } = require('../remix.config.prod.js');
 
-const assetsDir = path.resolve('public/build/_assets');
+const assetsDir = path.resolve(assetsBuildDirectory, '_assets');
 const prefix = `${publicPath.endsWith('/') ? publicPath : `${publicPath}/`}_assets/`;
 // url( optional-quote PREFIX file optional-quote )
 const URL_RE = new RegExp(`url\\((\\s*['"]?)${prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g');
@@ -44,8 +46,11 @@ if (!fs.existsSync(assetsDir)) {
 }
 
 let rewritten = 0;
-let filesTouched = 0;
 const missing = [];
+// Validate everything before writing anything: a partial rewrite would leave
+// the build output in a half-corrected state that is confusing to debug and
+// worse to inherit if a later step ever runs despite the failure.
+const pending = [];
 
 for (const name of fs.readdirSync(assetsDir).filter((f) => f.endsWith('.css'))) {
   const file = path.join(assetsDir, name);
@@ -59,16 +64,18 @@ for (const name of fs.readdirSync(assetsDir).filter((f) => f.endsWith('.css'))) 
   }
 
   rewritten += before.split(prefix).length - 1;
-  filesTouched += 1;
-  fs.writeFileSync(file, after);
+  pending.push([file, after]);
 }
 
 if (missing.length) {
   console.error(
-    `[css-assets] ${missing.length} reference(s) do not exist beside their stylesheet:\n  ${missing.join('\n  ')}`
+    `[css-assets] ${missing.length} reference(s) do not exist beside their stylesheet:\n  ${missing.join('\n  ')}\n[css-assets] nothing written.`
   );
   process.exit(1);
 }
+
+for (const [file, contents] of pending) fs.writeFileSync(file, contents);
+const filesTouched = pending.length;
 
 console.log(
   `[css-assets] rewrote ${rewritten} asset URL(s) in ${filesTouched} stylesheet(s) to be stylesheet-relative`
