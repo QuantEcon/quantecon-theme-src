@@ -12,7 +12,9 @@
 set -euo pipefail
 
 here="$(cd "$(dirname "$0")" && pwd)"
-cd "$here/fixture"
+# FIXTURE_DIR selects which fixture project to serve (default the main one);
+# `fixture-no-thebe` is the Thebe-disabled variant.
+cd "$here/${FIXTURE_DIR:-fixture}"
 
 : "${THEME_TEMPLATE:?set THEME_TEMPLATE to a local theme build dir or a zip URL}"
 
@@ -21,6 +23,7 @@ cd "$here/fixture"
 esc=$(printf '%s' "$THEME_TEMPLATE" | sed 's/[\\&|]/\\&/g')
 sed "s|__THEME__|${esc}|" myst.yml.in > myst.yml
 
+echo "[serve] fixture:  ${FIXTURE_DIR:-fixture}"
 echo "[serve] template: $THEME_TEMPLATE"
 echo "[serve] port:     ${PORT:-3111}"
 exec myst start --port "${PORT:-3111}"

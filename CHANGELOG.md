@@ -20,6 +20,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- In-page live compute via Thebe (Phase 2 of [`PLAN.md`](./PLAN.md), closes #88):
+  setting the standard MyST `project.thebe` config surfaces a **Power** toggle in
+  the header toolbar next to Launch on notebook pages (desktop); clicking it boots
+  the kernel, after which **Run / Restart / Clear** take its place and cells
+  execute live. The control is the `@myst-theme/jupyter` notebook toolbar,
+  portaled into the header (`ComputeToolbarSlot.tsx` → `#qe-compute-slot`) so it
+  stays inside the Thebe providers while living in the always-visible header —
+  no provider-tree lift. The QuantEcon default is **JupyterLite**
+  (`thebe: { lite: true }`): Python runs in the browser via Pyodide, with no
+  server or Binder to host; `binder:`/`server:` backends remain available through
+  the same config. Pyodide package caveat (numba/JAX unavailable) documented in
+  the README. Covered by a presence test scoped to the header slot and a
+  disabled-path test against a second no-thebe fixture served on its own port,
+  proving the toggle is gated on the project opting in ([#98](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/98)).
+
 ## [2.2.0] - 2026-07-16
 
 > Headline: fancy ordered lists — `(a)` / `(i)` / `B)` markers from the QuantEcon

@@ -24,6 +24,21 @@
     @apply hidden xl:block;
   }
 
+  /* Live-compute toggle in the header: the @myst-theme/jupyter NotebookToolbar
+     is portaled into the top toolbar (#qe-compute-slot, see ComputeToolbarSlot).
+     Neutralise its default right-aligned, sticky, full-width floating pill so it
+     sits inline among the header icons. */
+  #qe-compute-slot .myst-jp-nb-toolbar {
+    @apply static top-auto z-auto w-auto p-0 justify-start pointer-events-auto;
+  }
+  #qe-compute-slot .myst-jp-nb-toolbar-inner {
+    @apply m-0 p-0 border-0 shadow-none bg-transparent backdrop-blur-none;
+  }
+  /* Match the surrounding 20px header icons (the toolbar ships 24px icons). */
+  #qe-compute-slot .myst-jp-nb-toolbar svg {
+    @apply w-5 h-5;
+  }
+
   html {
     scroll-behavior: smooth;
   }

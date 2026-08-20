@@ -46,7 +46,7 @@ Derived from `quantecon-book-theme` v0.20.3 (see its `README.md`, `docs/user/*`,
 | # | Feature | Book-theme | MyST theme | Phase |
 | --- | --- | :---: | :---: | :---: |
 | Git history in lecture headers (last-modified + changelog dropdown) | ✅ | ❌ | **1** |
-| Launch parity — BinderHub + Thebe (live compute) in addition to Colab / private hub | ✅ | ⚠️ partial | **2** |
+| Launch parity — Thebe (live compute) in addition to Colab / private hub (BinderHub dropped, #26) | ✅ | ✅ | **2** |
 | Configurable code highlighting (custom QE tokens vs Pygments styles) | ✅ | ❌ | **3** |
 | Text colour schemes (`seoul256` / `gruvbox` / `none` + custom) | ✅ | ❌ | **3** |
 | Language switcher (multilingual) + `hreflang` SEO tags | ✅ | ❌ | **4** |
@@ -284,10 +284,25 @@ in-page **Thebe** live compute.
 Colab URL construction, `notebook_interface`, `nb_path_to_notebooks`, `path_to_docs`
 stripping) + `docs/user/launch.md`.
 
-- [ ] **Thebe:** the bundle already ships Thebe assets and `@myst-theme/jupyter` is wired
-      in (`PageContent.tsx` uses `ExecuteScopeProvider`, `NotebookToolbar`). Confirm/enable
-      `myst.yml` `project.jupyter`/`thebe` config path and surface a "live compute" toggle
-      consistent with the toolbar.
+- [x] **Thebe:** in-page live compute enabled via `project.thebe` config in `myst.yml`.
+      The infra was already wired (`Page.tsx` `ComputeOptionsProvider` + `ThebeLoaderAndServer`;
+      `PageContent.tsx` `ExecuteScopeProvider` + `NotebookToolbar`); enablement is config-derived
+      (`compute.enabled = !!thebeFrontmatterToOptions(project.thebe)`, no runtime setter), so
+      setting `project.thebe` surfaces the `@myst-theme/jupyter` NotebookToolbar (the **Power**
+      toggle, then Run/Restart/Clear once a kernel connects) on notebook pages — **portaled into
+      the QuantEcon header toolbar** next to Launch (`ComputeToolbarSlot.tsx` renders it via
+      `createPortal` into `#qe-compute-slot` in `Toolbar.tsx`; `app.css` neutralises the default
+      floating pill and matches the 20px header icons), so it sits in the fixed header always
+      visible while scrolling. The portal keeps the component inside the Thebe providers (React
+      context flows through the React tree, not the DOM) even though the header is mounted outside
+      them — avoiding a provider-tree lift. That header toggle **is** the "live compute"
+      control. The QuantEcon default is **JupyterLite** (`thebe: { lite: true }`): Python
+      in the browser via Pyodide, no server/Binder (avoids the flaky Binder, see #26). Verified
+      end-to-end (Power → Pyodide kernel boots in-browser). Pyodide caveat documented in the README
+      (numba/JAX unavailable). Fixture sets `thebe.lite`; `tests/visual/theme.spec.ts` asserts the
+      toggle renders; `notebook.png`/`launch-open.png` snapshots refreshed. A second fixture
+      (`tests/visual/fixture-no-thebe/`, served on a second port) asserts the toggle is **absent**
+      on a notebook page when a project doesn't set `project.thebe` (the disabled path).
 - [x] ~~**BinderHub:** add a Binder option to the `LaunchButton` radio group~~
       **Decided against (2026-06-12):** BinderHub proved flaky in practice, and Colab
       is the launch target QuantEcon standardises on — primarily because it provides

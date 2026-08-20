@@ -7,6 +7,10 @@ project:
   github: https://github.com/QuantEcon/quantecon-theme.mystmd
   plugins:
     - fancy-lists.mjs
+  # In-browser live compute (Pyodide). Surfaces the @myst-theme/jupyter
+  # NotebookToolbar (Power/Run/Restart/Clear) on notebook pages.
+  thebe:
+    lite: true
   toc:
     - file: intro.md
     - file: features.md
