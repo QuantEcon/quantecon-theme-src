@@ -12,7 +12,7 @@ import {
 import { useSidebarHeight } from '@myst-theme/site';
 import classNames from 'classnames';
 import { slugToUrl } from 'myst-common';
-import { useEffect, useState } from 'react';
+import useMounted from '~/hooks/useMounted';
 
 type StrictHeading = Omit<Heading, 'level'> & { level: number };
 type HeadingGroup = StrictHeading[];
@@ -42,19 +42,6 @@ function Section({ group }: { group: HeadingGroup }) {
       ))}
     </ul>
   );
-}
-
-/**
- * True only after the component has mounted on the client.
- *
- * Both the server render and the first (hydrating) client render return
- * `false`, so the markup matches and React does not warn; the effect then
- * flips it on the frame after hydration.
- */
-function useMounted() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  return mounted;
 }
 
 export function ContentsSidebar() {

@@ -37,6 +37,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   directory rather than assuming one. A production build now emits **zero**
   absolute asset URLs and all 78 references resolve
   ([#150](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/150)).
+- The sidebar toggle icons no longer animate their first-paint correction.
+  #123 stopped the contents panel flashing open on static-build loads; the
+  button that drives it had the identical shape and was untouched. Both lucide
+  icons carry `transition-all` with visibility driven by opacity, and on the
+  pre-`app.css` frame none of `absolute`, `opacity-0` or `opacity-100` exists
+  while lucide still emits real `width`/`height` attributes — so both icons
+  paint in flow at full opacity, and when the stylesheet lands `position` snaps
+  but `opacity` 1 → 0 *animates*, fading a close icon out of the toolbar on
+  every navigation. The transition is now withheld until after mount, making
+  that correction instant, and narrowed from `transition-all` to the three
+  properties that were ever meant to move (opacity, transform for
+  `hover:scale-110`, and colour so the icons still ease across a dark-mode
+  toggle). "Back to top" in the page margin had the same shape and is covered
+  too. The `useMounted` hook #123 introduced is hoisted to `app/hooks/` and
+  shared by all three sites
+  ([#127](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/127)).
+- The WebKit FOUC guard no longer goes red for reasons unrelated to the critical
+  CSS. Hydration currently fails on every page load (React #418/#423), and the
+  recovery re-render restores the inlined critical `<style>` about 195ms in —
+  after the control test has deliberately stripped it from the served HTML to
+  prove the guard is meaningful. The measurement used to run from the test after
+  `domcontentloaded`, leaving roughly a 150ms budget, so on a loaded runner all
+  three control assertions flipped at once. It now samples from an init script
+  that fires in-page on `DOMContentLoaded`, before hydration is even scheduled.
+  Both cases also assert their own preconditions — that the strip actually
+  matched, and whether the inline block is present as sampled — so a reshaped
+  `CRITICAL_CSS` reports as a stale strip pattern instead of as three confusing
+  failures about grid layout. The underlying hydration failure remains open in
+  [#126](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/126).
 
 ## [2.3.1] - 2026-08-26
 

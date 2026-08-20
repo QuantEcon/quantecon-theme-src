@@ -1,17 +1,24 @@
 import { useBaseurl, useLinkProvider, withBaseurl } from '@myst-theme/providers';
 import { useHeaders } from '@myst-theme/site';
 import classNames from 'classnames';
+import useMounted from '~/hooks/useMounted';
 import useScroll from '~/hooks/useScroll';
 
 export function BackToTop() {
   const isScrolled = useScroll(80);
+  const mounted = useMounted();
   const Link = useLinkProvider();
   return (
     <div className="fixed bottom-0 left-0 right-0 col-screen not-prose simple-center-grid grid-gap">
       <div className="relative col-margin">
         <p
           className={classNames(
-            'absolute bottom-0 font-semibold text-md z-[1000] transition-opacity ease-in-out duration-300',
+            'absolute bottom-0 font-semibold text-md z-[1000]',
+            // Withheld until after mount: before app.css lands `opacity-0` does
+            // not exist, so this paints visible and would then *fade* out when
+            // the stylesheet arrives rather than simply never having been
+            // there. Same mechanism as ContentsSidebar and SidebarToggle.
+            mounted && 'transition-opacity ease-in-out duration-300',
             {
               'opacity-100': isScrolled,
               'opacity-0': !isScrolled,
