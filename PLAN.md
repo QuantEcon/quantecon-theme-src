@@ -1,8 +1,9 @@
 # PLAN — QuantEcon MyST theme feature parity with `quantecon-book-theme`
 
 This plan tracks bringing the MyST theme (this repo, `quantecon-theme.mystmd` —
-formerly `quantecon-theme-src` — bundled
-to [`QuantEcon/quantecon-theme`](https://github.com/QuantEcon/quantecon-theme)) to
+formerly `quantecon-theme-src`, and no longer bundled to the now-archived
+[`QuantEcon/quantecon-theme`](https://github.com/QuantEcon/quantecon-theme) —
+releases ship as GitHub Release zips, see Phase 0) to
 feature parity with the Sphinx / Jupyter-Book&lt;2 theme
 [`quantecon-book-theme`](https://github.com/QuantEcon/quantecon-book-theme) ahead of
 migrating the QuantEcon lectures to MyST (Jupyter Book ≥ 2).
@@ -43,9 +44,9 @@ Before building anything custom, **check whether the feature already exists upst
 Derived from `quantecon-book-theme` v0.20.3 (see its `README.md`, `docs/user/*`, and
 `src/quantecon_book_theme/`).
 
-| # | Feature | Book-theme | MyST theme | Phase |
-| --- | --- | :---: | :---: | :---: |
-| Git history in lecture headers (last-modified + changelog dropdown) | ✅ | ❌ | **1** |
+| Feature | Book-theme | MyST theme | Phase |
+| --- | :---: | :---: | :---: |
+| Git history in lecture headers (last-modified + changelog dropdown) | ✅ | ✅ | **1** |
 | Launch parity — Thebe (live compute) in addition to Colab / private hub (BinderHub dropped, #26) | ✅ | ✅ | **2** |
 | Configurable code highlighting (custom QE tokens vs Pygments styles) | ✅ | ❌ | **3** |
 | Text colour schemes (`seoul256` / `gruvbox` / `none` + custom) | ✅ | ❌ | **3** |
@@ -55,9 +56,18 @@ Derived from `quantecon-book-theme` v0.20.3 (see its `README.md`, `docs/user/*`,
 | Full OpenGraph / Twitter card meta tags | ✅ | ⚠️ partial | **6** |
 | **Already at parity:** dark mode, font scaling, fullscreen, search, "On this page" TOC + back-to-top, contents sidebar, downloads (PDF/notebook), Colab + private JupyterHub launch, edit-on-GitHub, author header, content-driven footer, responsive/mobile | ✅ | ✅ | — |
 
+**Shipped state (2026-08-20).** Phase 0 completed across
+[v2.1.0](https://github.com/QuantEcon/quantecon-theme.mystmd/releases/tag/v2.1.0)–[v2.2.0](https://github.com/QuantEcon/quantecon-theme.mystmd/releases/tag/v2.2.0); Phase 1 and the Thebe half of Phase 2
+shipped in [v2.3.0](https://github.com/QuantEcon/quantecon-theme.mystmd/releases/tag/v2.3.0), and Phase 2's launch-config half shipped in
+[v2.2.0](https://github.com/QuantEcon/quantecon-theme.mystmd/releases/tag/v2.2.0). **Phase 3 is next.**
+
 ---
 
 ## Phase 0 — Modernise the release & distribution setup (prerequisite groundwork)
+
+**Status: complete** *(reviewed 2026-08-20)* — pipeline, rename, archive and the only
+live consumer all landed. The two unchecked boxes below are deferred by design: the
+flagship lecture repos repoint at their own MyST cutover.
 
 **Why first:** the deployed bundle is stuck at v1.1.1 (June 2025) and predates the
 entire `@myst-theme` 1.x upgrade. Parity work is meaningless until what's in `main` is
@@ -117,7 +127,7 @@ upstream is heading.
       **Verified 2026-06-11** against the v2.1.0 release URL: `myst start` downloaded,
       built, and served the visual fixture with the released theme.
 
-**Versioning & changelog:** *(remaining work tracked in [#71](https://github.com/QuantEcon/quantecon-theme-src/issues/71))*
+**Versioning & changelog:** *(remaining work tracked in [#71](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/71))*
 - [x] Make `vX.Y.Z` **tags** the release trigger *(trigger wired up in
       [#77](https://github.com/QuantEcon/quantecon-theme-src/pull/77))*; tag existing releases
       retroactively at their source commits (recorded in the old build repo as
@@ -161,7 +171,7 @@ upstream is heading.
       asset, release notes, and bundle version stamps all verified. Retiring `make deploy`
       waits for the consumer migration below.
 
-**Consumer migration (now unblocked — `v2.1.0` is published on the new flow):**
+**Consumer migration (unblocked at `v2.1.0`; the live consumer now tracks `v2.3.0`):**
 - [x] Repoint the **only current consumer**, `QuantEcon/lecture-wasm`
       ([`lectures/myst.yml:120`](https://github.com/QuantEcon/lecture-wasm/blob/main/lectures/myst.yml#L120)),
       from `…/quantecon-theme/archive/refs/heads/main.zip` to the new pinned release URL
@@ -172,13 +182,16 @@ upstream is heading.
       [lecture-wasm#47](https://github.com/QuantEcon/lecture-wasm/pull/47), closed. The
       Netlify app's duplicate auto-build fails independently —
       [lecture-wasm#49](https://github.com/QuantEcon/lecture-wasm/issues/49).)*
+      *(Bumped to the `v2.3.0` pin in
+      [lecture-wasm#67](https://github.com/QuantEcon/lecture-wasm/pull/67), merged
+      2026-08-20, so the only consumer tracks the current release.)*
 - [x] **Order matters** — migrate the consumer *before* archiving the old build repo:
       land pipeline → publish the first release (`v2.1.0`) → repoint `lecture-wasm` → then
       archive `QuantEcon/quantecon-theme`. *(Order held.)*
 - [ ] The flagship lecture repos (`lecture-python.myst`, `lecture-julia.myst`,
       `lecture-datascience.myst`, `lecture-python-advanced.myst`, …) still use the Sphinx
       `quantecon-book-theme` and are **not** consumers yet — each gets repointed as it cuts
-      over to MyST/JB≥2, not in this phase.
+      over to MyST/JB≥2, not in this phase. *(Still the case at 2026-08-20.)*
 - [ ] *(FYI, no action)* `QuantEcon/workflow-backups` only carries the repo-name glob
       `quantecon-.*`, which already matches the new name.
 
@@ -192,7 +205,9 @@ upstream is heading.
       the pinned-release form ([#79](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/79)).
 - [x] Triaged & consolidated the ~20 Dependabot PRs into a single lockfile refresh
       ([#55](https://github.com/QuantEcon/quantecon-theme-src/pull/55)–58; `npm audit`
-      68 → 45). The remaining findings need the Remix v2 migration ([#28]) — still to schedule.
+      68 → 45). The remaining findings need the framework migration, retargeted in June
+      2026 from Remix v2 to **React Router 7** and gated on upstream `jupyter-book/myst-theme`
+      ([#28](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/28); see `SECURITY.md`).
 - [x] Stand up a **visual preview / smoke test** against a real lecture repo (the book-theme
       uses `quantecon-book-theme-fixtures` + Playwright + Netlify previews — a lighter MyST
       equivalent would de-risk every later phase).
@@ -224,6 +239,11 @@ now, pre-cutover, while only `lecture-wasm` points at the theme.
 
 ## Phase 1 — Git history in lecture headers ⭐ (flagship)
 
+**Status: shipped in [v2.3.0](https://github.com/QuantEcon/quantecon-theme.mystmd/releases/tag/v2.3.0)** — the build-time plugin and the header
+control landed together in
+[#83](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/83). The one unchecked
+box below is a maintainer decision, not outstanding build work (open question 2).
+
 **Goal:** reproduce the book-theme's page header: a "Last changed: &lt;date&gt;" control
 that expands a changelog dropdown of the last N commits, with clickable commit hashes
 and a "full history" link.
@@ -254,6 +274,8 @@ and a "full history" link.
       repo (`plugins/`) — single self-contained `.mjs`, copy or reference from lecture
       repos; revisit when a second shared plugin appears (the QuantEcon `mystmd` fork
       is another candidate home, but a plugin stays usable on stock mystmd).
+      **Still open** — open question 2, tracked in
+      [#93](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/93).
 
 **Theme (render) deliverable:**
 - [x] New `app/components/PageHeaderHistory.tsx` (rendered from `ProjectFrontmatter.tsx`)
@@ -275,11 +297,18 @@ and a "full history" link.
 
 ---
 
-## Phase 2 — Launch parity (BinderHub + Thebe)
+## Phase 2 — Launch parity (Thebe + launch config)
 
-**Goal:** match the book-theme's full launch matrix. Today `LaunchButton.tsx` offers
-**Colab** + **private JupyterHub** only; the book-theme also offers **BinderHub** and
-in-page **Thebe** live compute.
+**Status: complete** — the launch-config generalisation shipped in
+[v2.2.0](https://github.com/QuantEcon/quantecon-theme.mystmd/releases/tag/v2.2.0) via
+[#97](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/97), and in-page Thebe
+in [v2.3.0](https://github.com/QuantEcon/quantecon-theme.mystmd/releases/tag/v2.3.0) via
+[#98](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/98). Tracking issue #88
+closed 2026-08-20.
+
+**Goal:** match the book-theme's launch matrix. `LaunchButton.tsx` offered **Colab** +
+**private JupyterHub** only; the book-theme also offered **BinderHub** (decided against,
+#26) and in-page **Thebe** live compute.
 **Reference:** `quantecon-book-theme/src/quantecon_book_theme/launch.py` (Binder/Hub/
 Colab URL construction, `notebook_interface`, `nb_path_to_notebooks`, `path_to_docs`
 stripping) + `docs/user/launch.md`.
@@ -319,12 +348,13 @@ stripping) + `docs/user/launch.md`.
       to point at an arbitrary notebook repo (book-theme `nb_repository_url` parity).
       URL logic extracted to pure, unit-tested builders in `launchUrls.ts`; applies to
       **both** the Colab and the Private-JupyterHub launch URLs. Done in
-      `feat/launch-parity-phase2`.
+      [#97](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/97).
 - [x] Fix Colab/JupyterHub path handling for **nested** lecture dirs: strip the source
       extension robustly (the old `page.location.split('.')[0]` truncated paths/dirs
       containing a dot), strip `launch_source_path` (book-theme `path_to_docs`) and
       prepend `launch_notebooks_path` (book-theme `nb_path_to_notebooks`). Covered by
-      `tests/unit/launch-urls.test.mjs`.
+      `tests/unit/launch-urls.test.mjs` (same PR,
+      [#97](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/97)).
 
 **Note:** removing the Private JupyterHub option (collapse to a single Colab button, #87)
 is deliberately kept out of this work — it's gated on a maintainer demand signal — so the
@@ -419,26 +449,39 @@ for the same translated sites).
 ## Sequencing & dependencies
 
 ```
-Phase 0  (hygiene/deploy + preview harness)  ── prerequisite for everything
+Phase 0  (hygiene/deploy + preview harness)  ── prerequisite  ✅ shipped
    │
-   ├─▶ Phase 1  Git history in headers      ⭐ highest value, has an upstream plugin
-   ├─▶ Phase 2  Launch parity (Binder/Thebe)
-   ├─▶ Phase 3  Code highlight + colour schemes  (needs visual preview)
+   ├─▶ Phase 1  Git history in headers          ⭐ ✅ shipped v2.3.0
+   ├─▶ Phase 2  Launch parity (Thebe + config)     ✅ shipped v2.2.0 / v2.3.0
+   ├─▶ Phase 3  Code highlight + colour schemes  (needs visual preview)  ← next
    ├─▶ Phase 4  i18n (language switcher) ──▶ Phase 5  RTL  (commonly shipped together)
    └─▶ Phase 6  Meta/SEO + stderr + docs
 ```
 
-Suggested order: **0 → 1 → 2 → 3 → (4 → 5) → 6**. Phases 1–6 are largely independent
-after Phase 0 and can be parallelised across contributors.
+Suggested order: **0 → 1 → 2 → 3 → (4 → 5) → 6**. Phases 0–2 are shipped as of
+[v2.3.0](https://github.com/QuantEcon/quantecon-theme.mystmd/releases/tag/v2.3.0) (2026-08-20), so **Phase 3 is next**. Phases 3–6 are largely
+independent of one another and can be parallelised across contributors.
 
 ## Open questions for maintainers
+
+*Tracked as [#93](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/93);
+resolutions are recorded here as they land.*
 
 1. **Upstream-first?** Several of these (git metadata rendering, language switcher,
    RTL) could be contributed to `jupyter-book/myst-theme` rather than kept QuantEcon-only.
    Which features are worth upstreaming vs forking?
 2. **Plugin home:** should the build-time git-metadata plugin (Phase 1) live in a shared
    `quantecon-myst-plugins` repo consumed by every lecture repo, or per-repo?
+   **Still open (2026-08-20)** — the last unchecked box in Phase 1; the interim home is
+   `plugins/` in this repo.
 3. **Compute model:** how much of the launch story moves to in-page Thebe vs external
    Colab/Binder/Hub, given infra cost and the existing `.notebooks` convention?
+   **Answered in practice (2026-08-20):** external launch is **Colab** (BinderHub dropped,
+   #26; the private hub stays for now, #87), and in-page compute is **Thebe with
+   JupyterLite/Pyodide** as the QuantEcon default — both shipped in Phase 2. What remains
+   has its own carriers: toggle placement and integration (#128) and per-lecture
+   enablement with compatibility testing (#114).
 4. **Scope for first migration:** which lectures migrate to JB≥2 first, and which subset
    of phases must land before that cutover (Phase 1 git-history is likely a must-have)?
+   *(That must-have shipped in v2.3.0, so what is left of this question is which repos go
+   first.)*

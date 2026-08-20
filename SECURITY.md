@@ -52,7 +52,14 @@ table above. When adding a deferral here, name the **package** — the buckets a
 matched by package, so an advisory whose package appears nowhere in this section
 is an untriaged one, not an implicitly-deferred one.
 
-### Deferred — patched only in Remix v2 (intentionally not adopted)
+### Deferred — patched only beyond Remix v1 (intentionally not adopted)
+
+The migration off Remix v1 was retargeted in June 2026 from Remix v2 to **React Router
+7**, upstream-first and gated on `jupyter-book/myst-theme`
+([#28](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/28)). Remix v2 is not
+the destination: it does not clear the static-build reload loop the `~1.17.0` pin
+protects against, and it is itself superseded by React Router 7. The deferrals below are
+unchanged by that retarget — they are all waiting on the same migration.
 
 | Package(s)                                                              | Severity | Status                                                                                                  |
 | ---------------------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------- |
