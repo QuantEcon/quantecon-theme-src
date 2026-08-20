@@ -53,11 +53,29 @@ jobs:
       - name: Extract release notes from CHANGELOG.md
         run: |
           VERSION=$(node -p "require('./package.json').version")
+          # Second stage: unwrap hard-wrapped lines. CHANGELOG.md is wrapped for
+          # the repo view, but GitHub renders release bodies like comments — a
+          # single newline becomes <br> — so wrapped source shows as narrow
+          # ragged lines. Joins indented continuation lines into their bullet
+          # and consecutive "> " lines into one; fenced code blocks and nested
+          # bullets pass through untouched.
           awk -v ver="$VERSION" '
             index($0, "## [" ver "]") == 1 { flag = 1; next }
             /^## /                         { flag = 0 }
             flag
-          ' CHANGELOG.md > release-notes.md
+          ' CHANGELOG.md | awk '
+            function flush() { if (have) { print buf; have = 0 } }
+            /^```/  { flush(); print; infence = !infence; next }
+            infence { print; next }
+            /^ {2,}[^ ]/ && have && $0 !~ /^ +[-*] / {
+              line = $0; sub(/^ +/, "", line); buf = buf " " line; next
+            }
+            /^> [^ ]/ && have && buf ~ /^> / {
+              line = $0; sub(/^> /, "", line); buf = buf " " line; next
+            }
+            { flush(); buf = $0; have = 1 }
+            END { flush() }
+          ' > release-notes.md
           if ! grep -q '[^[:space:]]' release-notes.md; then
             echo "::error::CHANGELOG.md has no \"## [$VERSION]\" section — add the curated entry (see CONTRIBUTING.md \"Releases\") and re-tag."
             exit 1
