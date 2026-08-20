@@ -1,6 +1,7 @@
 import type { LinksFunction, V2_MetaFunction, LoaderFunction } from '@remix-run/node';
 import tailwind from '~/styles/app.css';
 import thebeCoreCss from 'thebe-core/dist/lib/thebe-core.css';
+import { SourceSans3CSS } from '~/links';
 import { getConfig } from '~/backend/loaders.server';
 import type { SiteLoader } from '@myst-theme/common';
 import {
@@ -62,6 +63,12 @@ export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
  *
  * Keep the values in sync with their sources of truth:
  *   - font stack:    tailwind.config.js  -> theme.extend.fontFamily.sans
+ *                    The `@font-face` rules for "Source Sans 3 Variable" are
+ *                    self-hosted via app/links.ts, so they arrive in a <link>
+ *                    and are NOT available at this first paint. The
+ *                    `sans-serif` tail is what renders here and the webfont
+ *                    swaps in once that stylesheet lands — as it did with the
+ *                    Google Fonts @import this replaced.
  *   - grid columns:  tailwind.config.js  -> theme.extend.gridTemplateColumns
  *                    (`simple-sm` / `simple-xl`), applied by `.simple-center-grid`
  *   - dark bg:       matches the page <body>, which @myst-theme/site renders as
@@ -81,7 +88,7 @@ export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
  * the panel does not push the article down while it waits.
  */
 const CRITICAL_CSS = `
-:where(html){font-family:"Source Sans 3",sans-serif}
+:where(html){font-family:"Source Sans 3 Variable","Source Sans 3",sans-serif}
 :where(body){margin:0;background-color:#fff}
 :where(.dark body){background-color:#1c1917}
 :where([hidden],.hidden){display:none}
@@ -97,6 +104,12 @@ export const links: LinksFunction = () => {
       rel: 'icon',
       href: '/favicon.ico',
     },
+    // Self-hosted Source Sans 3 (see app/links.ts). Declared on the *root*
+    // route rather than the two page routes like KatexCSS, because root's
+    // links() are the only ones that also apply when the root ErrorBoundary
+    // renders — a 404, or the missing-site response thrown below — and the body
+    // font has to be right on those pages too.
+    ...SourceSans3CSS,
     { rel: 'stylesheet', href: tailwind },
     { rel: 'stylesheet', href: thebeCoreCss },
     { rel: 'stylesheet', href: '/myst-theme.css' },

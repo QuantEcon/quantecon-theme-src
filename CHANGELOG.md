@@ -36,6 +36,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   it is asserted against the DOM
   ([#121](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/121)).
 
+### Changed
+- Source Sans 3 is now self-hosted instead of `@import`ed from
+  `fonts.googleapis.com`. Google Fonts is blocked in mainland China, a
+  significant share of the QuantEcon readership, and unlike the CDN stylesheets
+  removed in 2.3.0 this one is the *body* font on every page rather than the
+  maths on some of them. It also had the worst possible shape for a
+  critical-path request: a CSS `@import`, discovered only after `app.css` had
+  downloaded and parsed, so the browser could not preload it and the chain ran
+  `app.css` → Google's CSS → `fonts.gstatic.com` woff2 across two extra origins.
+  The font now ships from `@fontsource-variable/source-sans-3` through the same
+  Remix import route the KaTeX CSS uses, so its 14 `.woff2` files are served
+  from the site's own origin. The family is declared as `Source Sans 3
+  Variable`, so `tailwind.config.js` and the inlined critical CSS in
+  `app/root.tsx` name it that way too, with plain `Source Sans 3` kept next in
+  the stack for a locally installed copy. Rendered text is unchanged — the
+  visual suite passes against untouched baselines
+  ([#131](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/131)).
+
 ### Fixed
 - Code cells nested inside a directive (`{exercise}`, `{solution}`, `{note}`, …)
   are now registered with the kernel, so their run button works and their
