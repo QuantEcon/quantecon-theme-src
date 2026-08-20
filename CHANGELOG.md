@@ -36,6 +36,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   disabled-path test against a second no-thebe fixture served on its own port,
   proving the toggle is gated on the project opting in ([#98](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/98)).
 
+### Fixed
+- Contents sidebar no longer flashes open on page load. On static builds the
+  first paint can happen before `app.css` applies, leaving the panel in flow and
+  fully visible; it then animated itself shut over 300ms because the transition
+  predated the stylesheet. The inlined critical CSS now parks the panel
+  off-screen on that first frame, and the transition is withheld until after
+  mount ([#123](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/123)).
+
 ## [2.2.0] - 2026-07-16
 
 > Headline: fancy ordered lists — `(a)` / `(i)` / `B)` markers from the QuantEcon

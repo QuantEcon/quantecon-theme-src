@@ -12,6 +12,7 @@ import {
 import { useSidebarHeight } from '@myst-theme/site';
 import classNames from 'classnames';
 import { slugToUrl } from 'myst-common';
+import { useEffect, useState } from 'react';
 
 type StrictHeading = Omit<Heading, 'level'> & { level: number };
 type HeadingGroup = StrictHeading[];
@@ -43,8 +44,22 @@ function Section({ group }: { group: HeadingGroup }) {
   );
 }
 
+/**
+ * True only after the component has mounted on the client.
+ *
+ * Both the server render and the first (hydrating) client render return
+ * `false`, so the markup matches and React does not warn; the effect then
+ * flips it on the frame after hydration.
+ */
+function useMounted() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  return mounted;
+}
+
 export function ContentsSidebar() {
   const [open] = useNavOpen();
+  const mounted = useMounted();
   const config = useSiteManifest();
   const project = useProjectManifest();
   const top = useThemeTop();
@@ -84,13 +99,28 @@ export function ContentsSidebar() {
     <div
       ref={toc}
       className={classNames(
+        // Stable hook for the inline critical CSS in app/root.tsx, which parks
+        // this panel off-screen on the very first paint — before app.css lands.
+        'qe-contents-sidebar',
         'fixed top-0 left-0',
         'w-[350px] lg:w-[250px] 2xl:w-[350px]',
         'h-screen w-[250px] z-[20] pt-[40px] pb-[90px] px-9',
         'bg-qetoolbar-light dark:bg-qetoolbar-dark ',
         'border-r-[1px] border-qetoolbar-border',
-        'transition-all duration-300 ease-in-out',
         'overflow-y-auto',
+        // Belt and braces, not the primary guard. The critical CSS above is
+        // what actually prevents the flash; because both states are a -100%
+        // translate there is nothing for a transition to interpolate, so
+        // removing this gate does not by itself reintroduce it (measured).
+        //
+        // It is kept because the transition is only ever wanted in response to
+        // a click: withholding it until after mount means any correction made
+        // when app.css lands is applied instantly rather than animated, which
+        // keeps this component correct even if the critical rule is later
+        // changed or dropped.
+        //
+        // `transform` (not `all`) so only the slide animates, on the compositor.
+        mounted && 'transition-transform duration-300 ease-in-out',
         { 'translate-x-0': open, '-translate-x-full': !open }
       )}
       style={{ top: '50px' }}
