@@ -70,6 +70,37 @@ defaults reproduce the behaviour above, so existing projects need no changes:
 | `launch_notebooks_path` | _(none)_ | Sub-directory within the notebook repo where the notebooks live |
 | `launch_source_path` | _(none)_ | Path prefix stripped from the page location (e.g. a `lectures/` source dir) |
 
+### Live compute (Thebe / JupyterLite)
+
+In addition to launching a notebook elsewhere (Colab/Hub), the theme can run
+notebook cells **in place** via [Thebe](https://thebe.readthedocs.io). This is
+opt-in per project through the standard MyST `thebe` config, set under
+`project.thebe` in `myst.yml` (the theme reads it from the project manifest, so
+it is project-level — not per-page frontmatter). The QuantEcon default is
+**JupyterLite** — Python runs entirely in the browser via Pyodide, with no
+server or Binder to host:
+
+```yaml
+# myst.yml
+project:
+  thebe:
+    lite: true
+```
+
+With this set, a **Power** toggle appears in the header toolbar (next to the
+Launch button) on notebook pages. Clicking it boots the in-browser kernel, after
+which **Run / Restart / Clear** take its place; cells then execute live. The
+toggle lives in the fixed header so it stays visible while scrolling, and only
+appears on notebook pages (desktop). It is the `@myst-theme/jupyter` notebook
+toolbar, relocated into the header via a portal.
+
+**Caveat:** Pyodide runs pure-Python plus packages compiled for it (numpy,
+scipy, pandas, matplotlib, sympy). Packages that aren't available for Pyodide
+(e.g. numba, JAX) won't import, so live compute suits lectures whose runtime
+stack is Pyodide-compatible. Other backends are available through the same
+`thebe` config (`binder:` for BinderHub, `server:` for a hosted Jupyter
+server) if a project needs a full environment.
+
 ### Git history in page headers
 
 The page header shows a "Last changed: ⟨date⟩" control (aligned to the right of

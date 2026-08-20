@@ -219,4 +219,46 @@ test.describe("QuantEcon theme — visual regression", () => {
       /^https:\/\/colab\.research\.google\.com\/github\/QuantEcon\/[\w.-]+\.notebooks\/blob\/main\/notebook\.ipynb$/
     );
   });
+
+  // Live compute: the fixture sets `project.thebe: { lite: true }`, which
+  // surfaces the @myst-theme/jupyter NotebookToolbar. It's portaled into the
+  // desktop header toolbar (next to Launch), so assert the Power toggle
+  // ("start compute environment") renders there. Actually booting the Pyodide
+  // kernel is a heavy in-browser download, so that end-to-end check is done
+  // manually rather than in CI.
+  test("live-compute-toggle", async ({ page }, testInfo) => {
+    test.skip(
+      testInfo.project.name !== "desktop-chrome",
+      "the live-compute toggle is desktop-only (the slot <li> is hidden below md; MobileActionsMenu does not include it)"
+    );
+    await page.goto("/notebook", { waitUntil: "domcontentloaded" });
+    await settle(page);
+    await expect(
+      // Scoped to the header slot: a toggle existing *somewhere* on the page
+      // wouldn't distinguish the final portaled placement from the earlier
+      // in-article iterations. Substring regex: resilient to upstream label
+      // wording/casing changes.
+      page.locator("#qe-compute-slot").getByRole("button", { name: /start compute/i })
+    ).toBeVisible();
+  });
+
+  // Disabled path: a second fixture project WITHOUT `project.thebe` (served on
+  // NO_THEBE_PORT). On a real notebook page there the live-compute toggle must
+  // NOT appear, proving it's gated on the project opting into Thebe — not just
+  // on the page being a notebook.
+  test("live-compute-toggle-absent-without-thebe", async ({ page }, testInfo) => {
+    test.skip(
+      testInfo.project.name !== "desktop-chrome",
+      "the live-compute toggle lives in the desktop header toolbar"
+    );
+    // Single source of truth: playwright.config.ts resolves the port (with its
+    // default) and writes it back into process.env for the workers.
+    const noThebeBase = `http://localhost:${process.env.NO_THEBE_PORT}`;
+    await page.goto(`${noThebeBase}/notebook`, { waitUntil: "domcontentloaded" });
+    await settle(page);
+    // Sanity-check we actually loaded the notebook page (so the count-0 below
+    // isn't a false pass from a 404 / wrong page).
+    await expect(page.getByText("Notebook outputs").first()).toBeVisible();
+    await expect(page.getByRole("button", { name: /start compute/i })).toHaveCount(0);
+  });
 });

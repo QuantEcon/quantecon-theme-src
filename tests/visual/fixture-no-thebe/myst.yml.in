@@ -1,0 +1,17 @@
+# Template for the "Thebe disabled" visual-regression fixture.
+# Deliberately sets NO `project.thebe`, so the live-compute toggle must not
+# appear in the header — see the `live-compute-toggle-absent-without-thebe`
+# test in `tests/visual/theme.spec.ts`. `serve.sh` copies this to `myst.yml`,
+# substituting __THEME__ with the theme under test (FIXTURE_DIR=fixture-no-thebe).
+version: 1
+project:
+  title: QuantEcon Theme — No-Thebe Fixture
+  github: https://github.com/QuantEcon/quantecon-theme.mystmd
+  toc:
+    - file: intro.md
+    - file: notebook.ipynb
+site:
+  title: QE Theme No-Thebe Fixture
+  template: __THEME__
+  options:
+    logo_text: QE No-Thebe Fixture
