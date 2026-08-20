@@ -26,6 +26,22 @@ import { test, expect, type Page, type Route } from "@playwright/test";
 
 const PAGE = "/";
 
+/**
+ * Slack, in CSS px, allowed on the parked nav panel's right edge.
+ *
+ * `translateX(-100%)` puts that edge at exactly 0 in theory, but the panel is
+ * unstyled at this point, so its width is shrink-to-fit and lands on a
+ * fractional value (135.171875px in WebKit here). WebKit snaps the painted
+ * translate to a whole device pixel while leaving the border-box width
+ * fractional, so the measured edge comes back at +0.171875 rather than 0 — the
+ * exact remainder varies with the intrinsic width, hence with platform font
+ * metrics. A strict `> 0` test therefore passes on the ubuntu CI runner and
+ * fails on macOS for the same, correct, markup.
+ *
+ * 1px is well inside "not visible" and well outside any snapping remainder.
+ */
+const OFFSCREEN_EPS = 1;
+
 async function isolateInlineCss(page: Page, { stripCritical = false } = {}) {
   await page.route("**/*", async (route: Route) => {
     const req = route.request();
@@ -65,12 +81,18 @@ async function firstPaintState(page: Page) {
     return {
       gridDisplay: grid ? getComputedStyle(grid).display : "(absent)",
       bodyFont: getComputedStyle(document.body).fontFamily,
-      // The nav panel is closed on load, so it must start fully off-screen to
-      // the left. If it is on-screen here the menu visibly flashes open.
-      // `null` (not `false`) when the element is missing: `false` is the value
-      // that *passes* the guard below, so a renamed hook would slip through it
+      // The nav panel is closed on load, so it must start parked off-screen to
+      // the left: its right edge at (or left of) the viewport's left edge. If
+      // any real width of it is on-screen here, the menu visibly flashes open.
+      //
+      // Reported as the measured edge rather than a boolean so the assertions
+      // can carry a sub-pixel tolerance — see `OFFSCREEN_EPS` below.
+      //
+      // `null` when the element is missing, and the guards below reject it
+      // explicitly: `null` numerically coerces to 0, which would *pass* the
+      // off-screen check, so a renamed hook would slip through the main test
       // and surface as a confusing failure in the control instead.
-      sidebarOnScreen: sidebar ? sidebar.getBoundingClientRect().right > 0 : null,
+      sidebarRight: sidebar ? sidebar.getBoundingClientRect().right : null,
       // null href == an inline <style>; any string == an external sheet that applied
       appliedExternal: applied.some((sheet) => !!sheet.href),
     };
@@ -88,10 +110,11 @@ test.describe("FOUC guard (WebKit) — inline critical CSS styles the first pain
     expect(state.gridDisplay).toBe("grid"); // grid not collapsed to block
     expect(state.bodyFont).toMatch(/Source Sans 3/); // sans, not the serif default
     expect(
-      state.sidebarOnScreen,
+      state.sidebarRight,
       "`.qe-contents-sidebar` not found — the hook the critical CSS targets was renamed or removed"
     ).not.toBeNull();
-    expect(state.sidebarOnScreen).toBe(false); // nav panel parked off-screen
+    // Nav panel parked off-screen (right edge at 0, modulo the sub-pixel slack).
+    expect(state.sidebarRight).toBeLessThan(OFFSCREEN_EPS);
   });
 
   test("control: removing the inline critical CSS reproduces the FOUC", async ({ page }) => {
@@ -104,11 +127,13 @@ test.describe("FOUC guard (WebKit) — inline critical CSS styles the first pain
     expect(state.gridDisplay).toBe("block");
     expect(state.bodyFont).not.toMatch(/Source Sans 3/);
     // Without the inline rule the nav panel lays out in-flow and fully visible —
-    // this is the "menu flashes open on load" symptom.
+    // this is the "menu flashes open on load" symptom. Measured at ~1272px of a
+    // 1280px viewport, so the margin over OFFSCREEN_EPS is three orders of
+    // magnitude: the two states are never in danger of being confused.
     expect(
-      state.sidebarOnScreen,
+      state.sidebarRight,
       "`.qe-contents-sidebar` not found — the hook the critical CSS targets was renamed or removed"
     ).not.toBeNull();
-    expect(state.sidebarOnScreen).toBe(true);
+    expect(state.sidebarRight).toBeGreaterThan(OFFSCREEN_EPS);
   });
 });
