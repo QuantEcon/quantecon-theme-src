@@ -93,7 +93,10 @@ with a link to the PR.
 To cut a release:
 
 1. In `CHANGELOG.md`, move the `## [Unreleased]` entries under a new `## [X.Y.Z] - YYYY-MM-DD`
-   heading and add the footer compare link.
+   heading, add the footer compare link, and re-point the `[Unreleased]` compare link's base
+   at the new tag (`compare/vX.Y.Z...HEAD`).
+   Wrapping the entry text is fine — the release workflow unwraps it, because GitHub renders
+   release bodies (unlike committed Markdown) with single newlines as line breaks.
 2. Bump the version in `package.json` (e.g. `npm version X.Y.Z --no-git-tag-version`).
    You do **not** need to bump `template.yml` — the release workflow stamps its `version`
    from `package.json` into the published bundle, so the two cannot drift.
