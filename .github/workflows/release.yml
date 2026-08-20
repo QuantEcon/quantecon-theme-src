@@ -83,6 +83,10 @@ jobs:
 
       - run: npm ci
       - run: npm run compile
+      # Cheap (~1s) but load-bearing: the unit suite includes the guard that
+      # `patches/` actually applied, and this is the only build that produces
+      # the published artifact.
+      - run: npm run test:unit
       - name: Build
         # esbuild occasionally deadlocks (QuantEcon/quantecon-theme-src — known
         # flake); time out fast so the run can simply be retried.

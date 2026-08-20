@@ -36,6 +36,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   it is asserted against the DOM
   ([#121](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/121)).
 
+### Fixed
+- Code cells nested inside a directive (`{exercise}`, `{solution}`, `{note}`, …)
+  are now registered with the kernel, so their run button works and their
+  outputs survive a kernel connection. `@myst-theme/jupyter`'s
+  `notebookFromMdast` walked only the mdast root's direct children, so a cell at
+  `root > block > exercise > block[kind=notebook-code]` never entered
+  `notebook.cells` or the `idkmap` — while the renderer matches
+  `block[kind=notebook-code]` at any depth and drew a run button anyway.
+  Clicking it logged `no cell found on execute` and did nothing, with no error
+  visible to the reader; on a live-compute page the cell's pre-baked outputs
+  also blanked as soon as the kernel attached, because the active output
+  renderer could not find a cell to bind to. Fixed by a third `patches/` entry
+  (`@myst-theme+jupyter+1.3.0.patch`) that walks nested blocks depth-first and
+  appends them in document order — which is execution order — while skipping
+  `{embed}` subtrees, whose cells belong to another page's notebook and would
+  otherwise collide in the shared key map. The existing
+  `block > container > code` figure case and the markdown-cell fallback are
+  unchanged. Note that nested cells now participate in **Run all**, so solution
+  and exercise cells execute along with the rest of the page.
+  ([#117](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/117))
+
 ## [2.3.0] - 2026-08-20
 
 > Headline: lecture pages gain **in-page live compute** (a JupyterLite/Pyodide

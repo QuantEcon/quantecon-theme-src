@@ -1,0 +1,121 @@
+diff --git a/node_modules/@myst-theme/jupyter/dist/execute/utils.js b/node_modules/@myst-theme/jupyter/dist/execute/utils.js
+index a204c49..f0c2f53 100644
+--- a/node_modules/@myst-theme/jupyter/dist/execute/utils.js
++++ b/node_modules/@myst-theme/jupyter/dist/execute/utils.js
+@@ -12,6 +12,38 @@ export function executableNodesFromBlock(block) {
+         return { codeCell: target.children[0], output: target.children[1] };
+     }
+ }
++/**
++ * Collect executable `block` nodes nested below `node`, depth-first, in
++ * document order.
++ *
++ * A `{code-cell}` written inside a directive (`{exercise}`, `{solution}`,
++ * `{note}`, ...) lands at `root > block > <directive> > block[kind=notebook-code]`,
++ * which the top-level-only walk in `notebookFromMdast` never reaches - so the
++ * cell is never registered with the kernel, while the renderer still draws a
++ * run button for it (`dist/block.js` matches `block[kind=notebook-code]` at any
++ * depth). Clicking that button logs `no cell found on execute` and does
++ * nothing.
++ *
++ * Once a block is claimed we do not descend into it: its children are the
++ * code/outputs pair, never another cell. `embed` subtrees are skipped - their
++ * content belongs to another page's notebook, and `idkmap` is shared across
++ * every notebook scope of the page, so walking into them would both add
++ * phantom cells and collide keys with the source notebook.
++ */
++function nestedExecutableBlocks(node, found) {
++    const children = node.children || [];
++    for (let i = 0; i < children.length; i++) {
++        const child = children[i];
++        if (child.type === 'embed')
++            continue;
++        if (child.type === 'block' && executableNodesFromBlock(child)) {
++            found.push(child);
++            continue;
++        }
++        nestedExecutableBlocks(child, found);
++    }
++    return found;
++}
+ /**
+  * Use the mdast to create a ThebeNotebook from the mdast tree of a notebook.
+  * This is intended to be used to create an independent ThebeNotebook instance
+@@ -35,40 +67,50 @@ export function notebookFromMdast(core, config, pageSlug, notebookSlug, mdast, i
+     // mulitple notebooks with the same slug will be present but scoped to different pages
+     // the busyScope mecahnism relies on the notebookSlug as id
+     const notebook = new core.ThebeNotebook(notebookSlug, config, rendermime);
++    // shared by the top-level and the nested-cell paths below
++    const codeCellFor = (block, executableNodes) => {
++        var _a, _b, _c;
++        const { codeCell, output } = executableNodes;
++        // use the block.key to identify the cell but maintain a mapping
++        // to allow code or output keys to look up cells and refs and idenifity
++        // the cell in the correct notebook
++        const target = {
++            pageSlug,
++            notebookSlug,
++            cellId: block.key,
++        };
++        idkmap[block.key] = target; // can reference from block in notebook views
++        idkmap[(_a = output.id) !== null && _a !== void 0 ? _a : output.key] = target; // can reference from output in article views
++        // include identifiers to enable lookup by (normalized) labels
++        if (block.identifier)
++            idkmap[block.identifier] = target;
++        if (codeCell.identifier)
++            idkmap[codeCell.identifier] = target;
++        if (output.identifier)
++            idkmap[output.identifier] = target;
++        return new core.ThebeCodeCell(target.cellId, notebook.id, (_b = codeCell.value) !== null && _b !== void 0 ? _b : '', config, (_c = block.data) !== null && _c !== void 0 ? _c : {}, notebook.rendermime);
++    };
+     // no metadata included in mdast yet
+     //Object.assign(notebook.metadata, ipynb.metadata);
+-    notebook.cells = mdast.children.map((block) => {
+-        var _a, _b, _c, _d;
++    const cells = [];
++    mdast.children.forEach((block) => {
++        var _a, _b;
+         if (block.type !== 'block')
+             console.warn(`Unexpected block type ${block.type}`);
+         const executableNodes = executableNodesFromBlock(block);
+         if (executableNodes) {
+-            const { codeCell, output } = executableNodes;
+-            // use the block.key to identify the cell but maintain a mapping
+-            // to allow code or output keys to look up cells and refs and idenifity
+-            // the cell in the correct notebook
+-            const target = {
+-                pageSlug,
+-                notebookSlug,
+-                cellId: block.key,
+-            };
+-            idkmap[block.key] = target; // can reference from block in notebook views
+-            idkmap[(_a = output.id) !== null && _a !== void 0 ? _a : output.key] = target; // can reference from output in article views
+-            // include identifiers to enable lookup by (normalized) labels
+-            if (block.identifier)
+-                idkmap[block.identifier] = target;
+-            if (codeCell.identifier)
+-                idkmap[codeCell.identifier] = target;
+-            if (output.identifier)
+-                idkmap[output.identifier] = target;
+-            return new core.ThebeCodeCell(target.cellId, notebook.id, (_b = codeCell.value) !== null && _b !== void 0 ? _b : '', config, (_c = block.data) !== null && _c !== void 0 ? _c : {}, notebook.rendermime);
+-        }
+-        else {
+-            // assume content - concatenate it
+-            // TODO inject cell metadata
+-            const cell = new core.ThebeMarkdownCell(block.key, notebook.id, block.children.reduce((acc, child) => { var _a; return acc + '\n' + ((_a = child.value) !== null && _a !== void 0 ? _a : ''); }, ''), (_d = block.data) !== null && _d !== void 0 ? _d : {}, notebook.rendermime);
+-            return cell;
++            cells.push(codeCellFor(block, executableNodes));
++            return;
+         }
++        // assume content - concatenate it
++        // TODO inject cell metadata
++        cells.push(new core.ThebeMarkdownCell(block.key, notebook.id, ((_a = block.children) !== null && _a !== void 0 ? _a : []).reduce((acc, child) => { var _a; return acc + '\n' + ((_a = child.value) !== null && _a !== void 0 ? _a : ''); }, ''), (_b = block.data) !== null && _b !== void 0 ? _b : {}, notebook.rendermime));
++        // register any cells the directives in this block nest below it, so
++        // they execute in document order along with the top-level cells
++        nestedExecutableBlocks(block, []).forEach((nestedBlock) => {
++            cells.push(codeCellFor(nestedBlock, executableNodesFromBlock(nestedBlock)));
++        });
+     });
++    notebook.cells = cells;
+     return notebook;
+ }

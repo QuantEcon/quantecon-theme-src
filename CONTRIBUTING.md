@@ -79,6 +79,41 @@ patches/         # patch-package patches for upstream fixes
 
 4. **Open a Pull Request** against `main`. CI will run type-check and build automatically.
 
+## Patching a dependency
+
+Some fixes have to land inside an installed package — usually an upstream bug we
+need before upstream can ship it. Those live in `patches/` and are applied by
+[patch-package](https://github.com/ds300/patch-package) from the `postinstall`
+script, so every `npm ci` re-applies them.
+
+To add or update one:
+
+```bash
+# 1. edit the file in place under node_modules/<pkg>/…
+# 2. capture the diff
+npx patch-package <pkg> --patch-dir patches
+# 3. prove it: reverse it, watch the guard test fail, re-apply
+npx patch-package --patch-dir patches --reverse && npm run test:unit
+npx patch-package --patch-dir patches && npm run test:unit
+```
+
+Two rules make patches safe to live with:
+
+- **Write a test that fails without the patch.** A patch that silently stops
+  applying is worse than no patch — the package looks installed and behaves
+  wrongly. `tests/unit/execute-nested-cells.test.mjs` is the pattern: it imports
+  the patched file directly, so it fails if the patch is missing. `test:unit`
+  runs in CI *and* in `release.yml`, so the published bundle is covered too.
+- **Expect a version warning, not a failure.** Patch filenames pin the version
+  they were generated against. When a caret range floats to a newer patch
+  release, patch-package still applies the patch and prints a mismatch warning;
+  that is why the guard test matters. Upstream the fix so the patch can be
+  dropped, and note the upstream PR in the patch's own comments.
+
+The theme is bundled with `serverDependenciesToBundle: [/.*/]`, so patched code
+is inlined into `build/` and ships in the release zip — consumers get the fix
+without installing anything.
+
 ## Commit Convention
 
 We use conventional commits:
