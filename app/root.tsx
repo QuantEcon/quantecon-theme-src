@@ -100,10 +100,10 @@ export const links: LinksFunction = () => {
     { rel: 'stylesheet', href: tailwind },
     { rel: 'stylesheet', href: thebeCoreCss },
     { rel: 'stylesheet', href: '/myst-theme.css' },
-    {
-      rel: 'stylesheet',
-      href: 'https://cdn.jsdelivr.net/npm/jupyter-matplotlib@0.11.3/css/mpl_widget.css',
-    },
+    // jupyter-matplotlib's stylesheet used to be pulled from jsdelivr here. It
+    // is now vendored into the Tailwind bundle (styles/mpl-widget.css), which
+    // drops a render-blocking request to a third-party CDN that is
+    // intermittently unreachable in mainland China.
     // Font Awesome intentionally not loaded: nothing in the theme renders
     // `fa-*` classes; use the bundled `lucide-react` icons instead.
   ];

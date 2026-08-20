@@ -5,7 +5,9 @@ import {
   type LoaderFunction,
 } from '@remix-run/node';
 import { getProject, isFlatSite, type PageLoader } from '@myst-theme/common';
-import { KatexCSS, getMetaTagsForArticle } from '@myst-theme/site';
+import { getMetaTagsForArticle } from '@myst-theme/site';
+// Self-hosted, not the CDN-backed KatexCSS from @myst-theme/site — see app/links.ts.
+import { KatexCSS } from '~/links';
 import { getConfig, getPage } from '~/backend/loaders.server';
 import type { SiteManifest } from 'myst-config';
 import { ErrorPage } from '~/components/ErrorPage';
