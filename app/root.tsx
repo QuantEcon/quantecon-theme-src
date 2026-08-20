@@ -104,10 +104,8 @@ export const links: LinksFunction = () => {
       rel: 'stylesheet',
       href: 'https://cdn.jsdelivr.net/npm/jupyter-matplotlib@0.11.3/css/mpl_widget.css',
     },
-    {
-      rel: 'stylesheet',
-      href: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css',
-    },
+    // Font Awesome intentionally not loaded: nothing in the theme renders
+    // `fa-*` classes; use the bundled `lucide-react` icons instead.
   ];
 };
 
