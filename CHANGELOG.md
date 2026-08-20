@@ -35,6 +35,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the README. Covered by a presence test scoped to the header slot and a
   disabled-path test against a second no-thebe fixture served on its own port,
   proving the toggle is gated on the project opting in ([#98](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/98)).
+- Git history in page headers (Phase 1 of [`PLAN.md`](./PLAN.md)): a "Last
+  changed" control on the page-header author line expands an inline changelog
+  with GitHub-linked commit hashes and a full-history link, mirroring the
+  `quantecon-book-theme` header. The panel opens above the header's blue
+  divider, pushing it down and sitting flush on it, so the divider reads as the
+  panel's own bottom edge and the changelog stays clear of the lecture content.
+  It grows to fit rather than scrolling — length is bounded at the source, with
+  the plugin capping entries per page (default 6). Data is injected at build
+  time by a new MyST
+  transform plugin (`plugins/git-metadata.mjs`, `git log --follow` per page →
+  `mdast.data.git_metadata`), with a `site.git_metadata` page-frontmatter
+  override for manual pinning. mystmd has no built-in last-modified support
+  (jupyter-book/mystmd#2213), and plugin transforms cannot modify page
+  frontmatter, hence the AST channel
+  ([#83](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/83)).
+
+### Changed
+- The KaTeX and jupyter-matplotlib stylesheets are now served from the site's
+  own origin instead of `cdn.jsdelivr.net`. jsdelivr is intermittently
+  unreachable from mainland China, and when it is blocked the maths markup
+  still renders but arrives unstyled — fractions, radicals and matrices
+  collapse into run-together text. The KaTeX CSS (plus the font files it
+  references) is bundled from the installed `katex` package, which also retires
+  the KaTeX 0.15.2 pin in the upstream `KatexCSS` export; the 316-byte
+  jupyter-matplotlib stylesheet is vendored into the Tailwind bundle, costing
+  no request at all
+  ([#125](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/125)).
+
+### Removed
+- The render-blocking Font Awesome 4.7 stylesheet from cdnjs. Nothing used it:
+  the theme renders no `fa-*` classes (the toolbar uses the bundled
+  `lucide-react` icons), and the library has been end-of-life since 2016.
+  Dropping it removes a third-party origin (a DNS lookup and TLS handshake)
+  from the critical rendering path
+  ([#124](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/124)).
 
 ### Fixed
 - Contents sidebar no longer flashes open on page load. On static builds the
@@ -56,20 +91,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fancy ordered lists (`(a)`, `iv.`, `B)` — QuantEcon/mystmd#50) now render their markers instead of falling back to decimals: a custom `list` renderer maps the node's `style` to the `<ol type>` attribute plus a case-sensitive `list-*` class (HTML matches `[type=...]` case-insensitively, so CSS keyed off the attribute cannot tell `a` from `A`) and exposes `delimiter` as a `delimiter-paren(s)` class, with counter-based CSS drawing the parenthesized markers ([#100](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/100)). Interim override until the fix lands upstream in `myst-to-react` (tracked in QuantEcon/mystmd#51). Covered by a new `lists` visual-regression fixture page whose markers are stamped by a fixture-local transform (`fancy-lists.mjs`) — so the coverage is independent of whether the building CLI parses fancy-list markers — plus DOM-level marker assertions (`lists-markers`), since a wrong marker case moves too few pixels for the snapshot diff budget.
 
 ### Added
-- Git history in page headers (Phase 1 of [`PLAN.md`](./PLAN.md)): a "Last
-  changed" control on the page-header author line expands an inline changelog
-  with GitHub-linked commit hashes and a full-history link, mirroring the
-  `quantecon-book-theme` header. The panel opens above the header's blue
-  divider, pushing it down and sitting flush on it, so the divider reads as the
-  panel's own bottom edge and the changelog stays clear of the lecture content.
-  It grows to fit rather than scrolling — length is bounded at the source, with
-  the plugin capping entries per page (default 6). Data is injected at build
-  time by a new MyST
-  transform plugin (`plugins/git-metadata.mjs`, `git log --follow` per page →
-  `mdast.data.git_metadata`), with a `site.git_metadata` page-frontmatter
-  override for manual pinning. mystmd has no built-in last-modified support
-  (jupyter-book/mystmd#2213), and plugin transforms cannot modify page
-  frontmatter, hence the AST channel.
 - Per-PR rendered previews on GitHub Pages (`.github/workflows/preview.yml`): each PR statically builds the real `lecture-python-programming` lectures with the candidate theme (`myst build --html`, including the build-time Jupyter Book → MyST upgrade) and publishes to `gh-pages` at `pr-preview/pr-<n>/` with a sticky link comment and teardown on close. Self-contained on `GITHUB_TOKEN` — no external preview service.
 
 ### Removed
