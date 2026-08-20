@@ -20,6 +20,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-08-20
+
+> Headline: lecture pages gain **in-page live compute** (a JupyterLite/Pyodide
+> Power toggle in the header toolbar) and an inline **git-history changelog** on
+> the page header's author line. All third-party CDN stylesheets are gone —
+> KaTeX and jupyter-matplotlib are served from the site's own origin and Font
+> Awesome is dropped — so maths and styling no longer degrade where
+> jsdelivr/cdnjs are unreachable (notably mainland China). Consumers upgrade by
+> bumping the pinned release URL in `site.template`.
+
 ### Added
 - In-page live compute via Thebe (Phase 2 of [`PLAN.md`](./PLAN.md), closes #88):
   setting the standard MyST `project.thebe` config surfaces a **Power** toggle in
@@ -204,6 +214,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial version of the QuantEcon MyST theme: Remix + `@myst-theme` book theme with QuantEcon branding, toolbar (home, search, fullscreen, font scaling, dark mode, downloads, Colab/JupyterHub launch, edit-on-GitHub), content-driven site footer, and bundled brand assets.
 
 [Unreleased]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.2.0...HEAD
+[2.3.0]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v1.1.1...v2.0.0
