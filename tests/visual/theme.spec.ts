@@ -186,6 +186,10 @@ test.describe("QuantEcon theme — visual regression", () => {
     expect(lists[5].className).toContain("delimiter-parens");
     expect(lists[5].liBefore).toBe(lists[1].liBefore);
     expect(lists[5].className).toBe(lists[1].className);
+    // Compared, not just pinned: asserting `start: "1"` on the proof list alone
+    // would still pass if a regression dropped `start` from body lists only,
+    // which is exactly the asymmetry this test exists to rule out.
+    expect(lists[5].start).toBe(lists[1].start);
   });
 
   // The Contents sidebar is off-canvas by default, so the full-page snapshots
