@@ -115,7 +115,7 @@ test.describe("FOUC guard (WebKit) — inline critical CSS styles the first pain
     // live in a <link>, which this test aborts, so what actually paints is the
     // `sans-serif` tail. That is the point: the guard is about sans-vs-serif,
     // not about the webfont having arrived.
-    expect(state.bodyFont).toMatch(/Source Sans 3 Variable/);
+    expect(state.bodyFont).toMatch(/^["']?Source Sans 3 Variable["']?\s*,/);
     expect(
       state.sidebarRight,
       "`.qe-contents-sidebar` not found — the hook the critical CSS targets was renamed or removed"
