@@ -89,11 +89,8 @@ export const links: LinksFunction = () => {
       rel: 'stylesheet',
       href: 'https://cdn.jsdelivr.net/npm/jupyter-matplotlib@0.11.3/css/mpl_widget.css',
     },
-    // Font Awesome 4.7 was dropped here: it is render-blocking from a third
-    // origin (DNS + TLS before first paint) and nothing renders `fa-*` classes —
-    // not this theme's components, and not any of the 27 pages of
-    // lecture-python-programming. If an icon set is needed again, prefer the
-    // bundled `lucide-react` icons already used across the toolbar.
+    // Font Awesome intentionally not loaded: nothing in the theme renders
+    // `fa-*` classes; use the bundled `lucide-react` icons instead.
   ];
 };
 
