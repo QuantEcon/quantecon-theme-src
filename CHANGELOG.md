@@ -20,6 +20,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Visual-fixture coverage for fancy ordered lists **inside a directive**.
+  `tests/visual/fixture/lists.md` gains a `prf:theorem`-wrapped stamped list,
+  and `lists-markers` asserts it renders with the same `type`, `start`,
+  `list-lower-roman delimiter-parens` classes and drawn marker as the
+  equivalent body-level list. Every fixture list previously sat in the page
+  body, so `LIST_RENDERERS` reaching the `prf:*` subtree was accidental rather
+  than asserted: it works because `myst-to-react`'s proof renderer passes its
+  children through the same `<MyST/>` dispatcher, and because nothing in
+  `styles/lists.css` scopes a selector to body-vs-proof. Both are load-bearing
+  and neither was pinned, so a change to either would silently return the ~330
+  list items across the dp books' 118 `prf:*` blocks to decimal markers — a
+  regression far too small in area for the snapshot diff budget, which is why
+  it is asserted against the DOM
+  ([#121](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/121)).
+
 ## [2.3.0] - 2026-08-20
 
 > Headline: lecture pages gain **in-page live compute** (a JupyterLite/Pyodide

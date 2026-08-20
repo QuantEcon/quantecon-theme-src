@@ -137,22 +137,26 @@ test.describe("QuantEcon theme — visual regression", () => {
   // ((A) where (a) is expected) moves far too few pixels for the full-page
   // snapshot's 1% diff budget, so pin the DOM/computed styles directly.
   // Ordering matches lists.md: alpha-parens, roman-parens, upper-alpha-paren,
-  // roman-period, decimal control.
+  // roman-period, decimal control, and (#121) the same roman-parens list
+  // wrapped in a `prf:theorem` directive.
   test("lists-markers", async ({ page }) => {
     await page.goto("/lists", { waitUntil: "domcontentloaded" });
     await settle(page);
     const lists = await page.evaluate(() =>
       Array.from(document.querySelectorAll("article ol, main ol")).map((ol) => ({
         type: ol.getAttribute("type"),
+        start: ol.getAttribute("start"),
         className: ol.className,
         listStyleType: getComputedStyle(ol).listStyleType,
         // Specified `content` of the drawn marker, e.g. `"(" counter(list-item, lower-alpha) ")"`.
         // Case-sensitive check that the right rule matched — ol[type] selectors
         // are case-insensitive in HTML, which is exactly the regression this guards.
         liBefore: getComputedStyle(ol.querySelector("li")!, "::before").content,
+        // Whether this list sits inside a `prf:*` body rather than the page body.
+        insideProof: !!ol.closest(".myst-proof-body"),
       }))
     );
-    expect(lists).toHaveLength(5);
+    expect(lists).toHaveLength(6);
     expect(lists[0]).toMatchObject({ type: "a", listStyleType: "none" });
     expect(lists[0].className).toContain("list-lower-alpha");
     expect(lists[0].className).toContain("delimiter-parens");
@@ -165,6 +169,23 @@ test.describe("QuantEcon theme — visual regression", () => {
     expect(lists[3].liBefore).toBe("none");
     expect(lists[4]).toMatchObject({ type: null, listStyleType: "decimal" });
     expect(lists[4].liBefore).toBe("none");
+
+    // #121: the same stamped roman-parens list, wrapped in `prf:theorem`.
+    // Two load-bearing behaviours were untested while every fixture list sat
+    // in the page body: myst-to-react's proof renderer passes its children
+    // through the same <MyST/> dispatcher that consults LIST_RENDERERS, and
+    // nothing in styles/lists.css scopes a selector to body-vs-proof. A
+    // regression in either would drop the ~330 list items across the dp books'
+    // prf:* blocks back to decimals — and moves far too few pixels for the
+    // snapshot budget, so it is pinned here rather than by screenshot.
+    expect(lists[1].insideProof).toBe(false);
+    expect(lists[5].insideProof).toBe(true);
+    // Byte-identical treatment to the equivalent body list (lists[1]).
+    expect(lists[5]).toMatchObject({ type: "i", start: "1", listStyleType: "none" });
+    expect(lists[5].className).toContain("list-lower-roman");
+    expect(lists[5].className).toContain("delimiter-parens");
+    expect(lists[5].liBefore).toBe(lists[1].liBefore);
+    expect(lists[5].className).toBe(lists[1].className);
   });
 
   // The Contents sidebar is off-canvas by default, so the full-page snapshots
