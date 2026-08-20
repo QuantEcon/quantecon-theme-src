@@ -20,6 +20,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- The Contents sidebar's width below `lg` no longer depends on Tailwind's
+  rule-emission order. The panel carried two unprefixed width utilities on the
+  same element — `w-[350px]` from the responsive line and a stale `w-[250px]`
+  on the next class string — which land in the same layer at the same
+  specificity, so the base band resolved to 350px only because Tailwind sorts
+  arbitrary values as strings and `[250px]` sorts before `[350px]`. Change the
+  base width to anything sorting earlier and the stale class silently took
+  over, with no error to explain why. The stale utility is gone, leaving
+  `w-[350px] lg:w-[250px] 2xl:w-[350px]` as the single source of the width.
+  Nothing moves: the resolved widths stay 350/250/350 across the base/`lg`/`2xl`
+  bands ([#130](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/130)).
+
 ## [2.3.0] - 2026-08-20
 
 > Headline: lecture pages gain **in-page live compute** (a JupyterLite/Pyodide

@@ -103,8 +103,12 @@ export function ContentsSidebar() {
         // this panel off-screen on the very first paint — before app.css lands.
         'qe-contents-sidebar',
         'fixed top-0 left-0',
+        // Every band of the panel width lives on this one line. A second
+        // unprefixed width anywhere in these class strings lands in the same
+        // layer at the same specificity, so which one wins below `lg` would be
+        // decided by Tailwind's emission order rather than by intent (#130).
         'w-[350px] lg:w-[250px] 2xl:w-[350px]',
-        'h-screen w-[250px] z-[20] pt-[40px] pb-[90px] px-9',
+        'h-screen z-[20] pt-[40px] pb-[90px] px-9',
         'bg-qetoolbar-light dark:bg-qetoolbar-dark ',
         'border-r-[1px] border-qetoolbar-border',
         'overflow-y-auto',
