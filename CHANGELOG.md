@@ -56,6 +56,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   unchanged. Note that nested cells now participate in **Run all**, so solution
   and exercise cells execute along with the rest of the page.
   ([#117](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/117))
+- Self-hosted stylesheet assets no longer 404 in static builds. Remix rewrites
+  every `url()` in a bundled stylesheet to an absolute `/myst_assets_folder/…`
+  path, which resolves under `myst start` — the theme's own server mounts
+  `public/build` there — but not in `myst build --html` output, where the assets
+  land under `build/_assets/` and mystmd's rewriter only fixes up `.html`, `.js`
+  and `.json`, never `.css`. So the KaTeX stylesheet self-hosted in
+  [#125](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/125) loaded
+  while all 60 of its font references failed, and maths fell back to system
+  glyphs on every statically built site — the degradation that change set out to
+  prevent. The build now rewrites those references to be relative to the
+  stylesheet, which resolves identically under `myst start`, in a static build,
+  and under a `baseurl` (where the absolute path was also wrong, affecting the
+  per-PR preview deployments). Every rewritten target is checked to exist beside
+  its stylesheet, so a wrong assumption fails the build instead of shipping
+  silent 404s ([#138](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/138)).
 
 ## [2.3.0] - 2026-08-20
 
