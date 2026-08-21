@@ -29,7 +29,7 @@ export function SidebarToggle() {
       type="button"
       popovertarget={TOC_POPOVER_ID}
       aria-label="Table of contents"
-      className="flex items-center w-6 h-6 cursor-pointer opacity-90 transition-transform duration-300 ease-in-out hover:scale-110"
+      className="qe-toc-toggle flex items-center w-6 h-6 cursor-pointer opacity-90 transition-transform duration-300 ease-in-out hover:scale-110"
     >
       <Menu className="qe-toc-toggle__open" width={24} height={24} aria-hidden="true" />
       <X className="qe-toc-toggle__close" width={24} height={24} aria-hidden="true" />

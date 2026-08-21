@@ -135,6 +135,25 @@
   }
 
   /**
+   * Focus ring for the toggle.
+   *
+   * Closing the drawer with Escape returns focus to this button, and Chrome
+   * then matches `:focus-visible` — correctly, since the interaction was a
+   * keypress: a keyboard user needs to see where focus landed. Clicking with a
+   * mouse does not match it, so the ring never appears for pointer users.
+   *
+   * It is restyled rather than removed. The UA default is a tight 1px square
+   * that reads as a glitch against the toolbar; this is the theme's blue, with
+   * offset and a radius so it reads as intentional. Removing it outright would
+   * leave keyboard users on an unmarked control (WCAG 2.4.7).
+   */
+  .qe-toc-toggle:focus-visible {
+    outline: 2px solid theme(colors.qeborder-blue);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /**
    * Toggle icon: hamburger when closed, cross when open.
    *
    * Driven off the drawer's own state with `:has()` rather than a React flag,
