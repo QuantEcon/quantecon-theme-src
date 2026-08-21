@@ -1,11 +1,5 @@
 import { Menu, X } from 'lucide-react';
-
-/**
- * Shared between the button and the panel it opens (app/components/ContentsSidebar.tsx).
- * `popovertarget` is matched to the panel's `id` by the browser, so the two
- * must agree; keeping the id here means they cannot drift silently.
- */
-export const TOC_POPOVER_ID = 'qe-toc';
+import { TOC_POPOVER_ID } from '../contentsDrawer';
 
 /**
  * Opens the contents drawer.
@@ -22,6 +16,10 @@ export const TOC_POPOVER_ID = 'qe-toc';
  * from the panel. Both icons are `aria-hidden`: the button carries the single
  * accessible name, where previously each icon carried its own label and screen
  * readers could announce both "Show" and "Hide" for the one control.
+ *
+ * On browsers without the Popover API this button is hidden along with the
+ * drawer, so it is never presented as a control that does nothing — see the
+ * `@supports` block at the end of the drawer styles.
  */
 export function SidebarToggle() {
   return (

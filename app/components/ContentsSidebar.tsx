@@ -8,7 +8,7 @@ import {
   withBaseurl,
 } from '@myst-theme/providers';
 import { slugToUrl } from 'myst-common';
-import { TOC_POPOVER_ID } from './toolbar/SidebarToggle';
+import { TOC_HEADING_ID, TOC_POPOVER_ID } from './contentsDrawer';
 
 type StrictHeading = Omit<Heading, 'level'> & { level: number };
 type HeadingGroup = StrictHeading[];
@@ -81,8 +81,13 @@ export function ContentsSidebar() {
     // state in React, so the drawer works before hydration and cannot animate a
     // correction on arrival. See styles/app.css for the full rationale.
     <div id={TOC_POPOVER_ID} popover="auto" className="qe-toc">
-      <h2 className="mb-4 text-lg font-bold">Contents</h2>
-      <nav aria-label="Table of contents">
+      <h2 id={TOC_HEADING_ID} className="mb-4 text-lg font-bold">
+        Contents
+      </h2>
+      {/* Labelled by the heading rather than a second `aria-label`: the button
+          that opens this is already named "Table of contents", so a matching
+          label here had screen readers announce the same phrase twice. */}
+      <nav aria-labelledby={TOC_HEADING_ID}>
         {headings?.map((headingOrGroup) => {
           if (Array.isArray(headingOrGroup))
             return (

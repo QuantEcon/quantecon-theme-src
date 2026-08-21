@@ -101,13 +101,16 @@
       overlay 0.3s allow-discrete;
   }
 
-  @media (min-width: 1024px) {
+  /* Breakpoints come from the Tailwind theme rather than being transcribed:
+     these used to be `lg:`/`2xl:` utilities, and hardcoding 1024px/1536px here
+     would desync silently if `screens` ever changed. */
+  @media (min-width: theme(screens.lg)) {
     .qe-toc {
       width: 15.625rem;
     }
   }
 
-  @media (min-width: 1536px) {
+  @media (min-width: theme(screens.2xl)) {
     .qe-toc {
       width: 21.875rem;
     }
@@ -128,9 +131,13 @@
     }
   }
 
+  /* No transition at all, rather than a very short one: the drawer still opens
+     and closes, it just does so instantly, which is what the preference asks
+     for. `display`/`overlay` do not need to be transitioned for the popover to
+     work — those entries exist only so the slide can outlast `display: none`. */
   @media (prefers-reduced-motion: reduce) {
     .qe-toc {
-      transition-duration: 1ms;
+      transition: none;
     }
   }
 
@@ -174,13 +181,31 @@
   }
 
   /**
-   * Fallback for browsers without the Popover API (iOS <= 16, Firefox < 125).
-   * There the attribute is inert and the panel would render permanently open,
-   * so it is hidden outright — the toggle is a no-op rather than the whole page
-   * being covered. Loading the polyfill in app/entry.client.tsx restores it.
+   * Browsers without the Popover API: Firefox < 125, and Safari < 17 — which
+   * includes every device that cannot be upgraded past iOS 16. There the
+   * `popover` attribute is inert, so the panel would render permanently open
+   * across the page.
+   *
+   * Hide it, and hide the toggle with it. A visible control that does nothing
+   * is worse than an absent one, and this control carries an accessible name,
+   * so a screen reader would otherwise offer to open something that can never
+   * open.
+   *
+   * The cost is real and deliberate: those browsers get no contents drawer.
+   * The in-page "On this page" outline and the site navigation still work, so
+   * the content stays reachable. Restoring the drawer means shipping a popover
+   * polyfill, which is not a drop-in — `:popover-open` is a pseudo-class and
+   * cannot be polyfilled, so every rule above that depends on it would need a
+   * class-based stand-in, and the polyfill runs after first paint, which is
+   * exactly the flash this rewrite removed. That trade was not worth making
+   * for the affected share; revisit if it grows.
+   *
+   * Firefox 125-128 is a narrower gap: popover works, `@starting-style` does
+   * not, so the drawer appears without sliding. Degrades cleanly, left alone.
    */
   @supports not selector(:popover-open) {
-    .qe-toc {
+    .qe-toc,
+    .qe-toc-toggle {
       display: none;
     }
   }
