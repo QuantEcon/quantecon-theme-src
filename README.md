@@ -5,6 +5,9 @@ QuantEcon lectures and books, distributed as a zip attached to each
 [GitHub Release](https://github.com/QuantEcon/quantecon-theme.mystmd/releases).
 
 - Responsive and mobile ready
+- Notebook launch (Google Colab / private JupyterHub) with configurable repo, branch and paths
+- In-page live compute via Thebe (JupyterLite / Pyodide by default)
+- Git history in page headers ("Last changed" plus an inline changelog)
 - Page Footer based on MyST Content
 - Bundled QuantEcon brand assets
 
@@ -146,8 +149,12 @@ Point your project's `site.template` at a **pinned release** zip:
 ```yaml
 # myst.yml
 site:
-  template: https://github.com/QuantEcon/quantecon-theme.mystmd/releases/download/v2.1.0/quantecon-theme.zip
+  template: https://github.com/QuantEcon/quantecon-theme.mystmd/releases/download/v2.3.0/quantecon-theme.zip
 ```
+
+Pin a specific version rather than tracking a branch, and bump it deliberately: the
+[releases page](https://github.com/QuantEcon/quantecon-theme.mystmd/releases) carries the
+changelog entry for each version, including anything consumers need to change.
 
 Then start the local server:
 

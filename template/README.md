@@ -53,11 +53,13 @@ The launch notebooks capability has been developed to mirror capabilities in the
 
 ## Usage with MyST
 
-To use this template locally, update your site template make sure your project's local dependencies are installed:
+To use this template, point your project's `site.template` at a pinned release zip. (The
+old `quantecon-theme` build repo is archived; releases are published as GitHub Release
+assets on `quantecon-theme.mystmd`.)
 
-```sh
+```yaml
 site:
-  template: https://github.com/QuantEcon/quantecon-theme/archive/refs/heads/main.zip
+  template: https://github.com/QuantEcon/quantecon-theme.mystmd/releases/download/v2.3.0/quantecon-theme.zip
 ```
 
 Then start the local server:

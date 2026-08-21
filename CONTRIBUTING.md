@@ -4,11 +4,14 @@ Thank you for your interest in contributing to the QuantEcon theme!
 
 ## Prerequisites
 
-- **Node.js** ≥ 18 (see `.nvmrc`). Running the unit tests (`npm run test:unit`)
+- **Node.js** — `.nvmrc` pins **24**, matching the CI runner. Running the unit tests (`npm run test:unit`)
   additionally requires **Node ≥ 23.6**, which strips TypeScript on the fly so the
   tests can import the `.ts` builders without a build step — this matches the CI
   Node 24 runner. The built theme itself still supports Node ≥ 20 (`engines.node`).
-- **npm** 8.x (see `packageManager` in `package.json`)
+- **npm** — whatever ships with Node 24; the lockfile is `lockfileVersion` 3.
+- **mystmd** on `PATH` for the visual and FOUC suites (`npm install -g mystmd`), which
+  build and serve the fixture. `npm run test:plugin` *skips* rather than fails without
+  it, so a green run there does not mean it executed.
 
 ## Development Setup
 
@@ -32,8 +35,13 @@ The dev server runs at `http://localhost:3000` by default.
 | ------------------- | ------------------------------------------------ |
 | `npm run dev`       | Start dev server with CSS watch + hot reload     |
 | `npm run prod:build`| Production build (CSS + Thebe assets + Remix)    |
-| `npm run compile`   | TypeScript type-check (`tsc --noEmit`)           |
+| `npm run compile`   | TypeScript type-check (`tsc --noEmit --skipLibCheck`) |
 | `npm run test:unit` | Pure-function unit tests (`node --test`, Node ≥ 23.6) |
+| `npm run test:plugin` | End-to-end test of `plugins/git-metadata.mjs` (needs `myst`) |
+| `npm run test:visual` | Playwright pixel-diff suite against the fixture |
+| `npm run test:visual:update` | Refresh the local (`-darwin`) baselines |
+| `npm run test:fouc` | WebKit first-paint guard (`webkit-fouc` project) |
+| `npm run build:css` | Tailwind build only (`styles/app.css` → `app/styles/app.css`) |
 | `npm run format`    | Format code with Prettier                        |
 | `npm run clean`     | Remove build artifacts                           |
 
