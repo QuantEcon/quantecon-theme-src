@@ -1,4 +1,3 @@
-import { useSidebarHeight } from '@myst-theme/site';
 import {
   BannerStateProvider,
   TabStateProvider,
@@ -18,13 +17,16 @@ function NavigationAndArticleWrapperInternal({
   inset?: number;
 }) {
   const top = useThemeTop();
-  const { container } = useSidebarHeight(top, inset);
+  // `useSidebarHeight` was dropped here and in ContentsSidebar: it sizes the
+  // sidebar against a banner, and it bails unless the same call site holds both
+  // its refs. Each of ours attached only one, so both instances early-returned
+  // on every scroll event and did nothing. The drawer is sized in CSS instead.
   return (
     <>
       <Toolbar />
       <ContentsSidebar />
       <TabStateProvider>
-        <article ref={container} className="article content" style={{ marginTop: top }}>
+        <article className="article content" style={{ marginTop: top }}>
           {children}
         </article>
       </TabStateProvider>

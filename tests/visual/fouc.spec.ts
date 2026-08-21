@@ -26,22 +26,6 @@ import { test, expect, type Page, type Route } from "@playwright/test";
 
 const PAGE = "/";
 
-/**
- * Slack, in CSS px, allowed on the parked nav panel's right edge.
- *
- * `translateX(-100%)` puts that edge at exactly 0 in theory, but the panel is
- * unstyled at this point, so its width is shrink-to-fit and lands on a
- * fractional value (135.171875px in WebKit here). WebKit snaps the painted
- * translate to a whole device pixel while leaving the border-box width
- * fractional, so the measured edge comes back at +0.171875 rather than 0 — the
- * exact remainder varies with the intrinsic width, hence with platform font
- * metrics. A strict `> 0` test therefore passes on the ubuntu CI runner and
- * fails on macOS for the same, correct, markup.
- *
- * 1px is well inside "not visible" and well outside any snapping remainder.
- */
-const OFFSCREEN_EPS = 1;
-
 async function isolateInlineCss(page: Page, { stripCritical = false } = {}) {
   await page.route("**/*", async (route: Route) => {
     const req = route.request();
@@ -70,7 +54,7 @@ async function firstPaintState(page: Page) {
   await page.waitForSelector(".simple-center-grid", { timeout: 5000 }).catch(() => {});
   return page.evaluate(() => {
     const grid = document.querySelector(".simple-center-grid");
-    const sidebar = document.querySelector(".qe-contents-sidebar");
+    const sidebar = document.querySelector(".qe-toc");
     const applied = Array.from(document.styleSheets).filter((sheet) => {
       try {
         return !!sheet.cssRules && sheet.cssRules.length > 0; // applied, not pending
@@ -81,18 +65,15 @@ async function firstPaintState(page: Page) {
     return {
       gridDisplay: grid ? getComputedStyle(grid).display : "(absent)",
       bodyFont: getComputedStyle(document.body).fontFamily,
-      // The nav panel is closed on load, so it must start parked off-screen to
-      // the left: its right edge at (or left of) the viewport's left edge. If
-      // any real width of it is on-screen here, the menu visibly flashes open.
+      // The contents drawer is a popover, so while closed the UA stylesheet
+      // gives it `display: none` and it generates no boxes at all. That is a
+      // stronger guarantee than the transform it replaced: it holds on the
+      // first paint with no author CSS whatsoever, which is why the control
+      // below expects it hidden too rather than flashing open.
       //
-      // Reported as the measured edge rather than a boolean so the assertions
-      // can carry a sub-pixel tolerance — see `OFFSCREEN_EPS` below.
-      //
-      // `null` when the element is missing, and the guards below reject it
-      // explicitly: `null` numerically coerces to 0, which would *pass* the
-      // off-screen check, so a renamed hook would slip through the main test
-      // and surface as a confusing failure in the control instead.
-      sidebarRight: sidebar ? sidebar.getBoundingClientRect().right : null,
+      // `null` when the element is missing, so a renamed hook fails the
+      // explicit presence guard instead of silently satisfying "not rendered".
+      sidebarRendered: sidebar ? sidebar.getClientRects().length > 0 : null,
       // null href == an inline <style>; any string == an external sheet that applied
       appliedExternal: applied.some((sheet) => !!sheet.href),
     };
@@ -117,11 +98,10 @@ test.describe("FOUC guard (WebKit) — inline critical CSS styles the first pain
     // not about the webfont having arrived.
     expect(state.bodyFont).toMatch(/^["']?Source Sans 3 Variable["']?\s*,/);
     expect(
-      state.sidebarRight,
-      "`.qe-contents-sidebar` not found — the hook the critical CSS targets was renamed or removed"
+      state.sidebarRendered,
+      "`.qe-toc` not found — the contents drawer was renamed or removed"
     ).not.toBeNull();
-    // Nav panel parked off-screen (right edge at 0, modulo the sub-pixel slack).
-    expect(state.sidebarRight).toBeLessThan(OFFSCREEN_EPS);
+    expect(state.sidebarRendered).toBe(false); // closed popover paints nothing
   });
 
   test("control: removing the inline critical CSS reproduces the FOUC", async ({ page }) => {
@@ -133,14 +113,14 @@ test.describe("FOUC guard (WebKit) — inline critical CSS styles the first pain
     expect(state.appliedExternal).toBe(false);
     expect(state.gridDisplay).toBe("block");
     expect(state.bodyFont).not.toMatch(/Source Sans 3/);
-    // Without the inline rule the nav panel lays out in-flow and fully visible —
-    // this is the "menu flashes open on load" symptom. Measured at ~1272px of a
-    // 1280px viewport, so the margin over OFFSCREEN_EPS is three orders of
-    // magnitude: the two states are never in danger of being confused.
+    // The drawer stays hidden even here, with every stylesheet stripped: it is
+    // the UA stylesheet that hides a closed popover, not anything we ship. This
+    // used to be the assertion that the panel flashed open, and its inversion
+    // is the point of the rewrite — the failure mode no longer exists to guard.
     expect(
-      state.sidebarRight,
-      "`.qe-contents-sidebar` not found — the hook the critical CSS targets was renamed or removed"
+      state.sidebarRendered,
+      "`.qe-toc` not found — the contents drawer was renamed or removed"
     ).not.toBeNull();
-    expect(state.sidebarRight).toBeGreaterThan(OFFSCREEN_EPS);
+    expect(state.sidebarRendered).toBe(false);
   });
 });

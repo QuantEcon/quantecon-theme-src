@@ -199,8 +199,11 @@ test.describe("QuantEcon theme — visual regression", () => {
   test("sidebar-open", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await settle(page);
-    await page.locator('button:has([aria-label="Show table of contents"])').click();
-    // The open state is a 300ms translate transition; wait for the sidebar to
+    // The drawer is a popover; the button invokes it via `popovertarget`, and
+    // the label now sits on the button itself rather than on the icons (which
+    // are aria-hidden), so there is a single accessible name to target.
+    await page.getByRole("button", { name: "Table of contents" }).click();
+    // The open state is a 300ms translate transition; wait for the drawer to
     // be fully on-screen (its "Contents" heading at ratio 1) rather than a
     // fixed delay.
     await expect(page.getByText("Contents", { exact: true })).toBeInViewport({ ratio: 1 });
