@@ -21,12 +21,21 @@ export function Toolbar() {
   return (
     <div
       className={classNames(
-        'fixed top-0 left-0 right-0 z-[2] flex items-center justify-between h-[50px] px-3 md:px-6',
+        'fixed top-0 left-0 right-0 z-[2] flex items-center justify-between h-[50px] px-3 lg:px-6',
         'bg-qetoolbar-light dark:bg-qetoolbar-dark',
         'border-b-[1px] border-qetoolbar-border'
       )}
     >
-      <ul className="flex items-center w-full space-x-3 md:space-x-5 text-qetext-light dark:text-qetext-dark">
+      {/*
+        The gap and the container padding above both widen at `lg`, not at
+        `md`, for the same reason. Every desktop control appears at
+        `md` (768px), but at 20px spacing the row's intrinsic width is ~856px,
+        so between 768 and 856 it had nowhere to go and pushed the last icons
+        off the right edge. Thirteen gaps at 12px instead of 20px gives that
+        band ~104px back, which is enough for the full set plus the compute
+        toggle. Above `lg` there is room to breathe, so the spacing returns.
+      */}
+      <ul className="flex items-center w-full space-x-3 lg:space-x-5 text-qetext-light dark:text-qetext-dark">
         <li>
           <SidebarToggle />
         </li>
@@ -37,7 +46,16 @@ export function Toolbar() {
             </Tooltip>
           </Link>
         </li>
-        <li>
+        {/*
+          `shrink-0` is load-bearing. The logo is an <img> with a fixed height
+          and an auto width, and Tailwind's preflight gives every image
+          `max-width: 100%`. As a flex item this <li> shrinks once the toolbar
+          runs out of room, the image clamps to it, and the pinned height then
+          distorts the aspect ratio — visibly between roughly 770px and 840px,
+          the band above the `md` breakpoint where every desktop control is
+          still shown. The flexible space in the row is the spacer below.
+        */}
+        <li className="shrink-0">
           <QuantEconButton />
         </li>
         <li className="flex-grow" />
@@ -48,7 +66,9 @@ export function Toolbar() {
           <FullScreenButton size={iconSize} />
         </li>
         <FontScaleListItems className="hidden md:block" size={iconSize} />
-        <li className="flex items-center md:pr-[36px]">
+        {/* Separator between the view controls and the actions cluster; scaled
+            down in the narrow desktop band for the same reason as the gap. */}
+        <li className="flex items-center md:pr-4 lg:pr-[36px]">
           <ThemeButton className="w-5 h-5 opacity-60" />
         </li>
         <li className="hidden md:block">
