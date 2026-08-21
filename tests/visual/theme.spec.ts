@@ -213,6 +213,33 @@ test.describe("QuantEcon theme — visual regression", () => {
     });
   });
 
+  // The reason the drawer is a popover at all: the browser owns the toggle, so
+  // it works on the server-rendered HTML, before (or without) hydration. That
+  // is what removes the open/closed flash, and it is invisible to every other
+  // test here — they all run with JS on, where a React-state implementation
+  // would pass identically. Without this, the property could be lost by adding
+  // an onClick or a client-only wrapper and nothing would fail.
+  test("drawer-opens-without-javascript", async ({ browser }, testInfo) => {
+    test.skip(
+      testInfo.project.name !== "desktop-chrome",
+      "asserts a server-render property; one engine is enough"
+    );
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    try {
+      const page = await context.newPage();
+      await page.goto(testInfo.config.projects[0].use.baseURL ?? "/", {
+        waitUntil: "domcontentloaded",
+      });
+      const drawer = page.locator(".qe-toc");
+      await expect(drawer).toBeHidden();
+      await page.getByRole("button", { name: "Table of contents" }).click();
+      await expect(drawer).toBeVisible();
+      await expect(page.getByText("Contents", { exact: true })).toBeInViewport({ ratio: 1 });
+    } finally {
+      await context.close();
+    }
+  });
+
   // Launch popover: Colab is the default and primary target (BinderHub is
   // deliberately not offered — #26). window.open is stubbed so the launch URL
   // assertion is deterministic and offline; the URL's repo part comes from the
