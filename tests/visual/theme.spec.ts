@@ -285,8 +285,12 @@ test.describe("QuantEcon theme — visual regression", () => {
     await page.goto(`${noThebeBase}/notebook`, { waitUntil: "domcontentloaded" });
     await settle(page);
     // Sanity-check we actually loaded the notebook page (so the count-0 below
-    // isn't a false pass from a 404 / wrong page).
-    await expect(page.getByText("Notebook outputs").first()).toBeVisible();
+    // isn't a false pass from a 404 / wrong page). Match the heading, not the
+    // text: `getByText(...).first()` resolved to the contents drawer's link to
+    // this page, which only counted as visible because the closed drawer used
+    // to be rendered off-screen. It is a popover now, so a closed drawer is
+    // `display: none` and its links are correctly hidden.
+    await expect(page.getByRole("heading", { name: "Notebook outputs" })).toBeVisible();
     await expect(page.getByRole("button", { name: /start compute/i })).toHaveCount(0);
   });
 });
