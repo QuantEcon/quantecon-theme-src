@@ -58,8 +58,8 @@ export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
  *
  * Because these rules carry no specificity, every property set here MUST also
  * be declared by the real stylesheet, otherwise it can never be overridden.
- * (E.g. parking the nav panel off-screen with `visibility:hidden` would stick
- * forever, since no Tailwind class sets `visibility` — hence the transform.)
+ * (Setting `visibility:hidden` on something no Tailwind class un-hides, say,
+ * would stick forever.)
  *
  * Keep the values in sync with their sources of truth:
  *   - font stack:    tailwind.config.js  -> theme.extend.fontFamily.sans
@@ -78,9 +78,8 @@ export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
  *                    #222, see app/components/Page.tsx — intentionally not set here
  *                    since these rules target <body>.)
  *
- * The contents drawer needs no rule here: it is a popover, so the UA
- * stylesheet gives it `display: none` while closed and it is already hidden on
- * this first paint (see `.qe-toc` in styles/app.css).
+ * The contents drawer needs no rule here — as a popover the UA stylesheet
+ * already hides it while closed (see `.qe-toc` in styles/app.css).
  */
 const CRITICAL_CSS = `
 :where(html){font-family:"Source Sans 3 Variable","Source Sans 3",sans-serif}

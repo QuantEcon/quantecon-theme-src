@@ -75,18 +75,15 @@ export function ContentsSidebar() {
     );
 
   return (
-    // A popover, so the browser keeps it hidden until the toggle invokes it —
-    // including on the first paint, before app.css has loaded. All of the
-    // presentation lives in `.qe-toc` (styles/app.css); there is no open/closed
-    // state in React, so the drawer works before hydration and cannot animate a
-    // correction on arrival. See styles/app.css for the full rationale.
+    // A popover: the browser owns the open/closed state, so there is none in
+    // React and the drawer works before hydration. All presentation lives in
+    // `.qe-toc` (styles/app.css).
     <div id={TOC_POPOVER_ID} popover="auto" className="qe-toc">
       <h2 id={TOC_HEADING_ID} className="mb-4 text-lg font-bold">
         Contents
       </h2>
-      {/* Labelled by the heading rather than a second `aria-label`: the button
-          that opens this is already named "Table of contents", so a matching
-          label here had screen readers announce the same phrase twice. */}
+      {/* Labelled by the heading, not a second `aria-label` — the toggle is
+          already named "Table of contents"; don't repeat it here. */}
       <nav aria-labelledby={TOC_HEADING_ID}>
         {headings?.map((headingOrGroup) => {
           if (Array.isArray(headingOrGroup))

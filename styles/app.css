@@ -59,21 +59,17 @@
  * Contents drawer.
  *
  * The panel is a popover, so the UA stylesheet gives it `display: none` while
- * closed. That is what makes this robust: it is already hidden on the very
- * first paint, before any author CSS has loaded, so there is no unstyled frame
- * to correct and therefore nothing for a transition to animate. It also keeps
- * the closed panel's links out of the tab order and the accessibility tree for
- * free, and the browser supplies Escape, light dismiss, and the invoker's
- * expanded state.
+ * closed: hidden on the first paint before any author CSS loads, and its links
+ * kept out of the tab order and accessibility tree, both for free.
  *
  * `display` and `overlay` are transitioned with `allow-discrete` so the panel
- * can still slide despite going to `display: none` — `@starting-style` gives
- * the entry animation its starting point.
+ * can still slide despite going to `display: none`; `@starting-style` gives the
+ * entry animation its starting point. Keep all three together — drop one and
+ * the slide breaks in one direction.
  *
- * The 50px block-start matches the `top={50}` passed to <Document> in
- * app/root.tsx; the three widths are the 350/250/350 the utility classes used
- * to express (see #130 — expressed once here, so there is no dependence on
- * Tailwind's emission order).
+ * Widths live here rather than in utility classes so they don't depend on
+ * Tailwind's emission order (#130). The 50px block-start must match the
+ * `top={50}` passed to <Document> in app/root.tsx.
  */
 @layer components {
   .qe-toc {
@@ -101,9 +97,8 @@
       overlay 0.3s allow-discrete;
   }
 
-  /* Breakpoints come from the Tailwind theme rather than being transcribed:
-     these used to be `lg:`/`2xl:` utilities, and hardcoding 1024px/1536px here
-     would desync silently if `screens` ever changed. */
+  /* Breakpoints via theme() so they track `screens` in tailwind.config.js —
+     transcribing the pixel values here would desync silently. */
   @media (min-width: theme(screens.lg)) {
     .qe-toc {
       width: 15.625rem;
@@ -131,43 +126,27 @@
     }
   }
 
-  /* No transition at all, rather than a very short one: the drawer still opens
-     and closes, it just does so instantly, which is what the preference asks
-     for. `display`/`overlay` do not need to be transitioned for the popover to
-     work — those entries exist only so the slide can outlast `display: none`. */
+  /* Opens and closes instantly. Dropping the transition is safe: the
+     `display`/`overlay` entries only exist to let the slide outlast
+     `display: none`, and there is no slide under this preference. */
   @media (prefers-reduced-motion: reduce) {
     .qe-toc {
       transition: none;
     }
   }
 
-  /**
-   * Focus ring for the toggle.
-   *
-   * Closing the drawer with Escape returns focus to this button, and Chrome
-   * then matches `:focus-visible` — correctly, since the interaction was a
-   * keypress: a keyboard user needs to see where focus landed. Clicking with a
-   * mouse does not match it, so the ring never appears for pointer users.
-   *
-   * It is restyled rather than removed. The UA default is a tight 1px square
-   * that reads as a glitch against the toolbar; this is the theme's blue, with
-   * offset and a radius so it reads as intentional. Removing it outright would
-   * leave keyboard users on an unmarked control (WCAG 2.4.7).
-   */
+  /* Escape closes the drawer and returns focus here, which matches
+     `:focus-visible`. Restyle it, never remove it — that would leave keyboard
+     users on an unmarked control (WCAG 2.4.7). Pointer users never see it. */
   .qe-toc-toggle:focus-visible {
     outline: 2px solid theme(colors.qeborder-blue);
     outline-offset: 3px;
     border-radius: 2px;
   }
 
-  /**
-   * Toggle icon: hamburger when closed, cross when open.
-   *
-   * Driven off the drawer's own state with `:has()` rather than a React flag,
-   * so the button cannot desync from the panel and nothing needs to re-render.
-   * Swapped with `display` rather than opacity: the pair used to cross-fade
-   * with `transition-all`, which animated itself on the first paint (#127).
-   */
+  /* Toggle icon: hamburger when closed, cross when open, driven off the
+     drawer's own state so the two cannot desync. Swap with `display`, not
+     opacity — a transitioned swap animates itself on the first paint (#127). */
   .qe-toc-toggle__close {
     display: none;
   }
@@ -181,27 +160,19 @@
   }
 
   /**
-   * Browsers without the Popover API: Firefox < 125, and Safari < 17 — which
-   * includes every device that cannot be upgraded past iOS 16. There the
-   * `popover` attribute is inert, so the panel would render permanently open
-   * across the page.
+   * Browsers without the Popover API (Firefox < 125, Safari < 17 — including
+   * anything stuck on iOS 16). The attribute is inert there, so the panel would
+   * render permanently open; hide it, and hide the toggle with it rather than
+   * leave a named control that cannot do anything.
    *
-   * Hide it, and hide the toggle with it. A visible control that does nothing
-   * is worse than an absent one, and this control carries an accessible name,
-   * so a screen reader would otherwise offer to open something that can never
-   * open.
+   * Deliberate trade: those browsers get no drawer, but the in-page outline and
+   * site navigation still reach every page. A polyfill would restore it and is
+   * not a drop-in — `:popover-open` is a pseudo-class and cannot be
+   * polyfilled, so every rule above needs a class-based stand-in, and the
+   * polyfill only runs after first paint. Revisit if that share grows.
    *
-   * The cost is real and deliberate: those browsers get no contents drawer.
-   * The in-page "On this page" outline and the site navigation still work, so
-   * the content stays reachable. Restoring the drawer means shipping a popover
-   * polyfill, which is not a drop-in — `:popover-open` is a pseudo-class and
-   * cannot be polyfilled, so every rule above that depends on it would need a
-   * class-based stand-in, and the polyfill runs after first paint, which is
-   * exactly the flash this rewrite removed. That trade was not worth making
-   * for the affected share; revisit if it grows.
-   *
-   * Firefox 125-128 is a narrower gap: popover works, `@starting-style` does
-   * not, so the drawer appears without sliding. Degrades cleanly, left alone.
+   * Firefox 125-128 has popover but not `@starting-style`: opens without
+   * sliding, which is fine.
    */
   @supports not selector(:popover-open) {
     .qe-toc,

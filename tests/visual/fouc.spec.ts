@@ -9,10 +9,9 @@ import { test, expect, type Page, type Route } from "@playwright/test";
  * grid collapsed to `display: block`. The fix inlines critical CSS into `<head>`
  * (see `app/root.tsx`), which parses synchronously and styles that first paint.
  *
- * The same unstyled frame also exposed the contents sidebar: `-translate-x-full`
- * does nothing until app.css lands, so the panel painted in-flow and visible,
- * then slid shut once the stylesheet arrived — the "menu opens on load" report.
- * It is covered here too, since the cause and the guard are the same.
+ * The contents drawer is checked here too: any panel that relies on author CSS
+ * to stay hidden paints open in that same frame. It is a popover now, so the UA
+ * stylesheet hides it and the assertions below expect that.
  *
  * This test makes the failure mode deterministic by **aborting all external
  * stylesheets**, so the only styling that can reach the page is the inline
@@ -65,11 +64,9 @@ async function firstPaintState(page: Page) {
     return {
       gridDisplay: grid ? getComputedStyle(grid).display : "(absent)",
       bodyFont: getComputedStyle(document.body).fontFamily,
-      // The contents drawer is a popover, so while closed the UA stylesheet
-      // gives it `display: none` and it generates no boxes at all. That is a
-      // stronger guarantee than the transform it replaced: it holds on the
-      // first paint with no author CSS whatsoever, which is why the control
-      // below expects it hidden too rather than flashing open.
+      // A closed popover is `display: none` per the UA stylesheet, so it paints
+      // nothing even with no author CSS at all — hence both tests below expect
+      // it hidden.
       //
       // `null` when the element is missing, so a renamed hook fails the
       // explicit presence guard instead of silently satisfying "not rendered".
@@ -113,10 +110,8 @@ test.describe("FOUC guard (WebKit) — inline critical CSS styles the first pain
     expect(state.appliedExternal).toBe(false);
     expect(state.gridDisplay).toBe("block");
     expect(state.bodyFont).not.toMatch(/Source Sans 3/);
-    // The drawer stays hidden even here, with every stylesheet stripped: it is
-    // the UA stylesheet that hides a closed popover, not anything we ship. This
-    // used to be the assertion that the panel flashed open, and its inversion
-    // is the point of the rewrite — the failure mode no longer exists to guard.
+    // Hidden even with every stylesheet stripped — that is the UA stylesheet's
+    // doing, not ours, so this control expects it hidden rather than flashing.
     expect(
       state.sidebarRendered,
       "`.qe-toc` not found — the contents drawer was renamed or removed"

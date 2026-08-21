@@ -199,9 +199,8 @@ test.describe("QuantEcon theme — visual regression", () => {
   test("sidebar-open", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await settle(page);
-    // The drawer is a popover; the button invokes it via `popovertarget`, and
-    // the label now sits on the button itself rather than on the icons (which
-    // are aria-hidden), so there is a single accessible name to target.
+    // The icons are aria-hidden, so the button itself carries the only
+    // accessible name to target.
     await page.getByRole("button", { name: "Table of contents" }).click();
     // The open state is a 300ms translate transition; wait for the drawer to
     // be fully on-screen (its "Contents" heading at ratio 1) rather than a
@@ -213,12 +212,10 @@ test.describe("QuantEcon theme — visual regression", () => {
     });
   });
 
-  // The reason the drawer is a popover at all: the browser owns the toggle, so
-  // it works on the server-rendered HTML, before (or without) hydration. That
-  // is what removes the open/closed flash, and it is invisible to every other
-  // test here — they all run with JS on, where a React-state implementation
-  // would pass identically. Without this, the property could be lost by adding
-  // an onClick or a client-only wrapper and nothing would fail.
+  // Guards the reason the drawer is a popover: the browser owns the toggle, so
+  // it works on the server-rendered HTML without hydration. Every other test
+  // runs with JS on and would pass without that property, so this is the only
+  // thing stopping an onClick or a client-only wrapper from silently taking it.
   test("drawer-opens-without-javascript", async ({ browser }, testInfo) => {
     test.skip(
       testInfo.project.name !== "desktop-chrome",
@@ -312,11 +309,8 @@ test.describe("QuantEcon theme — visual regression", () => {
     await page.goto(`${noThebeBase}/notebook`, { waitUntil: "domcontentloaded" });
     await settle(page);
     // Sanity-check we actually loaded the notebook page (so the count-0 below
-    // isn't a false pass from a 404 / wrong page). Match the heading, not the
-    // text: `getByText(...).first()` resolved to the contents drawer's link to
-    // this page, which only counted as visible because the closed drawer used
-    // to be rendered off-screen. It is a popover now, so a closed drawer is
-    // `display: none` and its links are correctly hidden.
+    // isn't a false pass from a 404 / wrong page). Match the heading, not bare
+    // text — the drawer links to this page by the same name.
     await expect(page.getByRole("heading", { name: "Notebook outputs" })).toBeVisible();
     await expect(page.getByRole("button", { name: /start compute/i })).toHaveCount(0);
   });

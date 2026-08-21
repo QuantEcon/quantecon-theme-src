@@ -27,13 +27,10 @@ export function Toolbar() {
       )}
     >
       {/*
-        The gap and the container padding above both widen at `lg`, not at
-        `md`, for the same reason. Every desktop control appears at
-        `md` (768px), but at 20px spacing the row's intrinsic width is ~856px,
-        so between 768 and 856 it had nowhere to go and pushed the last icons
-        off the right edge. Thirteen gaps at 12px instead of 20px gives that
-        band ~104px back, which is enough for the full set plus the compute
-        toggle. Above `lg` there is room to breathe, so the spacing returns.
+        Gap and container padding widen at `lg`, not `md`. The full desktop
+        control set switches on at `md`, and at 20px spacing it does not fit
+        between 768px and ~856px — the last icons get pushed off the right
+        edge. Keep the tighter spacing for that band when adding controls here.
       */}
       <ul className="flex items-center w-full space-x-3 lg:space-x-5 text-qetext-light dark:text-qetext-dark">
         <li>
@@ -47,13 +44,10 @@ export function Toolbar() {
           </Link>
         </li>
         {/*
-          `shrink-0` is load-bearing. The logo is an <img> with a fixed height
-          and an auto width, and Tailwind's preflight gives every image
-          `max-width: 100%`. As a flex item this <li> shrinks once the toolbar
-          runs out of room, the image clamps to it, and the pinned height then
-          distorts the aspect ratio — visibly between roughly 770px and 840px,
-          the band above the `md` breakpoint where every desktop control is
-          still shown. The flexible space in the row is the spacer below.
+          `shrink-0` is load-bearing: the logo has a pinned height and an auto
+          width, and preflight's `max-width: 100%` lets it clamp to a shrinking
+          flex item, distorting the aspect ratio. The row's flexible space is
+          the spacer below, not this.
         */}
         <li className="shrink-0">
           <QuantEconButton />
