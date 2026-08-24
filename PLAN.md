@@ -465,10 +465,11 @@ independent of one another and can be parallelised across contributors. Per open
 question 4's resolution below, all of Phases 3–6 gate the all-at-once lecture
 migration — they are cutover blockers, not optional polish.
 
-## Open questions for maintainers
+## Open questions for maintainers — all resolved
 
-*Tracked as [#93](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/93);
-resolutions are recorded here as they land.*
+*Tracked in [#93](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/93),
+closed 2026-08-24 with all four questions decided; the resolutions are recorded
+inline below.*
 
 1. **Upstream-first?** Several of these (git metadata rendering, language switcher,
    RTL) could be contributed to `jupyter-book/myst-theme` rather than kept QuantEcon-only.
