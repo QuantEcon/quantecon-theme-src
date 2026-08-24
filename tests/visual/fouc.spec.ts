@@ -108,7 +108,14 @@ test.describe("FOUC guard (WebKit) — inline critical CSS styles the first pain
     expect(state.appliedExternal).toBe(false);
     // The reported FOUC symptoms must be absent on first paint:
     expect(state.gridDisplay).toBe("grid"); // grid not collapsed to block
-    expect(state.bodyFont).toMatch(/Source Sans 3/); // sans, not the serif default
+    // Head of the stack, not just a substring: "Source Sans 3 Variable" (the
+    // family name of the self-hosted webfont) contains "Source Sans 3", so the
+    // looser regex would keep passing if CRITICAL_CSS and tailwind.config.js
+    // drifted apart. This reads the *declared* stack — the @font-face rules
+    // live in a <link>, which this test aborts, so what actually paints is the
+    // `sans-serif` tail. That is the point: the guard is about sans-vs-serif,
+    // not about the webfont having arrived.
+    expect(state.bodyFont).toMatch(/^["']?Source Sans 3 Variable["']?\s*,/);
     expect(
       state.sidebarRight,
       "`.qe-contents-sidebar` not found — the hook the critical CSS targets was renamed or removed"

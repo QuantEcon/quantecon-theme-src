@@ -66,7 +66,12 @@ module.exports = {
         'qeborder-blue': 'rgb(0 114 188)',
       },
       fontFamily: {
-        sans: ['"Source Sans 3"', 'sans-serif'],
+        // "Source Sans 3 Variable" is the family name declared by
+        // @fontsource-variable/source-sans-3, self-hosted via app/links.ts.
+        // Plain "Source Sans 3" comes next so a locally installed copy is used
+        // while the webfont swaps in, or if it fails to load. Must stay in step
+        // with CRITICAL_CSS in app/root.tsx.
+        sans: ['"Source Sans 3 Variable"', '"Source Sans 3"', 'sans-serif'],
       },
       keyframes: {
         slideDownAndFade: {

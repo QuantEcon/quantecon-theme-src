@@ -1,4 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap');
+/* Source Sans 3 is self-hosted and imported from app/links.ts, not @import-ed
+   here: Tailwind does not rebase url() inside an @import-ed stylesheet, so the
+   font paths would resolve relative to this file's *output* and 404. */
 @import '@myst-theme/styles';
 @import './lists.css';
 @import './mpl-widget.css';
