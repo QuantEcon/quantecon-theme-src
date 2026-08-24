@@ -23,11 +23,16 @@
  * the command times out. Shallow clones (e.g. CI checkouts with depth 1)
  * yield truncated history rather than an error.
  *
- * Usage in a lecture repo's myst.yml:
+ * Usage in a lecture repo's myst.yml — this repo is the plugin's permanent home
+ * (PLAN.md, open question 2): reference it by URL, with <tag> pinned to the
+ * theme release the repo builds with (e.g. v2.3.0), rather than vendoring a
+ * copy:
  *
  *   project:
  *     plugins:
- *       - git-metadata.mjs
+ *       - https://raw.githubusercontent.com/QuantEcon/quantecon-theme.mystmd/<tag>/plugins/git-metadata.mjs
+ *
+ * (A local copy — `- git-metadata.mjs` — also works, e.g. for development.)
  *
  * Configuration (myst-cli does not pass options to transform plugins, so
  * configuration is via environment variables):
