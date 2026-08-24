@@ -114,6 +114,41 @@ The theme is bundled with `serverDependenciesToBundle: [/.*/]`, so patched code
 is inlined into `build/` and ships in the release zip — consumers get the fix
 without installing anything.
 
+## Execution model: where code cells can live
+
+The theme registers executable `{code-cell}` blocks with the kernel wherever
+they sit in the page AST — top-level or nested inside a directive — via the
+`@myst-theme/jupyter` patch above. Cells are registered depth-first in
+**document order**, which is execution order, so the in-page notebook's cell
+sequence matches the source document 1-to-1 (nested cells also participate in
+*Run all*). Only `{embed}` subtrees are skipped: their cells belong to another
+page's notebook.
+
+Nesting is unavoidable, because mystmd's gated directive syntax does not keep
+cells at the AST root. `{solution-start}`/`{solution-end}` (and the `exercise`
+equivalents) are authoring-level sugar resolved at parse time: the transform
+folds the gated content back **under** the `solution` node, and no `gate`
+attribute survives. Both authoring styles below produce the identical AST —
+verified against myst v1.10.1 (qe-v10):
+
+```
+block[kind=notebook-code]        ← top-level cell
+block
+  solution                        ← {code-cell} inside a {solution} body
+    block[kind=notebook-code]
+  solution                        ← {code-cell} between solution-start/end gates
+    block[kind=notebook-code]
+```
+
+This differs from the Sphinx world, where `sphinx-exercise` gates exist
+precisely so myst-nb sees a top-level cell — that rationale does not carry over
+to mystmd's rendered AST, so downstream code must never assume gated authoring
+avoids nesting. Gated syntax remains the preferred *authoring* convention in
+the lecture sources (cleaner jupytext-style round-trips, consistency with the
+Sphinx-era repos), but the theme treats both styles identically. Making gated
+cells genuinely root-level in the AST would be an upstream mystmd transform
+change, not a theme or content fix.
+
 ## Commit Convention
 
 We use conventional commits:
