@@ -1,0 +1,63 @@
+# QuantEcon theme → upstream contribution registry
+#
+# Open question 1 of the book-theme parity plan (#93) resolved local-first
+# (2026-08-24): every feature lands in this repo first, and upstreaming is a
+# deferred later phase. This file is the ledger of what could go upstream, so
+# that phase starts from a list rather than from archaeology.
+#
+# Sibling registry: the QuantEcon mystmd fork tracks its candidates in
+# quantecon/UPSTREAM-PRS.yml as ordered cherry-pick SHA lists. That model
+# does not map here — this repo is a standalone theme consuming
+# @myst-theme/* packages, not a fork of jupyter-book/myst-theme — so entries
+# are feature-level: `provenance` lists the local PRs/commits as pointers for
+# whoever does the port, not a cherry-pick list.
+#
+# Status lifecycle (same as UPSTREAM-PRS.yml):
+#   planned  — feature not yet built here (tracked by a phase issue)
+#   pending  — feature shipped here; upstream contribution not yet opened
+#   open     — upstream PR/issue open, under review
+#   merged   — upstream accepted it; note the upstream release we can adopt
+
+upstream_candidates:
+
+  - id: git-metadata
+    title: Per-page git history (last-modified + changelog dropdown)
+    description: |
+      Build-time document transform (plugins/git-metadata.mjs) that attaches
+      per-page `git log --follow` history to the AST, plus the theme's
+      PageHeaderHistory.tsx header control that renders it.
+    status: pending
+    target: jupyter-book/mystmd (transform) + jupyter-book/myst-theme (render)
+    provenance:
+      - local_pr: 83
+        note: Phase 1 implementation (plugin + header UI), shipped in v2.3.0
+    upstream:
+      refs:
+        - jupyter-book/mystmd#2213  # open upstream request for git metadata
+      pr: null
+    notes: |
+      Splits naturally in two for upstream review: the transform as a
+      documented community plugin or core mystmd feature (per #2213), the
+      header rendering as a myst-theme component. Configuration is via env
+      var (QE_GIT_METADATA_MAX) because myst-cli passes no options to
+      transform plugins — an upstream version would want real plugin options.
+
+  - id: language-switcher
+    title: Language switcher + hreflang alternates
+    status: planned
+    target: jupyter-book/myst-theme
+    provenance: []
+    upstream:
+      pr: null
+    notes: |
+      Phase 4 (#90); not yet built. Record local PRs here as they land.
+
+  - id: rtl-support
+    title: RTL rendering (dir="rtl" config + logical-property audit)
+    status: planned
+    target: jupyter-book/myst-theme
+    provenance: []
+    upstream:
+      pr: null
+    notes: |
+      Phase 5 (#91); not yet built. Commonly shipped with language-switcher.

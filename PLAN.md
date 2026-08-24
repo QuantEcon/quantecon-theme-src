@@ -269,13 +269,14 @@ and a "full history" link.
       computed at render so it can't go stale). → `plugins/git-metadata.mjs`, with a
       node-level e2e (`npm run test:plugin`) that builds a throwaway project with the
       real `myst` CLI.
-- [ ] Decide where the plugin lives (a shared `quantecon-myst-plugins` package reused
-      across lecture repos is preferable to per-repo copies). *Interim:* lives in this
-      repo (`plugins/`) — single self-contained `.mjs`, copy or reference from lecture
-      repos; revisit when a second shared plugin appears (the QuantEcon `mystmd` fork
-      is another candidate home, but a plugin stays usable on stock mystmd).
-      **Still open** — open question 2, tracked in
-      [#93](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/93).
+- [x] Decide where the plugin lives. **Resolved (2026-08-24, open question 2 in
+      [#93](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/93)): this repo
+      is the permanent home.** The plugin is theme-coupled — the theme renders what it
+      emits — so it versions with the theme, and lecture repos load it by URL pinned to
+      the theme release tag they build with instead of vendoring copies:
+      `https://raw.githubusercontent.com/QuantEcon/quantecon-theme.mystmd/<tag>/plugins/git-metadata.mjs`.
+      A shared `quantecon-myst-plugins` repo is revisited only if a second,
+      non-theme-coupled plugin ever appears.
 
 **Theme (render) deliverable:**
 - [x] New `app/components/PageHeaderHistory.tsx` (rendered from `ProjectFrontmatter.tsx`)
@@ -460,7 +461,9 @@ Phase 0  (hygiene/deploy + preview harness)  ── prerequisite  ✅ shipped
 
 Suggested order: **0 → 1 → 2 → 3 → (4 → 5) → 6**. Phases 0–2 are shipped as of
 [v2.3.0](https://github.com/QuantEcon/quantecon-theme.mystmd/releases/tag/v2.3.0) (2026-08-20), so **Phase 3 is next**. Phases 3–6 are largely
-independent of one another and can be parallelised across contributors.
+independent of one another and can be parallelised across contributors. Per open
+question 4's resolution below, all of Phases 3–6 gate the all-at-once lecture
+migration — they are cutover blockers, not optional polish.
 
 ## Open questions for maintainers
 
@@ -470,10 +473,21 @@ resolutions are recorded here as they land.*
 1. **Upstream-first?** Several of these (git metadata rendering, language switcher,
    RTL) could be contributed to `jupyter-book/myst-theme` rather than kept QuantEcon-only.
    Which features are worth upstreaming vs forking?
+   **Resolved (2026-08-24): local-first.** Every feature lands in this repo first;
+   upstreaming is a deferred later phase, so it never blocks deploying and upgrading
+   mystmd for the lecture series. Candidates are tracked in
+   [`UPSTREAM-CANDIDATES.yml`](UPSTREAM-CANDIDATES.yml), a feature-level registry with
+   the same status lifecycle as the QuantEcon `mystmd` fork's
+   `quantecon/UPSTREAM-PRS.yml` — but with local PRs recorded as provenance rather
+   than cherry-pick lists, since this repo is not a fork of `jupyter-book/myst-theme`
+   and features must be ported, not replayed.
 2. **Plugin home:** should the build-time git-metadata plugin (Phase 1) live in a shared
    `quantecon-myst-plugins` repo consumed by every lecture repo, or per-repo?
-   **Still open (2026-08-20)** — the last unchecked box in Phase 1; the interim home is
-   `plugins/` in this repo.
+   **Resolved (2026-08-24): this repo, permanently.** Only one plugin exists
+   (`plugins/git-metadata.mjs`) and it is theme-coupled, so it stays here and versions
+   with the theme; lecture repos reference it by tag-pinned URL rather than vendoring
+   copies. A shared plugins repo is revisited only if a second, non-theme-coupled
+   plugin ever appears.
 3. **Compute model:** how much of the launch story moves to in-page Thebe vs external
    Colab/Binder/Hub, given infra cost and the existing `.notebooks` convention?
    **Answered in practice (2026-08-20):** external launch is **Colab** (BinderHub dropped,
@@ -483,5 +497,9 @@ resolutions are recorded here as they land.*
    enablement with compatibility testing (#114).
 4. **Scope for first migration:** which lectures migrate to JB≥2 first, and which subset
    of phases must land before that cutover (Phase 1 git-history is likely a must-have)?
-   *(That must-have shipped in v2.3.0, so what is left of this question is which repos go
-   first.)*
+   **Resolved (2026-08-24): all-or-nothing.** No per-lecture staging — every lecture
+   series migrates at once, onto a single common publishing base, once feature parity
+   is complete (single maintenance surface). The cutover gate is therefore the full
+   remaining milestone — Phases 3–6 ([#89](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/89)–[#92](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/92))
+   — plus the open live-compute defect
+   [#117](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/117).
