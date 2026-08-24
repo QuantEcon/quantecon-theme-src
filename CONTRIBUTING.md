@@ -79,6 +79,76 @@ patches/         # patch-package patches for upstream fixes
 
 4. **Open a Pull Request** against `main`. CI will run type-check and build automatically.
 
+## Patching a dependency
+
+Some fixes have to land inside an installed package — usually an upstream bug we
+need before upstream can ship it. Those live in `patches/` and are applied by
+[patch-package](https://github.com/ds300/patch-package) from the `postinstall`
+script, so every `npm ci` re-applies them.
+
+To add or update one:
+
+```bash
+# 1. edit the file in place under node_modules/<pkg>/…
+# 2. capture the diff
+npx patch-package <pkg> --patch-dir patches
+# 3. prove it: reverse it, watch the guard test fail, re-apply
+npx patch-package --patch-dir patches --reverse && npm run test:unit
+npx patch-package --patch-dir patches && npm run test:unit
+```
+
+Two rules make patches safe to live with:
+
+- **Write a test that fails without the patch.** A patch that silently stops
+  applying is worse than no patch — the package looks installed and behaves
+  wrongly. `tests/unit/execute-nested-cells.test.mjs` is the pattern: it imports
+  the patched file directly, so it fails if the patch is missing. `test:unit`
+  runs in CI *and* in `release.yml`, so the published bundle is covered too.
+- **Expect a version warning, not a failure.** Patch filenames pin the version
+  they were generated against. When a caret range floats to a newer patch
+  release, patch-package still applies the patch and prints a mismatch warning;
+  that is why the guard test matters. Upstream the fix so the patch can be
+  dropped, and note the upstream PR in the patch's own comments.
+
+The theme is bundled with `serverDependenciesToBundle: [/.*/]`, so patched code
+is inlined into `build/` and ships in the release zip — consumers get the fix
+without installing anything.
+
+## Execution model: where code cells can live
+
+The theme registers executable `{code-cell}` blocks with the kernel wherever
+they sit in the page AST — top-level or nested inside a directive — via the
+`@myst-theme/jupyter` patch above. Cells are registered depth-first in
+**document order**, which is execution order, so the in-page notebook's cell
+sequence matches the source document 1-to-1 (nested cells also participate in
+*Run all*). Only `{embed}` subtrees are skipped: their cells belong to another
+page's notebook.
+
+Nesting is unavoidable, because mystmd's gated directive syntax does not keep
+cells at the AST root. `{solution-start}`/`{solution-end}` (and the `exercise`
+equivalents) are authoring-level sugar resolved at parse time: the transform
+folds the gated content back **under** the `solution` node, and no `gate`
+attribute survives. Both authoring styles below produce the identical AST —
+verified against myst v1.10.1 (qe-v10):
+
+```
+block[kind=notebook-code]        ← top-level cell
+block
+  solution                        ← {code-cell} inside a {solution} body
+    block[kind=notebook-code]
+  solution                        ← {code-cell} between solution-start/end gates
+    block[kind=notebook-code]
+```
+
+This differs from the Sphinx world, where `sphinx-exercise` gates exist
+precisely so myst-nb sees a top-level cell — that rationale does not carry over
+to mystmd's rendered AST, so downstream code must never assume gated authoring
+avoids nesting. Gated syntax remains the preferred *authoring* convention in
+the lecture sources (cleaner jupytext-style round-trips, consistency with the
+Sphinx-era repos), but the theme treats both styles identically. Making gated
+cells genuinely root-level in the AST would be an upstream mystmd transform
+change, not a theme or content fix.
+
 ## Commit Convention
 
 We use conventional commits:
