@@ -5,7 +5,7 @@ QuantEcon lectures and books, distributed as a zip attached to each
 [GitHub Release](https://github.com/QuantEcon/quantecon-theme.mystmd/releases).
 
 - Responsive and mobile ready
-- Notebook launch (Google Colab / private JupyterHub) with configurable repo, branch and paths
+- Notebook launch (Google Colab) with configurable repo, branch and paths
 - In-page live compute via Thebe (JupyterLite / Pyodide by default)
 - Git history in page headers ("Last changed" plus an inline changelog)
 - Page Footer based on MyST Content
@@ -54,12 +54,17 @@ downloads:
 
 ### Launch Notebooks
 
-The launch notebooks capability has been developed to mirror capabilities in the previous QuantEcon theme. By default it assumes the `.notebooks` suffix convention for repository naming when launching both Google Colab and Private Jupyter Hub sessions.
+The launch notebooks capability has been developed to mirror capabilities in the previous QuantEcon theme. By default it assumes the `.notebooks` suffix convention for repository naming when locating the notebook to launch.
 
-Colab is the primary launch target (it provides GPU access for the lectures that
-need it). BinderHub is deliberately not offered — it proved flaky in practice;
-see issue [#26](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/26),
-kept open as a demand-driven future request.
+The **Launch** control in the toolbar is a direct link to Google Colab, the
+single launch target — it provides GPU access for the lectures that need it.
+Two other targets are deliberately not offered today, each tracked as a
+demand-driven future request: BinderHub, which proved flaky in practice
+([#26](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/26)), and a
+private JupyterHub, whose launcher entry was removed in
+[#87](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/87) because no
+lecture repo had ever configured one. For running cells without leaving the
+page, see [Live compute](#live-compute-thebe--jupyterlite) below.
 
 The repo/branch/path conventions are configurable under `site.options` in
 `myst.yml` (MyST's theme-options section). All keys are optional and the

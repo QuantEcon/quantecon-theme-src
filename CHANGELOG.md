@@ -20,6 +20,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+- The **Private JupyterHub** launch option. The toolbar's Launch control is now a
+  direct link to Google Colab instead of a popover with a radio group and a
+  hand-typed service URL. The demand signal this was gated on came back empty:
+  the book-theme only renders its hub button when `jupyterhub_url` is set in
+  `_config.yml`, and an org-wide search finds that key in no lecture repo at all
+  — every flagship series configures `colab_url` alone — so the button has never
+  appeared on a live QuantEcon site. The MyST version was also not the same
+  feature: it had no config key, rendered unconditionally, and asked the reader
+  to type a hub URL into a box whose value was `React.useState('')` and so was
+  discarded when the popover closed. Verified against a live build, it also
+  hardcoded a `/jupyter/hub/` path segment the Sphinx theme leaves to the
+  configured URL, so it only ever addressed hubs at `<host>/jupyter/hub/` and
+  could not reach a stock JupyterHub, let alone a local Jupyter server. Removing
+  it drops `buildJupyterHubUrl`, the Radix popover and radio group, and the
+  `launch-open.png` visual baseline; `launch-colab` now asserts the anchor's
+  `href`, which also pins that the control is a link rather than a chooser.
+  Re-adding hub, Binder and local-server targets is tracked as future work
+  ([#87](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/87)).
+
 ### Fixed
 - The remaining absolute asset URLs in the built stylesheets are now relative
   too. [#139](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/139)

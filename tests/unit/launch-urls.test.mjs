@@ -19,32 +19,16 @@ import { test } from 'node:test';
 
 import {
   buildColabUrl,
-  buildJupyterHubUrl,
   notebookOrgRepo,
   notebookRelPath,
 } from '../../app/components/toolbar/launchUrls.ts';
 
 const SOURCE = 'QuantEcon/lecture-foo';
-const HUB = 'https://hub.example.org';
 
 test('defaults reproduce the historical Colab URL (backward-compat)', () => {
   assert.equal(
     buildColabUrl(SOURCE, '/notebook.ipynb'),
     'https://colab.research.google.com/github/QuantEcon/lecture-foo.notebooks/blob/main/notebook.ipynb',
-  );
-});
-
-test('defaults reproduce the historical JupyterHub URL (backward-compat)', () => {
-  assert.equal(
-    buildJupyterHubUrl(HUB, SOURCE, '/notebook.ipynb'),
-    'https://hub.example.org/jupyter/hub/user-redirect/git-pull?repo=https://github.com/QuantEcon/lecture-foo.notebooks&branch=main&urlpath=tree/lecture-foo.notebooks/notebook.ipynb',
-  );
-});
-
-test('a trailing slash on the hub URL does not produce a double slash', () => {
-  assert.equal(
-    buildJupyterHubUrl(`${HUB}/`, SOURCE, '/notebook.ipynb'),
-    'https://hub.example.org/jupyter/hub/user-redirect/git-pull?repo=https://github.com/QuantEcon/lecture-foo.notebooks&branch=main&urlpath=tree/lecture-foo.notebooks/notebook.ipynb',
   );
 });
 
@@ -128,9 +112,5 @@ test('combined config: source_path strip + notebooks_path + branch + nested dir'
   assert.equal(
     buildColabUrl(SOURCE, '/lectures/topic/page.md', config),
     'https://colab.research.google.com/github/QuantEcon/lecture-foo.notebooks/blob/release/nb/topic/page.ipynb',
-  );
-  assert.equal(
-    buildJupyterHubUrl(HUB, SOURCE, '/lectures/topic/page.md', config),
-    'https://hub.example.org/jupyter/hub/user-redirect/git-pull?repo=https://github.com/QuantEcon/lecture-foo.notebooks&branch=release&urlpath=tree/lecture-foo.notebooks/nb/topic/page.ipynb',
   );
 });

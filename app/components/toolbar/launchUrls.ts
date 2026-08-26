@@ -76,20 +76,3 @@ export function buildColabUrl(
   return `${COLAB_BASE_URL}${orgRepo}/blob/${branch}/${relPath}`;
 }
 
-/** Private JupyterHub (nbgitpuller `git-pull`) launch URL for the given page. */
-export function buildJupyterHubUrl(
-  hubBaseUrl: string,
-  sourceOrgRepo: string,
-  location: string,
-  config: LaunchConfig = {},
-): string {
-  const orgRepo = notebookOrgRepo(sourceOrgRepo, config);
-  const repoName = orgRepo.split('/')[1] ?? '';
-  const branch = config.branch ?? DEFAULT_BRANCH;
-  const relPath = notebookRelPath(location, config);
-  // Drop a trailing slash on the user-provided hub URL to avoid `//jupyter`.
-  // Query values are left unencoded to match the book-theme `launch.py` /
-  // nbgitpuller format that the production QuantEcon hubs already accept.
-  const base = hubBaseUrl.replace(/\/+$/, '');
-  return `${base}/jupyter/hub/user-redirect/git-pull?repo=https://github.com/${orgRepo}&branch=${branch}&urlpath=tree/${repoName}/${relPath}`;
-}

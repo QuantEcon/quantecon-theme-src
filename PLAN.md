@@ -54,7 +54,7 @@ Derived from `quantecon-book-theme` v0.20.3 (see its `README.md`, `docs/user/*`,
 | RTL support (`dir="rtl"`) | ✅ | ❌ | **5** |
 | Collapsible stderr warnings in notebook cells | ✅ | ❓ verify | **6** |
 | Full OpenGraph / Twitter card meta tags | ✅ | ⚠️ partial | **6** |
-| **Already at parity:** dark mode, font scaling, fullscreen, search, "On this page" TOC + back-to-top, contents sidebar, downloads (PDF/notebook), Colab + private JupyterHub launch, edit-on-GitHub, author header, content-driven footer, responsive/mobile | ✅ | ✅ | — |
+| **Already at parity:** dark mode, font scaling, fullscreen, search, "On this page" TOC + back-to-top, contents sidebar, downloads (PDF/notebook), Colab launch, edit-on-GitHub, author header, content-driven footer, responsive/mobile | ✅ | ✅ | — |
 
 **Shipped state (2026-08-20).** Phase 0 completed across
 [v2.1.0](https://github.com/QuantEcon/quantecon-theme.mystmd/releases/tag/v2.1.0)–[v2.2.0](https://github.com/QuantEcon/quantecon-theme.mystmd/releases/tag/v2.2.0); Phase 1 and the Thebe half of Phase 2
@@ -339,8 +339,8 @@ stripping) + `docs/user/launch.md`.
       **GPU access** for the lectures that need it. #26 stays open as a demand-driven
       future request (an implementation existed in PR #86 and was stripped before
       merge — recoverable from that history if demand appears). The Private
-      JupyterHub option remains for now; its possible removal (collapsing the
-      launcher to a direct Colab button) is tracked in #87.
+      JupyterHub option was **removed in #87** (2026-08-26), collapsing the
+      launcher to a direct Colab link — see the note below.
 - [x] Generalise the hardcoded `.notebooks` suffix and `main` branch into config under
       `site.options` in `myst.yml` (MyST's analog of the book-theme `html_theme_options`),
       so non-default branches and naming work. New optional keys (defaults reproduce the
@@ -348,18 +348,21 @@ stripping) + `docs/user/launch.md`.
       (default `.notebooks`), `launch_branch` (default `main`), plus `launch_repo_url`
       to point at an arbitrary notebook repo (book-theme `nb_repository_url` parity).
       URL logic extracted to pure, unit-tested builders in `launchUrls.ts`; applies to
-      **both** the Colab and the Private-JupyterHub launch URLs. Done in
-      [#97](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/97).
-- [x] Fix Colab/JupyterHub path handling for **nested** lecture dirs: strip the source
+      the Colab launch URL (and, until #87 removed it, the private-JupyterHub
+      URL). Done in [#97](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/97).
+- [x] Fix Colab path handling for **nested** lecture dirs: strip the source
       extension robustly (the old `page.location.split('.')[0]` truncated paths/dirs
       containing a dot), strip `launch_source_path` (book-theme `path_to_docs`) and
       prepend `launch_notebooks_path` (book-theme `nb_path_to_notebooks`). Covered by
       `tests/unit/launch-urls.test.mjs` (same PR,
       [#97](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/97)).
 
-**Note:** removing the Private JupyterHub option (collapse to a single Colab button, #87)
-is deliberately kept out of this work — it's gated on a maintainer demand signal — so the
-generalisation above covers both Colab and the hub. See #87.
+**Note:** the Private JupyterHub option was **removed (#87, 2026-08-26)** and the launcher
+is now a direct Colab link. The demand signal it was gated on came back empty: no lecture
+repo has ever set the book-theme's `jupyterhub_url`, so that button never rendered on a live
+site, while the MyST version shipped a hand-typed URL box that hardcoded the `/jupyter/hub/`
+path and so only worked for one hub layout. Re-adding hub, Binder and local-server targets
+properly is tracked as future work — see the enhancement issues linked from #87.
 
 **Effort:** M. **Risk:** low–medium. **Deps:** Phase 0.
 
