@@ -20,6 +20,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- The remaining absolute asset URLs in the built stylesheets are now relative
+  too. [#139](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/139)
+  rewrote the stylesheets in `_assets/`, but Remix also emits route and
+  shared-chunk CSS into the build root, `_shared/` and `routes/`, and the
+  rewriter enumerated a single directory so it never saw them. Four such
+  stylesheets shipped in 2.3.1 still pointing `--jp-icon-plotly` at an absolute
+  `/myst_assets_folder/_assets/plotly-*.svg`, which resolves under `myst start`
+  but 404s in `myst build --html` output and under a `baseurl` — the same defect
+  [#138](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/138)
+  described, in the files that fix did not cover. The script now walks the build
+  directory and computes each stylesheet's prefix from its own location, since
+  the depth differs (`./_assets/` from the build root, `../_assets/` from
+  `routes/`), and checks every rewritten target from that stylesheet's own
+  directory rather than assuming one. A production build now emits **zero**
+  absolute asset URLs and all 78 references resolve
+  ([#150](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/150)).
+
 ## [2.3.1] - 2026-08-26
 
 > Headline: corrects two defects in what 2.3.0 shipped. Code cells nested inside
