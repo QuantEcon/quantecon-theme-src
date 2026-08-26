@@ -502,5 +502,11 @@ inline below.*
    series migrates at once, onto a single common publishing base, once feature parity
    is complete (single maintenance surface). The cutover gate is therefore the full
    remaining milestone — Phases 3–6 ([#89](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/89)–[#92](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/92))
-   — plus the open live-compute defect
-   [#117](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/117).
+   — plus migration readiness ([#114](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/114),
+   [#128](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/128),
+   [#87](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/87)). The gate is
+   tracked as a whole in [#147](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/147).
+   The live-compute and static-build defects that blocked the shipped surface
+   ([#117](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/117),
+   [#138](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/138)) are fixed and
+   ship in v2.3.1.

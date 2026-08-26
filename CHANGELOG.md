@@ -20,6 +20,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.1] - 2026-08-26
+
+> Headline: corrects two defects in what 2.3.0 shipped. Code cells nested inside
+> a directive (`{exercise}`, `{solution}`, `{note}`) drew a run button that did
+> nothing; they now register with the kernel and execute. Self-hosted stylesheet
+> assets 404'd in `myst build --html` output, so every KaTeX font failed and
+> maths fell back to system glyphs on statically built sites; asset URLs are now
+> relative and resolve in every layout. Source Sans 3 is self-hosted too,
+> removing the last third-party origin from the critical rendering path.
+> Consumers upgrade by bumping the pinned release URL in `site.template`.
+
 ### Added
 - Visual-fixture coverage for fancy ordered lists **inside a directive**.
   `tests/visual/fixture/lists.md` gains a `prf:theorem`-wrapped stamped list,
@@ -50,8 +61,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   from the site's own origin. The family is declared as `Source Sans 3
   Variable`, so `tailwind.config.js` and the inlined critical CSS in
   `app/root.tsx` name it that way too, with plain `Source Sans 3` kept next in
-  the stack for a locally installed copy. Rendered text is unchanged — the
-  visual suite passes against untouched baselines
+  the stack for a locally installed copy. Rendered text is unchanged in
+  substance, but the `@fontsource` build's glyph metrics differ marginally from
+  the Google-served static font, enough to re-wrap a line at the mobile
+  viewport — so the linux mobile-chrome baselines were refreshed
+  ([#148](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/148)); every
+  desktop baseline is untouched
   ([#131](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/131)).
 
 ### Fixed
@@ -283,7 +298,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial version of the QuantEcon MyST theme: Remix + `@myst-theme` book theme with QuantEcon branding, toolbar (home, search, fullscreen, font scaling, dark mode, downloads, Colab/JupyterHub launch, edit-on-GitHub), content-driven site footer, and bundled brand assets.
 
-[Unreleased]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.3.0...HEAD
+[Unreleased]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.3.1...HEAD
+[2.3.1]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.0.0...v2.1.0
