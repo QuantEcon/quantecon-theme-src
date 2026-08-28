@@ -1,0 +1,176 @@
+/* QuantEcon content styles.
+ *
+ * Typography and content styling for the lectures, matched to the Sphinx
+ * lecture builds (python-programming.quantecon.org). This is the file to
+ * hand-edit -- content design lives here as plain CSS, not in
+ * `tailwind.config.js`.
+ *
+ * Imported from `styles/app.css` after `@myst-theme/styles`, so rules here are
+ * emitted after that package's own.
+ *
+ *
+ * HOW TO OVERRIDE THE TYPOGRAPHY PLUGIN WITHOUT `!important`
+ *
+ * `.article` is bound to `@tailwindcss/typography` by
+ * `@myst-theme/styles/typography.css`:
+ *
+ *     .article { @apply prose break-words max-w-none prose-stone dark:prose-invert; }
+ *
+ * The plugin writes every rule as `.article :where(p)`. `:where()` contributes
+ * no specificity, so that selector weighs (0,1,0) -- a single class. Plain
+ * `.article p` here is (0,1,1) and beats it outright.
+ *
+ * Two cases need more care:
+ *
+ *   - Where the plugin already uses a descendant selector, match its shape.
+ *     `.article :where(ul > li)` is (0,1,2), so a bare `.article li` (0,1,1)
+ *     loses; write `.article ul > li` and let import order settle the tie.
+ *
+ *   - Utility classes on the element win at equal specificity. The theme
+ *     renders `<h1 class="pt-12 m-0">`, and `m-0` is (0,1,0) -- so `.article h1`
+ *     (0,1,1) is needed to set a heading margin.
+ *
+ *
+ * LAYERS
+ *
+ * `@layer base` for element rules. `@layer components` for class overrides
+ * such as `.link`, which upstream defines in that layer -- base is emitted
+ * first, so the same rule in the base block would lose.
+ *
+ * Both `@layer components` and `@layer utilities` are tree-shaken: a rule
+ * survives only if Tailwind finds its class while scanning `content`, and that
+ * list covers this theme's `app/` plus the myst-theme packages -- never lecture
+ * markdown. So a class authored in lecture source (`:class: terminal`) is
+ * dropped from the build. Such rules go unlayered at the foot of this file.
+ *
+ *
+ * COLOURS
+ *
+ * Prefer setting `--tw-prose-*` custom properties on `.article` over colours on
+ * elements. `dark:prose-invert` resolves to `.article:is(.dark *)`, (0,2,0), so
+ * it still wins in dark mode -- a colour hard-coded on an element would not
+ * invert and would need a matching `.dark` rule alongside it.
+ *
+ *
+ * UNITS
+ *
+ * The Sphinx builds render at an 18px root; this theme keeps 16px. Express
+ * sizes in `em` against the content font size rather than inheriting from
+ * `:root`, and note the px equivalent, so the two can be compared directly.
+ */
+
+/* ---------------------------------------------------------------------------
+   DESIGN TOKENS
+   Values shared across the rules below. Overriding one of these under `.dark`
+   is the way to give a token a dark-mode variant.
+   --------------------------------------------------------------------------- */
+:root {
+  /* Inline literals, matching the Sphinx build's `code.literal`. */
+  --qe-literal-color: #af5f5f;
+}
+
+@layer base {
+  /* Paragraph rhythm. The plugin ships `.article :where(p)` at 1.25em (20px);
+     the Sphinx build uses a flat 1rem, so match that. `.article p` is (0,1,1)
+     and beats the plugin's (0,1,0). */
+  .article p {
+    margin: 1rem 0; /* 16px */
+  }
+
+  /* Inline literals. `:not(pre) > code` keeps this off code blocks, which the
+     Sphinx build leaves as plain monospace -- applying the literal colour there
+     would fight the syntax highlighting. Code inside headings is deliberately
+     included: Sphinx styles those as literals too. At (0,1,2) this outranks
+     both `:where(code)` and `:where(h3 code)`, which are (0,1,0). */
+  .article :not(pre) > code {
+    font-weight: 400;
+    color: var(--qe-literal-color, #af5f5f);
+    /* Inherit the body font. Dropping this declaration would not fall back to
+       Source Sans 3: Tailwind's preflight and JupyterLab's stylesheet both set a
+       monospace family on `code`, and the result is Menlo. */
+    font-family: inherit;
+    font-size: 1rem; /* 16px, matching body text */
+    font-style: normal;
+    letter-spacing: 0.01rem;
+    overflow-wrap: break-word;
+  }
+
+  /* The typography plugin wraps inline code in literal backticks via
+     `:where(code)::before/::after`, (0,1,1). The Sphinx build renders none, so
+     suppress them. `content: none` stops the boxes being generated at all.
+     Upstream @myst-theme already fixes this in `themeExtensions.typography`,
+     but that never reaches the build -- see the note in tailwind.config.js. */
+  .article :not(pre) > code::before,
+  .article :not(pre) > code::after {
+    content: none;
+  }
+
+  /* Figures: no space above, 1rem below. Scoped to `.article` because the
+     plugin's `:where(figure)` is (0,1,0) and a bare `figure` at (0,0,1) would
+     lose to it. Top/bottom longhands only -- the shorthand's left/right would
+     outrank `.auto`/`.terminal` at (0,1,0) and cancel the auto margins that
+     centre these same figures. */
+  .article figure {
+    margin-top: 0;
+    margin-bottom: 1rem; /* 16px */
+    padding: 0.5em; /* 8px; box-sizing is border-box, so width is unchanged */
+  }
+
+  /* Lists sit flush -- the surrounding paragraphs' 1rem margins define the
+     space before and after. This clears three plugin rules at once:
+     `:where(ul)`, `:where(ol)` and `:where(ul ul, ul ol, ol ul, ol ol)`. All
+     three are (0,1,0), because `:where()` contributes no specificity whatever
+     it wraps, so `.article ul` at (0,1,1) beats the nested-list rule too.
+     Padding is left alone, so the 1.625em indent stays, and the longhands
+     leave the inline margins to whatever else sets them. */
+  .article ul,
+  .article ol {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  /* List spacing. The plugin sets these via `.article :where(li)`, which is
+     (0,1,0), so `.article li` at (0,1,1) wins outright -- no need to mirror its
+     `ul > li` shape (that selector carries only `padding-inline-start`). */
+  .article li {
+    margin: 0.5rem 0; /* 8px */
+  }
+
+  /* MyST wraps list-item text in a <p>, which would otherwise pick up the prose
+     paragraph margin of 1.25em and stack it inside the li margin above.
+     Direct children only, so paragraphs in a nested admonition or figure keep
+     their own spacing. At (0,1,2) this also outranks the `.article p` rule. */
+  .article li > p {
+    margin: 0;
+  }
+}
+
+@layer components {
+  /* Content base size. `.article` is where @tailwindcss/typography puts the
+     prose font-size, so it is set here rather than on :root -- every `em` in
+     this file resolves against it. */
+  .article {
+    font-size: 1rem; /* 16px */
+  }
+
+}
+
+/* Sizing classes applied from lecture source, e.g. `:class: terminal` on a
+   figure. Deliberately unlayered: rules inside `@layer components` are purged
+   unless Tailwind spots the class in `content`, and it never scans lecture
+   markdown. Unlayered CSS is passed through untouched. It is emitted after the
+   main Tailwind layers, though a block of responsive `@media` utilities still
+   follows, so this is not the last word in the cascade. */
+.auto {
+  width: 70%;
+  height: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.terminal {
+  width: 80%;
+  height: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
