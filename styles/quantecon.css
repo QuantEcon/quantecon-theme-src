@@ -77,6 +77,33 @@
     margin: 1rem 0; /* 16px */
   }
 
+  /* Anchors. Ported out of `tailwind.config.js`'s `typography.DEFAULT.css.a`
+     and `invert.css.a` when the broken `typography` spread was removed -- see
+     the note there. Upstream prose otherwise sets `font-weight: 500` and
+     underlines every anchor.
+
+     `:where(a)` keeps these at (0,1,0), matching the rules they replace. That
+     matters: heading anchors carry a `font-normal` utility and `.link` carries
+     its own colour and underline, both emitted later in the sheet, so they win
+     the tie -- exactly as they did before. A plain `.article a` would be
+     (0,1,1) and would wrongly override both. */
+  .article :where(a) {
+    font-weight: inherit;
+    text-decoration: none;
+  }
+
+  .article :where(a):hover {
+    text-decoration: underline;
+  }
+
+  /* Dark mode at (0,2,0): beats prose-invert, still loses to `.link`'s own dark
+     colour utility. `.link` is deliberately not excluded -- it took its weight
+     from this rule and its colour from its own utility. */
+  .dark .article :where(a) {
+    color: #fff;
+    font-weight: 600;
+  }
+
   /* Inline literals. `:not(pre) > code` keeps this off code blocks, which the
      Sphinx build leaves as plain monospace -- applying the literal colour there
      would fight the syntax highlighting. Code inside headings is deliberately

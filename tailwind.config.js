@@ -6,31 +6,6 @@ module.exports = {
   theme: {
     extend: {
       ...mystTheme.themeExtensions,
-      typography: {
-        ...mystTheme.themeExtensions.typography,
-        DEFAULT: {
-          css: {
-            fontSize: '1.125rem',
-            fontWeight: '400',
-            a: {
-              color: 'rgb(0 73 121 / 0.8)',
-              fontWeight: 'inherit',
-              textDecoration: 'none',
-              '&:hover': {
-                textDecoration: 'underline',
-              },
-            },
-          },
-        },
-        invert: {
-          css: {
-            a: {
-              color: '#ffffff',
-              fontWeight: '600',
-            },
-          },
-        },
-      },
       gridTemplateColumns: {
         ...mystTheme.themeExtensions.gridTemplateColumns,
         'simple-sm':
