@@ -44,9 +44,20 @@ module.exports = {
         // "Source Sans 3 Variable" is the family name declared by
         // @fontsource-variable/source-sans-3, self-hosted via app/links.ts.
         // Plain "Source Sans 3" comes next so a locally installed copy is used
-        // while the webfont swaps in, or if it fails to load. Must stay in step
-        // with CRITICAL_CSS in app/root.tsx.
-        sans: ['"Source Sans 3 Variable"', '"Source Sans 3"', 'sans-serif'],
+        // while the webfont swaps in, or if it fails to load.
+        //
+        // "Source Sans 3 Fallback" is the metric-matched local face declared in
+        // CRITICAL_CSS (app/root.tsx). The faces ship `font-display: swap`, so
+        // until the woff2 lands the browser paints a fallback and then swaps --
+        // and raw Helvetica/Arial run ~7.8% wider than Source Sans 3, which is
+        // what makes that swap a visible reflow. The tuned face closes it to
+        // ~0.5%. Must stay in step with CRITICAL_CSS in app/root.tsx.
+        sans: [
+          '"Source Sans 3 Variable"',
+          '"Source Sans 3"',
+          '"Source Sans 3 Fallback"',
+          'sans-serif',
+        ],
       },
       keyframes: {
         slideDownAndFade: {

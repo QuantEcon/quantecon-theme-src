@@ -54,9 +54,17 @@
  *
  * UNITS
  *
- * The Sphinx builds render at an 18px root; this theme keeps 16px. Express
- * sizes in `em` against the content font size rather than inheriting from
- * `:root`, and note the px equivalent, so the two can be compared directly.
+ * The Sphinx builds step the root size by viewport -- 16px below 992px, 18px
+ * at and above it. This theme deliberately does not: `.article` is a flat 18px
+ * at every width, so the size never shifts under the reader, and the root stays
+ * at 16px so the browser's own font-size preference is not overridden (setting
+ * a px root is a WCAG 1.4.4 problem, which is why the Sphinx theme has to ship
+ * its own font-plus/font-minus controls to compensate).
+ *
+ * So `rem` (16px, off the root) and `em` (18px, off `.article`) differ here and
+ * the choice carries meaning. Use `em` for anything that should scale with the
+ * content. Use `rem` only where the Sphinx build is itself root-relative, and
+ * say so at the site. Note the px equivalent either way.
  */
 
 /* ---------------------------------------------------------------------------
@@ -66,15 +74,25 @@
    --------------------------------------------------------------------------- */
 :root {
   /* Inline literals, matching the Sphinx build's `code.literal`. */
-  --qe-literal-color: #af5f5f;
+  --qe-literal-color: #af5f5f; /* 4.54:1 on white -- AA, but only just */
+}
+
+/* Dark mode. The Sphinx theme defines its own dark literal colour under
+   `body.dark-theme code.literal`; this is that value. The light #af5f5f scores
+   only 3.85:1 on stone-900, below the 4.5:1 AA floor, where #d78787 is 6.42:1.
+   `.dark` and `:root` are both (0,1,0), so this wins on source order -- it has
+   to stay below the block above. */
+.dark {
+  --qe-literal-color: #d78787;
 }
 
 @layer base {
-  /* Paragraph rhythm. The plugin ships `.article :where(p)` at 1.25em (20px);
-     the Sphinx build uses a flat 1rem, so match that. `.article p` is (0,1,1)
-     and beats the plugin's (0,1,0). */
+  /* Paragraph rhythm. The plugin ships `.article :where(p)` at 1.25em (22.5px).
+     The Sphinx build leaves `p` at `margin: revert`, i.e. the UA default of
+     `1em 0` measured against 18px text, so `1em` reproduces it exactly.
+     `.article p` is (0,1,1) and beats the plugin's (0,1,0). */
   .article p {
-    margin: 1rem 0; /* 16px */
+    margin: 1em 0; /* 18px */
   }
 
   /* Anchors. Ported out of `tailwind.config.js`'s `typography.DEFAULT.css.a`
@@ -116,7 +134,12 @@
        Source Sans 3: Tailwind's preflight and JupyterLab's stylesheet both set a
        monospace family on `code`, and the result is Menlo. */
     font-family: inherit;
-    font-size: 1rem; /* 16px, matching body text */
+    /* Root-relative on purpose: this must NOT scale with `.article`. The
+       Sphinx build sizes inline code at `.9rem` off its own root (16.2px),
+       fixed regardless of the surrounding text -- including inside headings.
+       Against this theme's 16px root, `1rem` is the same 16px. `1em` would
+       inherit the heading scale and blow code in an h2/h3 up to match it. */
+    font-size: 1rem; /* 16px; the Sphinx build renders 16.2px */
     font-style: normal;
     letter-spacing: 0.01rem;
     overflow-wrap: break-word;
@@ -139,8 +162,8 @@
      centre these same figures. */
   .article figure {
     margin-top: 0;
-    margin-bottom: 1rem; /* 16px */
-    padding: 0.5em; /* 8px; box-sizing is border-box, so width is unchanged */
+    margin-bottom: 1em; /* 18px, matching the paragraph rhythm */
+    padding: 0.5em; /* 9px; box-sizing is border-box, so width is unchanged */
   }
 
   /* Lists sit flush -- the surrounding paragraphs' 1rem margins define the
@@ -158,9 +181,11 @@
 
   /* List spacing. The plugin sets these via `.article :where(li)`, which is
      (0,1,0), so `.article li` at (0,1,1) wins outright -- no need to mirror its
-     `ul > li` shape (that selector carries only `padding-inline-start`). */
+     `ul > li` shape (that selector carries only `padding-inline-start`). The
+     Sphinx build uses `li { margin: .5rem 0 }` against an 18px root, i.e. 9px;
+     `0.5em` against 18px content is the same 9px. */
   .article li {
-    margin: 0.5rem 0; /* 8px */
+    margin: 0.5em 0; /* 9px */
   }
 
   /* MyST wraps list-item text in a <p>, which would otherwise pick up the prose
@@ -175,11 +200,32 @@
 @layer components {
   /* Content base size. `.article` is where @tailwindcss/typography puts the
      prose font-size, so it is set here rather than on :root -- every `em` in
-     this file resolves against it. */
-  .article {
-    font-size: 1rem; /* 16px */
-  }
+     this file resolves against it. Flat at every width; see UNITS above.
 
+     Keep in step with the `.article` rule in `CRITICAL_CSS` (app/root.tsx).
+     Nothing sets a content size at first paint otherwise, so the article would
+     render at the UA default 16px and jump to 18px when this bundle lands.
+
+     No `--tw-prose-links` here, deliberately. The anchor colour that came off
+     `tailwind.config.js` with the broken `typography` spread looks like a
+     regression but is not: it never reached the page, before or after.
+
+     The typography plugin colours anchors with
+     `.article :where(a):not(...) { color: var(--tw-prose-links) }`, (0,1,0),
+     emitted in the components layer. Every anchor myst-to-react renders in
+     content carries a class that re-colours it from the *utilities* layer --
+     `.link`, `.hover-link`, `.text-inherit` -- and utilities are emitted after
+     components, so they win at equal specificity. The one classless anchor is
+     the project title, and `ProjectFrontmatter.tsx` puts `prose-a:text-inherit`
+     on it precisely so it does NOT take a link colour.
+
+     Measured on the visual fixture: forcing the token to a sentinel value
+     changed 0 of 35 anchors across /, /features, /lists and /notebook. Setting
+     it here would be dead code. If article anchors ever do need recolouring,
+     it has to be a rule that outranks those utilities, not this token. */
+  .article {
+    font-size: 1.125rem; /* 18px */
+  }
 }
 
 /* Sizing classes applied from lecture source, e.g. `:class: terminal` on a
