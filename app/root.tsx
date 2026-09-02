@@ -73,6 +73,10 @@ export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
  *                    it is declared below rather than in styles/app.css so it
  *                    is available at this first paint too. Being `local()`-only
  *                    it costs no request.
+ *   - content size:  styles/quantecon.css -> `.article` font-size (1.125rem).
+ *                    Without it the article paints at the UA default 16px and
+ *                    jumps to 18px when the Tailwind bundle lands, reflowing
+ *                    the whole page on every cold load.
  *   - grid columns:  tailwind.config.js  -> theme.extend.gridTemplateColumns
  *                    (`simple-sm` / `simple-xl`), applied by `.simple-center-grid`
  *   - dark bg:       matches the page <body>, which @myst-theme/site renders as
@@ -94,6 +98,7 @@ export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
 const CRITICAL_CSS = `
 @font-face{font-family:"Source Sans 3 Fallback";src:local("Helvetica"),local("Arial"),local("Liberation Sans"),local("Arimo");size-adjust:92.25%;ascent-override:111%;descent-override:43.36%;line-gap-override:0%}
 :where(html){font-family:"Source Sans 3 Variable","Source Sans 3","Source Sans 3 Fallback",sans-serif}
+:where(.article){font-size:1.125rem}
 :where(body){margin:0;background-color:#fff}
 :where(.dark body){background-color:#1c1917}
 :where([hidden],.hidden){display:none}

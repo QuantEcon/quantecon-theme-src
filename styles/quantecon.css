@@ -54,19 +54,23 @@
  *
  * UNITS
  *
- * The Sphinx builds step the root size by viewport -- 16px below 992px, 18px
- * at and above it. This theme keeps a flat 16px: the size never shifts under
- * the reader, and the root is left alone so the browser's own font-size
- * preference still applies (a px root is a WCAG 1.4.4 problem, which is why the
- * Sphinx theme has to ship its own font-plus/font-minus controls to make up for
- * it). Lecture text is therefore smaller than the Sphinx build above 992px --
- * a deliberate trade, not a mismatch waiting to be fixed.
+ * The Sphinx builds step the *root* size by viewport -- 16px below 992px, 18px
+ * at and above it -- and reach 18px content that way. This theme sets a flat
+ * 18px on `.article` instead and leaves the root at 16px, so the browser's own
+ * font-size preference still applies (overriding it with a px root is a WCAG
+ * 1.4.4 problem, which is why the Sphinx theme has to ship its own
+ * font-plus/font-minus controls to make up for it).
  *
- * `.article` and the root are both 16px, so `em` and `rem` coincide in content
- * rules today. Prefer `em` there regardless, so the rhythm follows the content
- * if that base ever moves. Site chrome pinned to a fixed size -- the footer and
- * the back-to-top button -- uses `rem` on purpose, so it stays put when the
- * content size changes. Note the px equivalent either way.
+ * Content therefore matches the Sphinx build at desktop widths, and runs larger
+ * than it below 992px, where Sphinx drops back to a 16px root. Flat was chosen
+ * over a matching breakpoint so the size never shifts under the reader.
+ *
+ * `em` (18px, off `.article`) and `rem` (16px, off the root) differ here, so the
+ * choice carries meaning. Use `em` for anything that should scale with the
+ * content. Use `rem` where the value is pinned to a fixed size regardless of
+ * content -- the footer, the back-to-top button, and inline code, all of which
+ * track the Sphinx build's own root-relative sizes. Note the px equivalent
+ * either way.
  */
 
 /* ---------------------------------------------------------------------------
@@ -89,12 +93,12 @@
 }
 
 @layer base {
-  /* Paragraph rhythm. The plugin ships `.article :where(p)` at 1.25em (20px).
+  /* Paragraph rhythm. The plugin ships `.article :where(p)` at 1.25em (22.5px).
      The Sphinx build leaves `p` at `margin: revert`, i.e. the UA default of
      `1em 0` measured against its own text size, so `1em` keeps that proportion.
      `.article p` is (0,1,1) and beats the plugin's (0,1,0). */
   .article p {
-    margin: 1em 0; /* 16px at 16px content */
+    margin: 1em 0; /* 18px at 18px content */
   }
 
   /* Anchors. Ported out of `tailwind.config.js`'s `typography.DEFAULT.css.a`
@@ -189,7 +193,7 @@
      18px desktop root); `0.5em` keeps that proportion against the content size
      here. */
   .article li {
-    margin: 0.5em 0; /* 8px at 16px content */
+    margin: 0.5em 0; /* 9px at 18px content */
   }
 
   /* MyST wraps list-item text in a <p>, which would otherwise pick up the prose
@@ -226,7 +230,7 @@
      it here would be dead code. If article anchors ever do need recolouring,
      it has to be a rule that outranks those utilities, not this token. */
   .article {
-    font-size: 1rem; /* 16px */
+    font-size: 1.125rem; /* 18px */
   }
 }
 
