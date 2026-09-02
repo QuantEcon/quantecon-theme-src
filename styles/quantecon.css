@@ -89,12 +89,12 @@
 }
 
 @layer base {
-  /* Paragraph rhythm. The plugin ships `.article :where(p)` at 1.25em (22.5px).
+  /* Paragraph rhythm. The plugin ships `.article :where(p)` at 1.25em (20px).
      The Sphinx build leaves `p` at `margin: revert`, i.e. the UA default of
-     `1em 0` measured against 18px text, so `1em` reproduces it exactly.
+     `1em 0` measured against its own text size, so `1em` keeps that proportion.
      `.article p` is (0,1,1) and beats the plugin's (0,1,0). */
   .article p {
-    margin: 1em 0; /* 16px */
+    margin: 1em 0; /* 16px at 16px content */
   }
 
   /* Anchors. Ported out of `tailwind.config.js`'s `typography.DEFAULT.css.a`
@@ -132,10 +132,11 @@
   .article :not(pre) > code {
     font-weight: 400;
     color: var(--qe-literal-color, #af5f5f);
-    /* Inherit the body font. Dropping this declaration would not fall back to
-       Source Sans 3: Tailwind's preflight and JupyterLab's stylesheet both set a
-       monospace family on `code`, and the result is Menlo. */
-    font-family: inherit;
+    /* No `font-family` on purpose. The Sphinx build sets inline literals in
+       Source Code Pro, monospace (measured on python-programming.quantecon.org),
+       so the monospace family that Tailwind's preflight and JupyterLab's
+       stylesheet already put on `code` is the right one -- the same stack the
+       code blocks use. Self-hosting Source Code Pro is a separate change. */
     /* Root-relative on purpose: this must NOT scale with `.article`. The
        Sphinx build sizes inline code at `.9rem` off its own root (16.2px),
        fixed regardless of the surrounding text -- including inside headings.
@@ -184,10 +185,11 @@
   /* List spacing. The plugin sets these via `.article :where(li)`, which is
      (0,1,0), so `.article li` at (0,1,1) wins outright -- no need to mirror its
      `ul > li` shape (that selector carries only `padding-inline-start`). The
-     Sphinx build uses `li { margin: .5rem 0 }` against an 18px root, i.e. 9px;
-     `0.5em` against 18px content is the same 9px. */
+     Sphinx build uses `li { margin: .5rem 0 }`, half its root size (9px at its
+     18px desktop root); `0.5em` keeps that proportion against the content size
+     here. */
   .article li {
-    margin: 0.5em 0; /* 8px */
+    margin: 0.5em 0; /* 8px at 16px content */
   }
 
   /* MyST wraps list-item text in a <p>, which would otherwise pick up the prose
@@ -232,7 +234,7 @@
    SITE FOOTER
 
    The footer part (`site.parts.footer`) renders *inside* `.article`, so it
-   inherits the content typography set above -- 18px text on an 18px rhythm,
+   inherits the content typography set above -- the content size and rhythm,
    prose link colours, centred images. These rules put it back to the Sphinx
    build's footer, measured off python-programming.quantecon.org.
 
@@ -249,7 +251,10 @@
        root is the 14.4px the Sphinx build renders (its .8rem of an 18px root). */
     font-size: 0.9rem; /* 14.4px */
     line-height: 1.5; /* 21.6px */
-    color: #444; /* full opacity; the element carries `text-opacity-80` */
+    /* This overrides the element's `text-qetext-light text-opacity-80`
+       utilities outright, so that 80% no longer applies; the `opacity: 0.7`
+       below is what fades the footer. */
+    color: #444;
     /* The 36px gap above the rule is padding, not margin: `styles/app.css` sets
        `margin-top: 0 !important` on every `.simple-center-grid > *`, and this
        footer is a direct child of that grid. */
@@ -275,6 +280,14 @@
     text-decoration: none;
   }
 
+  /* Dark mode. The rule above is (0,2,1), so it beats both `.link`'s dark
+     colour utility and `.dark .article :where(a)` -- and #0072bc drawn at the
+     footer's 70% opacity on stone-900 is about 2.3:1. blue-300, the theme's
+     dark `.link` hover colour, lands near 5.3:1 at the same opacity. */
+  .dark .article .qe-site-footer a {
+    color: #93c5fd;
+  }
+
   /* The licence badge is wrapped `a.link > span > picture > img`; prose styles
      make the picture a block and centre the image with auto margins. */
   .article .qe-site-footer :is(img, picture) {
@@ -292,7 +305,7 @@
    BACK TO TOP
 
    `BackToTop` (app/components/Outline.tsx) renders a bare `<a>` inside
-   `.article`, so it inherits the 18px content size and the surrounding text
+   `.article`, so it inherits the content size and the surrounding text
    colour. The Sphinx build styles this as a small blue pill
    (`.qe-page__toc .back-to-top-btn`), measured live at #0072bc / 15.3px / 600
    with 9px 18px padding and a 4px radius.
