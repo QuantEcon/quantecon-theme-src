@@ -285,6 +285,36 @@
   }
 }
 
+/* ---------------------------------------------------------------------------
+   BACK TO TOP
+
+   `BackToTop` (app/components/Outline.tsx) renders a bare `<a>` inside
+   `.article`, so it inherits the 18px content size and the surrounding text
+   colour. The Sphinx build styles this as a small blue pill
+   (`.qe-page__toc .back-to-top-btn`), measured live at #0072bc / 15.3px / 600
+   with 9px 18px padding and a 4px radius.
+
+   The colour selector is deliberately only (0,1,1). `.dark .article :where(a)`
+   is (0,2,0) and so still wins in dark mode, keeping the existing white link
+   there rather than painting this blue on a dark background.
+   --------------------------------------------------------------------------- */
+@layer components {
+  .qe-back-to-top a {
+    font-size: 0.85em; /* 15.3px, matching the Sphinx build's .85rem of an 18px root */
+    font-weight: 600;
+    line-height: 1.5; /* 22.95px; prose otherwise gives this 1.75 (26.8px) */
+    color: #0072bc;
+    /* `inline-block` so the vertical padding actually takes; the anchor is
+       inline by default, and Sphinx uses `display: block` inside its own fixed
+       wrapper. Padding in px because it is `.5rem 1rem` against Sphinx's 18px
+       root, which no em against this element's own 15.3px reproduces cleanly. */
+    display: inline-block;
+    padding: 9px 18px;
+    border-radius: 4px;
+    text-decoration: none;
+  }
+}
+
 /* Sizing classes applied from lecture source, e.g. `:class: terminal` on a
    figure. Deliberately unlayered: rules inside `@layer components` are purged
    unless Tailwind spots the class in `content`, and it never scans lecture
