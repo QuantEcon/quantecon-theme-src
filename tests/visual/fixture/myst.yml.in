@@ -21,3 +21,5 @@ site:
   template: __THEME__
   options:
     logo_text: QuantEcon Visual Fixture
+  parts:
+    footer: footer.md
