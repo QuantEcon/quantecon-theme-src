@@ -55,16 +55,18 @@
  * UNITS
  *
  * The Sphinx builds step the root size by viewport -- 16px below 992px, 18px
- * at and above it. This theme deliberately does not: `.article` is a flat 18px
- * at every width, so the size never shifts under the reader, and the root stays
- * at 16px so the browser's own font-size preference is not overridden (setting
- * a px root is a WCAG 1.4.4 problem, which is why the Sphinx theme has to ship
- * its own font-plus/font-minus controls to compensate).
+ * at and above it. This theme keeps a flat 16px: the size never shifts under
+ * the reader, and the root is left alone so the browser's own font-size
+ * preference still applies (a px root is a WCAG 1.4.4 problem, which is why the
+ * Sphinx theme has to ship its own font-plus/font-minus controls to make up for
+ * it). Lecture text is therefore smaller than the Sphinx build above 992px --
+ * a deliberate trade, not a mismatch waiting to be fixed.
  *
- * So `rem` (16px, off the root) and `em` (18px, off `.article`) differ here and
- * the choice carries meaning. Use `em` for anything that should scale with the
- * content. Use `rem` only where the Sphinx build is itself root-relative, and
- * say so at the site. Note the px equivalent either way.
+ * `.article` and the root are both 16px, so `em` and `rem` coincide in content
+ * rules today. Prefer `em` there regardless, so the rhythm follows the content
+ * if that base ever moves. Site chrome pinned to a fixed size -- the footer and
+ * the back-to-top button -- uses `rem` on purpose, so it stays put when the
+ * content size changes. Note the px equivalent either way.
  */
 
 /* ---------------------------------------------------------------------------
@@ -92,7 +94,7 @@
      `1em 0` measured against 18px text, so `1em` reproduces it exactly.
      `.article p` is (0,1,1) and beats the plugin's (0,1,0). */
   .article p {
-    margin: 1em 0; /* 18px */
+    margin: 1em 0; /* 16px */
   }
 
   /* Anchors. Ported out of `tailwind.config.js`'s `typography.DEFAULT.css.a`
@@ -162,8 +164,8 @@
      centre these same figures. */
   .article figure {
     margin-top: 0;
-    margin-bottom: 1em; /* 18px, matching the paragraph rhythm */
-    padding: 0.5em; /* 9px; box-sizing is border-box, so width is unchanged */
+    margin-bottom: 1em; /* 16px, matching the paragraph rhythm */
+    padding: 0.5em; /* 8px; box-sizing is border-box, so width is unchanged */
   }
 
   /* Lists sit flush -- the surrounding paragraphs' 1rem margins define the
@@ -185,7 +187,7 @@
      Sphinx build uses `li { margin: .5rem 0 }` against an 18px root, i.e. 9px;
      `0.5em` against 18px content is the same 9px. */
   .article li {
-    margin: 0.5em 0; /* 9px */
+    margin: 0.5em 0; /* 8px */
   }
 
   /* MyST wraps list-item text in a <p>, which would otherwise pick up the prose
@@ -200,11 +202,9 @@
 @layer components {
   /* Content base size. `.article` is where @tailwindcss/typography puts the
      prose font-size, so it is set here rather than on :root -- every `em` in
-     this file resolves against it. Flat at every width; see UNITS above.
-
-     Keep in step with the `.article` rule in `CRITICAL_CSS` (app/root.tsx).
-     Nothing sets a content size at first paint otherwise, so the article would
-     render at the UA default 16px and jump to 18px when this bundle lands.
+     this file resolves against it. Flat at every width; see UNITS above. This
+     matches the UA default, so there is no first-paint size change to guard
+     against -- nothing needs to pin it in `CRITICAL_CSS`.
 
      No `--tw-prose-links` here, deliberately. The anchor colour that came off
      `tailwind.config.js` with the broken `typography` spread looks like a
@@ -224,7 +224,7 @@
      it here would be dead code. If article anchors ever do need recolouring,
      it has to be a rule that outranks those utilities, not this token. */
   .article {
-    font-size: 1.125rem; /* 18px */
+    font-size: 1rem; /* 16px */
   }
 }
 
@@ -244,7 +244,10 @@
    --------------------------------------------------------------------------- */
 @layer components {
   .article .qe-site-footer {
-    font-size: 0.8em; /* 14.4px, matching the Sphinx footer's .8rem of an 18px root */
+    /* `rem`, not `em`: this is chrome pinned to the Sphinx footer's own size,
+       so it must not track the content base. 0.9rem against this theme's 16px
+       root is the 14.4px the Sphinx build renders (its .8rem of an 18px root). */
+    font-size: 0.9rem; /* 14.4px */
     line-height: 1.5; /* 21.6px */
     color: #444; /* full opacity; the element carries `text-opacity-80` */
     /* The 36px gap above the rule is padding, not margin: `styles/app.css` sets
@@ -300,7 +303,10 @@
    --------------------------------------------------------------------------- */
 @layer components {
   .qe-back-to-top a {
-    font-size: 0.85em; /* 15.3px, matching the Sphinx build's .85rem of an 18px root */
+    /* `rem` for the same reason as the footer: pinned to the Sphinx button's
+       size, not the content base. The awkward figure is exactly .85rem of the
+       Sphinx build's 18px root expressed against this theme's 16px one. */
+    font-size: 0.95625rem; /* 15.3px */
     font-weight: 600;
     line-height: 1.5; /* 22.95px; prose otherwise gives this 1.75 (26.8px) */
     color: #0072bc;
