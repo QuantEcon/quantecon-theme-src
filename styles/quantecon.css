@@ -228,6 +228,63 @@
   }
 }
 
+/* ---------------------------------------------------------------------------
+   SITE FOOTER
+
+   The footer part (`site.parts.footer`) renders *inside* `.article`, so it
+   inherits the content typography set above -- 18px text on an 18px rhythm,
+   prose link colours, centred images. These rules put it back to the Sphinx
+   build's footer, measured off python-programming.quantecon.org.
+
+   Selectors are `.article .qe-site-footer`, (0,2,0), on purpose. At (0,1,0) a
+   bare `.qe-site-footer` loses to the utilities already on the element
+   (`text-qetext-light`, `text-opacity-80`, and `.link` on the badge anchor),
+   because utilities are emitted after components. The extra `.article` wins on
+   specificity instead of relying on source order.
+   --------------------------------------------------------------------------- */
+@layer components {
+  .article .qe-site-footer {
+    font-size: 0.8em; /* 14.4px, matching the Sphinx footer's .8rem of an 18px root */
+    line-height: 1.5; /* 21.6px */
+    color: #444; /* full opacity; the element carries `text-opacity-80` */
+    /* The 36px gap above the rule is padding, not margin: `styles/app.css` sets
+       `margin-top: 0 !important` on every `.simple-center-grid > *`, and this
+       footer is a direct child of that grid. */
+    padding-top: 2.5em; /* 36px */
+    /* The Sphinx footer sets `margin: 36px 0`, so it also clears 36px below the
+       last line. Padding rather than margin here: this is the last grid child,
+       and a bottom margin on it does not extend the document. */
+    padding-bottom: 2.5em; /* 36px */
+    /* The Sphinx footer carries `opacity: .7` on the whole element, so its rule,
+       badge and text all render faded. Without this the colours above are
+       correct as *declared* but render too strong: the rule samples
+       rgb(0 114 188) against the Sphinx build's rgb(75 155 207), and the text
+       likewise. Matching the opacity reproduces both exactly. */
+    opacity: 0.7;
+  }
+
+  .article .qe-site-footer p {
+    margin: 1em 0; /* 14.4px */
+  }
+
+  .article .qe-site-footer a {
+    color: #0072bc; /* rgb(0 114 188), the same blue as the rule above */
+    text-decoration: none;
+  }
+
+  /* The licence badge is wrapped `a.link > span > picture > img`; prose styles
+     make the picture a block and centre the image with auto margins. */
+  .article .qe-site-footer :is(img, picture) {
+    display: inline;
+    margin: 0;
+  }
+
+  /* The 5px rule itself; its `mb-5` utility is 20px, the Sphinx gap is 18px. */
+  .article .qe-site-footer > div:first-child {
+    margin-bottom: 1.25em; /* 18px */
+  }
+}
+
 /* Sizing classes applied from lecture source, e.g. `:class: terminal` on a
    figure. Deliberately unlayered: rules inside `@layer components` are purged
    unless Tailwind spots the class in `content`, and it never scans lecture
