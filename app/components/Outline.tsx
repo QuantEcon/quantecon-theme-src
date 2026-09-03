@@ -11,14 +11,21 @@ export function BackToTop() {
       <div className="relative col-margin">
         <p
           className={classNames(
-            'absolute bottom-0 font-semibold text-md z-[1000] transition-opacity ease-in-out duration-300',
+            'qe-back-to-top absolute bottom-0 font-semibold text-md z-[1000] transition-opacity ease-in-out duration-300',
             {
               'opacity-100': isScrolled,
               'opacity-0': !isScrolled,
             }
           )}
         >
-          <Link to="#top">Back to top</Link>
+          {/* Label matches the Sphinx build's back-to-top button exactly:
+              U+2191 + space + "Top". `aria-label` is deliberately kept -- the
+              Sphinx original leans on `title` alone, which screen readers
+              announce inconsistently, so the visible label can shorten without
+              the accessible name going with it. */}
+          <Link to="#top" title="Back to top" aria-label="Back to top">
+            ↑ Top
+          </Link>
         </p>
       </div>
     </div>

@@ -4,6 +4,9 @@
 @import '@myst-theme/styles';
 @import './lists.css';
 @import './mpl-widget.css';
+/* QuantEcon content styles. Last, so it has the final say among the
+   imports -- see the file's header for the specificity rules. */
+@import './quantecon.css';
 
 @layer base {
   .grid-gap {
