@@ -70,6 +70,10 @@
  * entry animation its starting point. Keep all three together — drop one and
  * the slide breaks in one direction.
  *
+ * Widths and padding are in rem, so the toolbar's A+/A- control (which sets
+ * the root font size) scales the drawer with the text it holds — intended.
+ * The 50px block-start below is px on purpose: the toolbar it sits under is.
+ *
  * Widths live here rather than in utility classes so they don't depend on
  * Tailwind's emission order (#130). The 50px block-start must match the
  * `top={50}` passed to <Document> in app/root.tsx.

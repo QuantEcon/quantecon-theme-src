@@ -43,6 +43,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and appended to the `sans` stack, so the swap to the self-hosted webfont no
   longer reflows the page: measured text width moves from about 8% off target
   to under 0.5% while the woff2 is still loading ([#155](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/155)).
+- The contents drawer is rebuilt on the native Popover API. The browser now
+  owns its open/closed state (`popovertarget` on the toolbar toggle), so the
+  drawer works on the server-rendered HTML before hydration, a closed drawer is
+  `display: none` from the UA stylesheet on the very first paint — the
+  critical-CSS rule that parked it off-screen is gone rather than patched —
+  and its links leave the tab order and accessibility tree while closed.
+  **Behaviour changes:** the drawer is now light-dismissed (`popover="auto"`):
+  Escape closes it, and so does clicking or selecting anywhere outside it,
+  where before it stayed open until toggled. It also closes itself when the
+  search dialog opens, since a popover paints above every z-indexed layer
+  including a modal's backdrop. **Browser support:** browsers without the
+  Popover API (Firefox < 125, Safari < 17, which includes anything on iOS 16)
+  get neither the drawer nor its toggle — the in-page outline and site
+  navigation still reach every page there. A polyfill was considered and
+  rejected because it runs after first paint, reintroducing the flash this
+  removes; revisit if that share matters. Drawer widths now live in
+  `styles/app.css` keyed on `theme(screens.*)`, so they no longer depend on
+  Tailwind's emission order
+  ([#130](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/130),
+  [#144](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/144)).
 
 ### Fixed
 - Inline code no longer renders wrapped in literal backticks.
@@ -67,6 +87,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   directory rather than assuming one. A production build now emits **zero**
   absolute asset URLs and all 78 references resolve
   ([#150](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/150)).
+- The contents toggle icons no longer animate their first-paint correction,
+  and the close icon no longer paints beside the hamburger on the pre-`app.css`
+  frame. The icons now swap with `display` off the drawer's `:popover-open`
+  state instead of cross-fading with `transition-all`, so there is nothing to
+  animate, and a zero-specificity critical-CSS rule hides the close icon until
+  the stylesheet lands
+  ([#127](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/127),
+  [#144](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/144)).
+- The toolbar logo no longer distorts between roughly 770px and 840px, and the
+  desktop control set no longer overflows the right edge in the 768–856px band.
+  The logo is `shrink-0` (preflight's `max-width: 100%` was letting it clamp to
+  a shrinking flex item), and the toolbar's gap, separator and padding widen at
+  `lg` rather than `md`, returning about 148px to that band
+  ([#144](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/144)).
+- The contents toggle has a visible `:focus-visible` ring, so keyboard users
+  can see where focus returns after Escape closes the drawer (WCAG 2.4.7)
+  ([#144](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/144)).
 
 ## [2.3.1] - 2026-08-26
 

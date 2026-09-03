@@ -5,8 +5,10 @@ import { TOC_POPOVER_ID } from '../contentsDrawer';
  * Opens the contents drawer.
  *
  * No `onClick` and no React state by design — `popovertarget` hands the toggle
- * to the browser, which also supplies `aria-expanded`, Escape and light
- * dismiss. Don't add any of those here.
+ * to the browser, which also supplies Escape, light dismiss and the expanded
+ * state in the accessibility tree. Don't add any of those here — including an
+ * `aria-expanded` attribute: the DOM attribute reads `null` by design, the
+ * browser exposes the state directly to assistive tech.
  *
  * Both icons are `aria-hidden` so the button is the single accessible name;
  * which one shows is decided in CSS from the drawer's `:popover-open` state

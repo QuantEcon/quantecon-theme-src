@@ -8,6 +8,7 @@ import {
   withBaseurl,
 } from '@myst-theme/providers';
 import { slugToUrl } from 'myst-common';
+import { useEffect } from 'react';
 import { TOC_HEADING_ID, TOC_POPOVER_ID } from './contentsDrawer';
 
 type StrictHeading = Omit<Heading, 'level'> & { level: number };
@@ -40,7 +41,42 @@ function Section({ group }: { group: HeadingGroup }) {
   );
 }
 
+/**
+ * Closes the drawer when a modal dialog opens.
+ *
+ * A popover lives in the browser's top layer, which paints above every
+ * z-indexed element — including the search dialog's backdrop (`z-[1000]`) and
+ * panel. Light dismiss does not help: it fires on pointerdown, and the search
+ * hotkey (Cmd/Ctrl+K) is a keydown, so the drawer would stay open above the
+ * modal, un-dimmed, with its links dead under the dialog's pointer-events lock.
+ *
+ * Radix portals the dialog into a container appended directly to <body>, so a
+ * shallow childList observer on <body> is enough — no subtree walk on every
+ * mutation. Any `role="dialog"` counts: a modal opening over an open drawer is
+ * wrong regardless of which dialog it is.
+ */
+function useCloseOnDialogOpen(popoverId: string) {
+  useEffect(() => {
+    const drawer = document.getElementById(popoverId);
+    if (!drawer || typeof drawer.hidePopover !== 'function') return;
+    const observer = new MutationObserver((records) => {
+      for (const record of records) {
+        for (const node of record.addedNodes) {
+          if (!(node instanceof Element)) continue;
+          if (node.matches('[role="dialog"]') || node.querySelector('[role="dialog"]')) {
+            drawer.hidePopover(); // no-op when already closed
+            return;
+          }
+        }
+      }
+    });
+    observer.observe(document.body, { childList: true });
+    return () => observer.disconnect();
+  }, [popoverId]);
+}
+
 export function ContentsSidebar() {
+  useCloseOnDialogOpen(TOC_POPOVER_ID);
   const config = useSiteManifest();
   const project = useProjectManifest();
   const baseurl = useBaseurl();
@@ -79,11 +115,14 @@ export function ContentsSidebar() {
     // React and the drawer works before hydration. All presentation lives in
     // `.qe-toc` (styles/app.css).
     <div id={TOC_POPOVER_ID} popover="auto" className="qe-toc">
-      <h2 id={TOC_HEADING_ID} className="mb-4 text-lg font-bold">
+      {/* A styled div, not a heading: the drawer precedes every page's <h1>
+          in DOM order, so an <h2> here would invert heading-order navigation
+          whenever the drawer is open. */}
+      <div id={TOC_HEADING_ID} className="mb-4 text-lg font-bold">
         Contents
-      </h2>
-      {/* Labelled by the heading, not a second `aria-label` — the toggle is
-          already named "Table of contents"; don't repeat it here. */}
+      </div>
+      {/* Labelled by the title above, not a second `aria-label` — the toggle
+          is already named "Table of contents"; don't repeat it here. */}
       <nav aria-labelledby={TOC_HEADING_ID}>
         {headings?.map((headingOrGroup) => {
           if (Array.isArray(headingOrGroup))

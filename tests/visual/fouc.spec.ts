@@ -54,6 +54,7 @@ async function firstPaintState(page: Page) {
   return page.evaluate(() => {
     const grid = document.querySelector(".simple-center-grid");
     const sidebar = document.querySelector(".qe-toc");
+    const closeIcon = document.querySelector(".qe-toc-toggle__close");
     const applied = Array.from(document.styleSheets).filter((sheet) => {
       try {
         return !!sheet.cssRules && sheet.cssRules.length > 0; // applied, not pending
@@ -71,6 +72,10 @@ async function firstPaintState(page: Page) {
       // `null` when the element is missing, so a renamed hook fails the
       // explicit presence guard instead of silently satisfying "not rendered".
       sidebarRendered: sidebar ? sidebar.getClientRects().length > 0 : null,
+      // The toggle's close icon is hidden by a critical-CSS rule; without it
+      // both icons paint side by side on the first frame. `null` when missing,
+      // for the same reason as above.
+      toggleCloseRendered: closeIcon ? closeIcon.getClientRects().length > 0 : null,
       // null href == an inline <style>; any string == an external sheet that applied
       appliedExternal: applied.some((sheet) => !!sheet.href),
     };
@@ -99,6 +104,11 @@ test.describe("FOUC guard (WebKit) — inline critical CSS styles the first pain
       "`.qe-toc` not found — the contents drawer was renamed or removed"
     ).not.toBeNull();
     expect(state.sidebarRendered).toBe(false); // closed popover paints nothing
+    expect(
+      state.toggleCloseRendered,
+      "`.qe-toc-toggle__close` not found — the toggle's close icon was renamed or removed"
+    ).not.toBeNull();
+    expect(state.toggleCloseRendered).toBe(false); // hidden by the inline rule
   });
 
   test("control: removing the inline critical CSS reproduces the FOUC", async ({ page }) => {
@@ -117,5 +127,12 @@ test.describe("FOUC guard (WebKit) — inline critical CSS styles the first pain
       "`.qe-toc` not found — the contents drawer was renamed or removed"
     ).not.toBeNull();
     expect(state.sidebarRendered).toBe(false);
+    // Unlike the drawer, the close icon relies on the critical CSS: with it
+    // stripped, both icons paint — which proves the inline rule is doing work.
+    expect(
+      state.toggleCloseRendered,
+      "`.qe-toc-toggle__close` not found — the toggle's close icon was renamed or removed"
+    ).not.toBeNull();
+    expect(state.toggleCloseRendered).toBe(true);
   });
 });

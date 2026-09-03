@@ -86,8 +86,15 @@ export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
  *                    #222, see app/components/Page.tsx — intentionally not set here
  *                    since these rules target <body>.)
  *
- * The contents drawer needs no rule here — as a popover the UA stylesheet
- * already hides it while closed (see `.qe-toc` in styles/app.css).
+ *   - toggle icon:   styles/app.css -> `.qe-toc-toggle__close` (only the class
+ *                    name needs to stay in sync)
+ *
+ * The contents drawer itself needs no rule here — as a popover the UA
+ * stylesheet already hides it while closed (see `.qe-toc` in styles/app.css).
+ * Its toggle does: both icons are always in the DOM and lucide emits real
+ * width/height attributes, so without this rule the close icon paints beside
+ * the hamburger on that first frame. The `body:has(.qe-toc:popover-open)` rule
+ * in app.css outranks this zero-specificity one, so the open state still swaps.
  */
 const CRITICAL_CSS = `
 @font-face{font-family:"Source Sans 3 Fallback";src:local("Helvetica"),local("Arial"),local("Liberation Sans"),local("Arimo");size-adjust:92.25%;ascent-override:111%;descent-override:43.36%;line-gap-override:0%}
@@ -96,6 +103,7 @@ const CRITICAL_CSS = `
 :where(body){margin:0;background-color:#fff}
 :where(.dark body){background-color:#1c1917}
 :where([hidden],.hidden){display:none}
+:where(.qe-toc-toggle__close){display:none}
 :where(.simple-center-grid){display:grid;grid-template-columns:[screen-start] 1fr [body-start] minmax(300px,800px) [body-end] 1fr [screen-end]}
 :where(.simple-center-grid) > *{grid-column:body-start / body-end}
 @media (min-width:1280px){:where(.simple-center-grid){grid-template-columns:[screen-start] 1fr 200px 20px [body-start] 800px [body-end] 20px [margin-start] 200px [margin-end] 1fr [screen-end]}}
