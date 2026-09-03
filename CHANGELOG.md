@@ -20,7 +20,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- The site footer part (`site.parts.footer`) and the back-to-top button are
+  styled to match the Sphinx lecture builds, with every value measured off
+  python-programming.quantecon.org: 14.4px footer text at 70% opacity with an
+  inline licence badge and 36px clearance above the rule and below the last
+  line, and a `↑ Top` pill in QuantEcon blue (with `aria-label="Back to top"`
+  kept for screen readers). The footer content column now matches the width of
+  its own rule, and footer links get a readable colour in dark mode ([#155](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/155)).
+
+### Changed
+- Lecture content typography now follows the Sphinx builds, via a dedicated
+  `styles/quantecon.css` imported after `@myst-theme/styles` so nothing upstream
+  is forked: paragraph, list and figure rhythm in `em`, inline literals in the
+  Sphinx colour (`--qe-literal-color`, with the Sphinx dark-mode value under
+  `.dark`) at a root-relative size and in the monospace stack, and the `.auto`
+  and `.terminal` figure-sizing classes lecture sources already use. The file's
+  header documents how each rule outranks the typography plugin without
+  `!important` ([#155](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/155)).
+- A metric-matched `Source Sans 3 Fallback` face (local Helvetica/Arial with
+  `size-adjust` and ascent/descent overrides) is declared in the critical CSS
+  and appended to the `sans` stack, so the swap to the self-hosted webfont no
+  longer reflows the page: measured text width moves from about 8% off target
+  to under 0.5% while the woff2 is still loading ([#155](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/155)).
+
 ### Fixed
+- Inline code no longer renders wrapped in literal backticks.
+  `tailwind.config.js` spread `themeExtensions.typography` into an object, but
+  upstream exports it as a function, so the spread yielded `{}` and silently
+  dropped every upstream typography setting, including the rule that removes
+  the plugin's `::before`/`::after` backticks. The key is gone and the project
+  values it carried live in `styles/quantecon.css` ([#155](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/155)).
 - The remaining absolute asset URLs in the built stylesheets are now relative
   too. [#139](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/139)
   rewrote the stylesheets in `_assets/`, but Remix also emits route and

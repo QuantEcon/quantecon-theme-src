@@ -8,12 +8,15 @@ export function SiteFooter({ content, className }: { content: GenericParent; cla
   return (
     <div
       className={classNames(
-        'col-screen text-qetext-light text-opacity-80 dark:text-qetext-dark-muted subgrid-gap',
+        'qe-site-footer col-screen text-qetext-light text-opacity-80 dark:text-qetext-dark-muted subgrid-gap',
         grid
       )}
     >
       <div className="border-t-[5px] border-t-qeborder-blue col-body mb-5" />
-      <MyST ast={content} className="col-screen" />
+      {/* col-body, not col-screen: the Sphinx footer is content-column width, and
+          the 5px rule above is already col-body -- col-screen here left the text
+          running wider than its own rule. */}
+      <MyST ast={content} className="col-body" />
     </div>
   );
 }
