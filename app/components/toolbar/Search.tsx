@@ -602,6 +602,9 @@ export function Search({ debounceTime = 500, charLimit = 64 }: SearchProps) {
   const [searchResults, setSearchResults] = useState<RankedSearchResult[] | undefined>();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const top = useThemeTop();
+  // Closing the dialog returns focus to the trigger, which would pop the
+  // tooltip open over it (see Tooltip's ignoreNextFocusRef docs).
+  const suppressTooltipRef = useRef(false);
 
   // Clear search state on close
   useEffect(() => {
@@ -633,7 +636,7 @@ export function Search({ debounceTime = 500, charLimit = 64 }: SearchProps) {
   const triggerClose = useCallback(() => setOpen(false), [setOpen]);
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
-      <Tooltip label="Search" asChild>
+      <Tooltip label="Search" asChild ignoreNextFocusRef={suppressTooltipRef}>
         <Dialog.Trigger asChild>
           <SearchTriggerButton />
         </Dialog.Trigger>
@@ -642,6 +645,12 @@ export function Search({ debounceTime = 500, charLimit = 64 }: SearchProps) {
         <Dialog.Overlay className="fixed inset-0 bg-[#656c85cc] z-[1000]" />
         <Dialog.Content
           className="myst-search-dialog fixed flex flex-col top-0 bg-white dark:bg-stone-900 z-[1001] h-screen w-full sm:left-1/2 sm:-translate-x-1/2 sm:w-[90vw] sm:max-w-screen-sm sm:h-auto sm:max-h-[var(--content-max-height)] sm:top-[var(--content-top)] sm:rounded-md p-4 text-gray-900 dark:text-white"
+          // Fires just before Radix moves focus back to the trigger; without
+          // this the tooltip opens over the trigger on every dialog dismissal
+          // and needs a further click elsewhere to clear.
+          onCloseAutoFocus={() => {
+            suppressTooltipRef.current = true;
+          }}
           // Store state as CSS variables so that we can set the style with tailwind variants
           style={
             {
