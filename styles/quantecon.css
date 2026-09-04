@@ -93,6 +93,26 @@
 }
 
 @layer base {
+  /* Heading face. The Sphinx build sets `h1,h2,h3,h4,h5` in `"PT Serif",serif`
+     and then puts h4/h5 back to Source Sans Pro at weight 900 -- so serif is
+     h1-h3 only, and that split is reproduced here. The face is self-hosted via
+     app/links.ts (@fontsource/pt-serif) and mirrored in CRITICAL_CSS
+     (app/root.tsx) so the first WebKit paint is serif too.
+
+     Family only, on purpose. The typography plugin's heading weights (800/700/
+     600) resolve against PT Serif's 400+700 faces to the same 700 the Sphinx
+     build renders -- it asks for 900, which also resolves to 700. Sizes are
+     left to the plugin scale; matching the Sphinx sizes is a separate change.
+
+     The plugin's own heading rules are `.article :where(h1)` etc at (0,1,0);
+     `.article h1` at (0,1,1) wins outright, and no utility on the rendered
+     headings (`pt-12 m-0`) sets a family. */
+  .article h1,
+  .article h2,
+  .article h3 {
+    font-family: 'PT Serif', serif;
+  }
+
   /* Paragraph rhythm. The plugin ships `.article :where(p)` at 1.25em (22.5px).
      The Sphinx build leaves `p` at `margin: revert`, i.e. the UA default of
      `1em 0` measured against its own text size, so `1em` keeps that proportion.

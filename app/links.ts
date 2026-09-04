@@ -5,6 +5,10 @@ import katexCss from 'katex/dist/katex.min.css';
 // `declare module "*.css"` and fail `npm run compile`.
 import sourceSans3Css from '@fontsource-variable/source-sans-3/index.css';
 import sourceSans3ItalicCss from '@fontsource-variable/source-sans-3/wght-italic.css';
+import ptSerif400Css from '@fontsource/pt-serif/400.css';
+import ptSerif400ItalicCss from '@fontsource/pt-serif/400-italic.css';
+import ptSerif700Css from '@fontsource/pt-serif/700.css';
+import ptSerif700ItalicCss from '@fontsource/pt-serif/700-italic.css';
 
 /**
  * Self-hosted KaTeX stylesheet.
@@ -67,4 +71,24 @@ export const KatexCSS: HtmlLinkDescriptor = {
 export const SourceSans3CSS: HtmlLinkDescriptor[] = [
   { rel: 'stylesheet', href: sourceSans3Css },
   { rel: 'stylesheet', href: sourceSans3ItalicCss },
+];
+
+/**
+ * Self-hosted PT Serif, the heading face of the Sphinx lecture builds
+ * (python-programming.quantecon.org sets `h1,h2,h3` in `"PT Serif",serif`).
+ * `styles/quantecon.css` applies it to `.article` headings here.
+ *
+ * Self-hosted for the same reasons as Source Sans 3 above, and routed through
+ * the same Remix/esbuild pipeline. The static (non-variable) package: PT Serif
+ * only ships 400 and 700. Four stylesheets because the package splits every
+ * weight/style pair; each is a handful of `@font-face` rules and the browser
+ * only downloads the faces a page actually uses. The Sphinx build asks for
+ * weight 900 on headings, which resolves to the 700 face -- the same face
+ * these files provide.
+ */
+export const PTSerifCSS: HtmlLinkDescriptor[] = [
+  { rel: 'stylesheet', href: ptSerif400Css },
+  { rel: 'stylesheet', href: ptSerif400ItalicCss },
+  { rel: 'stylesheet', href: ptSerif700Css },
+  { rel: 'stylesheet', href: ptSerif700ItalicCss },
 ];
