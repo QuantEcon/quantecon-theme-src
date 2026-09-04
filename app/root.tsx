@@ -113,6 +113,8 @@ const CRITICAL_CSS = `
 :where(.article h2){font-size:1.7em}
 :where(.article h3){font-size:1.4em}
 :where(.article h4){font-size:1.2em}
+:where(.article h1,.article h2,.article h3,.article h4,.article h5){line-height:1.15}
+:where(.article h4,.article h5){font-weight:900}
 :where(body){margin:0;background-color:#fff}
 :where(.dark body){background-color:#1c1917}
 :where([hidden],.hidden){display:none}
