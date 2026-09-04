@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { LoadingBar } from '@myst-theme/site';
-import { Search } from '@myst-theme/site/src/components/Navigation/Search';
+import { Search } from './Search';
 import { House } from 'lucide-react';
 import { SidebarToggle } from './SidebarToggle';
 import { QuantEconButton } from './QuantEconButton';
