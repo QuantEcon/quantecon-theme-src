@@ -11,7 +11,9 @@ import { test, expect, type Page, type Route } from "@playwright/test";
  *
  * The contents drawer is checked here too: any panel that relies on author CSS
  * to stay hidden paints open in that same frame. It is a popover now, so the UA
- * stylesheet hides it and the assertions below expect that.
+ * stylesheet hides it and the assertions below expect that. The toggle's close
+ * icon and the "back to top" button are the other two things that would paint
+ * without author CSS; each has a rule in the critical block and is asserted on.
  *
  * This test makes the failure mode deterministic by **aborting all external
  * stylesheets**, so the only styling that can reach the page is the inline
@@ -55,6 +57,7 @@ async function firstPaintState(page: Page) {
     const grid = document.querySelector(".simple-center-grid");
     const sidebar = document.querySelector(".qe-toc");
     const closeIcon = document.querySelector(".qe-toc-toggle__close");
+    const backToTop = document.querySelector(".qe-back-to-top");
     const applied = Array.from(document.styleSheets).filter((sheet) => {
       try {
         return !!sheet.cssRules && sheet.cssRules.length > 0; // applied, not pending
@@ -76,6 +79,11 @@ async function firstPaintState(page: Page) {
       // both icons paint side by side on the first frame. `null` when missing,
       // for the same reason as above.
       toggleCloseRendered: closeIcon ? closeIcon.getClientRects().length > 0 : null,
+      // "Back to top" is hidden by opacity rather than display, and carries a
+      // transition — so if it paints visible here it will *fade* out once the
+      // stylesheet lands. The critical block pins it to 0. `null` when missing,
+      // as above.
+      backToTopOpacity: backToTop ? getComputedStyle(backToTop).opacity : null,
       // null href == an inline <style>; any string == an external sheet that applied
       appliedExternal: applied.some((sheet) => !!sheet.href),
     };
@@ -109,6 +117,11 @@ test.describe("FOUC guard (WebKit) — inline critical CSS styles the first pain
       "`.qe-toc-toggle__close` not found — the toggle's close icon was renamed or removed"
     ).not.toBeNull();
     expect(state.toggleCloseRendered).toBe(false); // hidden by the inline rule
+    expect(
+      state.backToTopOpacity,
+      "`.qe-back-to-top` not found — the back-to-top button was renamed or removed"
+    ).not.toBeNull();
+    expect(state.backToTopOpacity).toBe("0"); // pinned by the inline rule
   });
 
   test("control: removing the inline critical CSS reproduces the FOUC", async ({ page }) => {
@@ -134,5 +147,12 @@ test.describe("FOUC guard (WebKit) — inline critical CSS styles the first pain
       "`.qe-toc-toggle__close` not found — the toggle's close icon was renamed or removed"
     ).not.toBeNull();
     expect(state.toggleCloseRendered).toBe(true);
+    // Same for "back to top": with the inline rule gone it paints at full
+    // opacity, which is the state the transition would then animate away from.
+    expect(
+      state.backToTopOpacity,
+      "`.qe-back-to-top` not found — the back-to-top button was renamed or removed"
+    ).not.toBeNull();
+    expect(state.backToTopOpacity).toBe("1");
   });
 });
