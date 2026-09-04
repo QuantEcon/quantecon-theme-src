@@ -99,10 +99,10 @@
      app/links.ts (@fontsource/pt-serif) and mirrored in CRITICAL_CSS
      (app/root.tsx) so the first WebKit paint is serif too.
 
-     Family only, on purpose. The typography plugin's heading weights (800/700/
-     600) resolve against PT Serif's 400+700 faces to the same 700 the Sphinx
-     build renders -- it asks for 900, which also resolves to 700. Sizes are
-     left to the plugin scale; matching the Sphinx sizes is a separate change.
+     Family only here -- sizes are matched in the block below. The typography
+     plugin's heading weights (800/700/600) resolve against PT Serif's 400+700
+     faces to the same 700 the Sphinx build renders -- it asks for 900, which
+     also resolves to 700.
 
      The plugin's own heading rules are `.article :where(h1)` etc at (0,1,0);
      `.article h1` at (0,1,1) wins outright, and no utility on the rendered
@@ -111,6 +111,35 @@
   .article h2,
   .article h3 {
     font-family: 'PT Serif', serif;
+  }
+
+  /* Heading scale, matching the Sphinx build's content headings: h1 2em of
+     the body size, then h2 1.7rem / h3 1.4rem / h4 1.2rem / h5 1rem of its
+     root -- which is 18px at desktop widths, the same 18px this theme sets on
+     `.article`. So each value carries over as the same number in `em`, and
+     `em` (not `rem`) keeps the whole scale tracking the content size, per
+     UNITS above. h5 is omitted: the plugin leaves it at 1em, already the
+     match. The plugin's own scale was h1 2.25em / h2 1.5em / h3 1.25em / h4
+     1em. Mirrored in CRITICAL_CSS (app/root.tsx) so the first WebKit paint
+     lays out at the final sizes.
+
+     Font-size only, deliberately: the plugin's heading margins and
+     line-heights are declared in `em`, so they resolve against these new
+     sizes and keep their proportions. */
+  .article h1 {
+    font-size: 2em; /* 36px at 18px content */
+  }
+
+  .article h2 {
+    font-size: 1.7em; /* 30.6px */
+  }
+
+  .article h3 {
+    font-size: 1.4em; /* 25.2px */
+  }
+
+  .article h4 {
+    font-size: 1.2em; /* 21.6px */
   }
 
   /* Paragraph rhythm. The plugin ships `.article :where(p)` at 1.25em (22.5px).

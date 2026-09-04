@@ -78,7 +78,10 @@ export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
  *                    likewise absent at first paint). Without this rule the
  *                    headings paint in the sans stack and swap to serif when
  *                    the Tailwind bundle lands; the generic `serif` fallback
- *                    here is far closer to the final shape.
+ *                    here is far closer to the final shape. The sizes come
+ *                    from the same block. They matter beyond reflow: the UA
+ *                    default for an h1 inside <article> is 1.5em, not 2em,
+ *                    so without them the h1 would paint visibly small.
  *   - content size:  styles/quantecon.css -> `.article` font-size (1.125rem).
  *                    Without it the article paints at the UA default 16px and
  *                    jumps to 18px when the Tailwind bundle lands, reflowing
@@ -106,6 +109,10 @@ const CRITICAL_CSS = `
 :where(html){font-family:"Source Sans 3 Variable","Source Sans 3","Source Sans 3 Fallback",sans-serif}
 :where(.article){font-size:1.125rem}
 :where(.article h1,.article h2,.article h3){font-family:"PT Serif",serif}
+:where(.article h1){font-size:2em}
+:where(.article h2){font-size:1.7em}
+:where(.article h3){font-size:1.4em}
+:where(.article h4){font-size:1.2em}
 :where(body){margin:0;background-color:#fff}
 :where(.dark body){background-color:#1c1917}
 :where([hidden],.hidden){display:none}
