@@ -81,15 +81,25 @@
 :root {
   /* Inline literals, matching the Sphinx build's `code.literal`. */
   --qe-literal-color: #af5f5f; /* 4.54:1 on white -- AA, but only just */
+  /* Content links, matching the Sphinx build's `a` / `a:hover`. */
+  --qe-link-color: #0072bc; /* 5.05:1 on white -- AA */
+  --qe-link-hover-color: #004979;
 }
 
 /* Dark mode. The Sphinx theme defines its own dark literal colour under
    `body.dark-theme code.literal`; this is that value. The light #af5f5f scores
    only 3.85:1 on stone-900, below the 4.5:1 AA floor, where #d78787 is 6.42:1.
    `.dark` and `:root` are both (0,1,0), so this wins on source order -- it has
-   to stay below the block above. */
+   to stay below the block above.
+
+   Links go white, as the Sphinx dark theme paints them (`&.dark-theme a
+   { color: #fff !important }`) -- and as `.dark .article :where(a)` below
+   already does for every anchor that is not a `.link`. Hover stays white too:
+   the Sphinx dark theme has no hover colour change. */
 .dark {
   --qe-literal-color: #d78787;
+  --qe-link-color: #fff;
+  --qe-link-hover-color: #fff;
 }
 
 @layer base {
@@ -120,9 +130,9 @@
     text-decoration: underline;
   }
 
-  /* Dark mode at (0,2,0): beats prose-invert, still loses to `.link`'s own dark
-     colour utility. `.link` is deliberately not excluded -- it took its weight
-     from this rule and its colour from its own utility. */
+  /* Dark mode at (0,2,0): beats prose-invert. `.link` is deliberately not
+     excluded -- it takes its weight from this rule, and its colour from the
+     CONTENT LINKS section below (which lands on the same #fff in dark mode). */
   .dark .article :where(a) {
     color: #fff;
     font-weight: 600;
@@ -231,6 +241,55 @@
      it has to be a rule that outranks those utilities, not this token. */
   .article {
     font-size: 1.125rem; /* 18px */
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   CONTENT LINKS
+
+   myst-to-react colours content anchors through two classes: `.link` (plain
+   links) and `.hover-link` (cross-references, citations, footnotes). Upstream
+   defines both in `@myst-theme/styles` as blue-700/blue-400 with blue
+   decoration colours; the Sphinx builds render links in QuantEcon blue
+   instead. These rules re-colour the classes to the measured Sphinx values --
+   colour only. The underline itself (always-on, dotted for `.hover-link`) is
+   left as upstream ships it.
+
+   Specificity is matched to the upstream rules this overrides, with source
+   order breaking each tie (this file is @import-ed after `@myst-theme/styles`,
+   see styles/app.css):
+
+     - `.link` here (0,1,0) ties upstream `.link` -- wins on order.
+     - `.link:hover` (0,2,0) ties upstream's compiled `hover:` utility.
+     - `.dark :is(...)` (0,2,0) ties upstream's `dark:` -> `.link:is(.dark *)`.
+     - `.dark :is(...):hover` (0,3,0) ties `.link:hover:is(.dark *)`.
+
+   `text-decoration-color: currentColor` replaces upstream's separate blue
+   decoration utilities in one declaration per rule -- the underline always
+   draws in the link's own colour, as the Sphinx build's plain underline does.
+
+   Known differences from the Sphinx build, deliberately out of scope here:
+   it underlines only on hover, and colours `:visited` links #004979. */
+@layer components {
+  .link,
+  .hover-link {
+    color: var(--qe-link-color, #0072bc);
+    text-decoration-color: currentColor;
+  }
+
+  .link:hover,
+  .hover-link:hover {
+    color: var(--qe-link-hover-color, #004979);
+    text-decoration-color: currentColor;
+  }
+
+  /* Dark mode needs its own rules despite the tokens flipping under `.dark`:
+     upstream's dark utilities are literal colours at higher specificity than
+     the base rules above, so tokens alone would never reach the page there. */
+  .dark :is(.link, .hover-link),
+  .dark :is(.link, .hover-link):hover {
+    color: var(--qe-link-color);
+    text-decoration-color: currentColor;
   }
 }
 
