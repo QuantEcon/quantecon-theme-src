@@ -20,6 +20,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-09-04
+
+> Headline: lecture content now matches the typography of the existing Sphinx
+> builds, and inline code stops rendering wrapped in literal backticks — a
+> regression that reached every code span on every page, caused by a
+> `tailwind.config.js` spread of an upstream export that is a function, not an
+> object. The static-build asset fix from 2.3.1 is completed: four route and
+> shared-chunk stylesheets it did not cover still shipped absolute
+> `/myst_assets_folder/…` URLs, and a production build now emits zero of them
+> with all 78 references resolving. The site footer and back-to-top button are
+> styled to match the Sphinx builds.
+
+
 ### Added
 - The site footer part (`site.parts.footer`) and the back-to-top button are
   styled to match the Sphinx lecture builds, with every value measured off
@@ -346,7 +359,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial version of the QuantEcon MyST theme: Remix + `@myst-theme` book theme with QuantEcon branding, toolbar (home, search, fullscreen, font scaling, dark mode, downloads, Colab/JupyterHub launch, edit-on-GitHub), content-driven site footer, and bundled brand assets.
 
-[Unreleased]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.3.1...HEAD
+[Unreleased]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.3.1...v2.4.0
 [2.3.1]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.1.0...v2.2.0
