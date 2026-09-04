@@ -21,12 +21,18 @@ export function Toolbar() {
   return (
     <div
       className={classNames(
-        'fixed top-0 left-0 right-0 z-[2] flex items-center justify-between h-[50px] px-3 md:px-6',
+        'fixed top-0 left-0 right-0 z-[2] flex items-center justify-between h-[50px] px-3 lg:px-6',
         'bg-qetoolbar-light dark:bg-qetoolbar-dark',
         'border-b-[1px] border-qetoolbar-border'
       )}
     >
-      <ul className="flex items-center w-full space-x-3 md:space-x-5 text-qetext-light dark:text-qetext-dark">
+      {/*
+        Gap and container padding widen at `lg`, not `md`. The full desktop
+        control set switches on at `md`, and at 20px spacing it does not fit
+        between 768px and ~856px — the last icons get pushed off the right
+        edge. Keep the tighter spacing for that band when adding controls here.
+      */}
+      <ul className="flex items-center w-full space-x-3 lg:space-x-5 text-qetext-light dark:text-qetext-dark">
         <li>
           <SidebarToggle />
         </li>
@@ -37,7 +43,13 @@ export function Toolbar() {
             </Tooltip>
           </Link>
         </li>
-        <li>
+        {/*
+          `shrink-0` is load-bearing: the logo has a pinned height and an auto
+          width, and preflight's `max-width: 100%` lets it clamp to a shrinking
+          flex item, distorting the aspect ratio. The row's flexible space is
+          the spacer below, not this.
+        */}
+        <li className="shrink-0">
           <QuantEconButton />
         </li>
         <li className="flex-grow" />
@@ -48,7 +60,9 @@ export function Toolbar() {
           <FullScreenButton size={iconSize} />
         </li>
         <FontScaleListItems className="hidden md:block" size={iconSize} />
-        <li className="flex items-center md:pr-[36px]">
+        {/* Separator between the view controls and the actions cluster; scaled
+            down in the narrow desktop band for the same reason as the gap. */}
+        <li className="flex items-center md:pr-4 lg:pr-[36px]">
           <ThemeButton className="w-5 h-5 opacity-60" />
         </li>
         <li className="hidden md:block">
