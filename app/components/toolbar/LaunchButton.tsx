@@ -115,17 +115,12 @@ function LaunchPanel() {
 export function LaunchButton({ size, showLabel }: { size: number; showLabel?: boolean }) {
   return (
     <Popover.Root>
-      <Popover.Trigger aria-label="Launch notebook" className="flex items-center cursor-pointer">
-        <Tooltip label="Launch Notebook">
-          <CirclePlay
-            className="opacity-90 hover:scale-110"
-            width={size}
-            height={size}
-            tabIndex={0}
-          />
+      <Tooltip label="Launch Notebook" asChild>
+        <Popover.Trigger aria-label="Launch notebook" className="flex items-center cursor-pointer">
+          <CirclePlay className="opacity-90 hover:scale-110" width={size} height={size} />
           {showLabel && <span className="ml-2">Launch</span>}
-        </Tooltip>
-      </Popover.Trigger>
+        </Popover.Trigger>
+      </Tooltip>
       <Popover.Portal>
         <Popover.Content
           sideOffset={3}

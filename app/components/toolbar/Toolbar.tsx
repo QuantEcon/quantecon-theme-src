@@ -31,11 +31,11 @@ export function Toolbar() {
           <SidebarToggle />
         </li>
         <li>
-          <Link to={baseurl ?? '/'}>
-            <Tooltip label="Home">
+          <Tooltip label="Home" asChild>
+            <Link to={baseurl ?? '/'} aria-label="Home">
               <House className="opacity-90 hover:scale-110" width={iconSize} height={iconSize} />
-            </Tooltip>
-          </Link>
+            </Link>
+          </Tooltip>
         </li>
         <li>
           <QuantEconButton />

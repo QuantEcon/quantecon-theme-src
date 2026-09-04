@@ -585,9 +585,7 @@ const SearchTriggerButton = forwardRef<
       disabled={!!disabled}
       ref={ref}
     >
-      <Tooltip label="Search">
-        <SearchIcon className="opacity-60 hover:scale-110" width={20} height={20} />
-      </Tooltip>
+      <SearchIcon className="opacity-60 hover:scale-110" width={20} height={20} />
     </button>
   );
 });
@@ -635,9 +633,11 @@ export function Search({ debounceTime = 500, charLimit = 64 }: SearchProps) {
   const triggerClose = useCallback(() => setOpen(false), [setOpen]);
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
-      <Dialog.Trigger asChild>
-        <SearchTriggerButton />
-      </Dialog.Trigger>
+      <Tooltip label="Search" asChild>
+        <Dialog.Trigger asChild>
+          <SearchTriggerButton />
+        </Dialog.Trigger>
+      </Tooltip>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-[#656c85cc] z-[1000]" />
         <Dialog.Content
