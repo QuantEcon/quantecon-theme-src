@@ -13,18 +13,21 @@ export function FullScreenButton({ size }: { size: number }) {
       setFullScreen(true);
     }
   }, []);
+  const label = fullScreen ? 'Reset Full Screen' : 'Full Screen';
   return (
-    <button onClick={handleFullscreen} className="flex items-center cursor-pointer">
-      {fullScreen && (
-        <Tooltip label="Reset Full Screen">
+    <Tooltip label={label} asChild>
+      <button
+        onClick={handleFullscreen}
+        aria-label={label}
+        className="flex items-center cursor-pointer"
+      >
+        {fullScreen && (
           <Minimize className="opacity-60 hover:scale-110" width={size} height={size} />
-        </Tooltip>
-      )}
-      {!fullScreen && (
-        <Tooltip label="Full Screen">
+        )}
+        {!fullScreen && (
           <Maximize className=" opacity-60 hover:scale-110" width={size} height={size} />
-        </Tooltip>
-      )}
-    </button>
+        )}
+      </button>
+    </Tooltip>
   );
 }
