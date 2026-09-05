@@ -1,0 +1,359 @@
+/* QuantEcon content styles.
+ *
+ * Typography and content styling for the lectures, matched to the Sphinx
+ * lecture builds (python-programming.quantecon.org). This is the file to
+ * hand-edit -- content design lives here as plain CSS, not in
+ * `tailwind.config.js`.
+ *
+ * Imported from `styles/app.css` after `@myst-theme/styles`, so rules here are
+ * emitted after that package's own.
+ *
+ *
+ * HOW TO OVERRIDE THE TYPOGRAPHY PLUGIN WITHOUT `!important`
+ *
+ * `.article` is bound to `@tailwindcss/typography` by
+ * `@myst-theme/styles/typography.css`:
+ *
+ *     .article { @apply prose break-words max-w-none prose-stone dark:prose-invert; }
+ *
+ * The plugin writes every rule as `.article :where(p)`. `:where()` contributes
+ * no specificity, so that selector weighs (0,1,0) -- a single class. Plain
+ * `.article p` here is (0,1,1) and beats it outright.
+ *
+ * Two cases need more care:
+ *
+ *   - Where the plugin already uses a descendant selector, match its shape.
+ *     `.article :where(ul > li)` is (0,1,2), so a bare `.article li` (0,1,1)
+ *     loses; write `.article ul > li` and let import order settle the tie.
+ *
+ *   - Utility classes on the element win at equal specificity. The theme
+ *     renders `<h1 class="pt-12 m-0">`, and `m-0` is (0,1,0) -- so `.article h1`
+ *     (0,1,1) is needed to set a heading margin.
+ *
+ *
+ * LAYERS
+ *
+ * `@layer base` for element rules. `@layer components` for class overrides
+ * such as `.link`, which upstream defines in that layer -- base is emitted
+ * first, so the same rule in the base block would lose.
+ *
+ * Both `@layer components` and `@layer utilities` are tree-shaken: a rule
+ * survives only if Tailwind finds its class while scanning `content`, and that
+ * list covers this theme's `app/` plus the myst-theme packages -- never lecture
+ * markdown. So a class authored in lecture source (`:class: terminal`) is
+ * dropped from the build. Such rules go unlayered at the foot of this file.
+ *
+ *
+ * COLOURS
+ *
+ * Prefer setting `--tw-prose-*` custom properties on `.article` over colours on
+ * elements. `dark:prose-invert` resolves to `.article:is(.dark *)`, (0,2,0), so
+ * it still wins in dark mode -- a colour hard-coded on an element would not
+ * invert and would need a matching `.dark` rule alongside it.
+ *
+ *
+ * UNITS
+ *
+ * The Sphinx builds step the *root* size by viewport -- 16px below 992px, 18px
+ * at and above it -- and reach 18px content that way. This theme sets a flat
+ * 18px on `.article` instead and leaves the root at 16px, so the browser's own
+ * font-size preference still applies (overriding it with a px root is a WCAG
+ * 1.4.4 problem, which is why the Sphinx theme has to ship its own
+ * font-plus/font-minus controls to make up for it).
+ *
+ * Content therefore matches the Sphinx build at desktop widths, and runs larger
+ * than it below 992px, where Sphinx drops back to a 16px root. Flat was chosen
+ * over a matching breakpoint so the size never shifts under the reader.
+ *
+ * `em` (18px, off `.article`) and `rem` (16px, off the root) differ here, so the
+ * choice carries meaning. Use `em` for anything that should scale with the
+ * content. Use `rem` where the value is pinned to a fixed size regardless of
+ * content -- the footer, the back-to-top button, and inline code, all of which
+ * track the Sphinx build's own root-relative sizes. Note the px equivalent
+ * either way.
+ */
+
+/* ---------------------------------------------------------------------------
+   DESIGN TOKENS
+   Values shared across the rules below. Overriding one of these under `.dark`
+   is the way to give a token a dark-mode variant.
+   --------------------------------------------------------------------------- */
+:root {
+  /* Inline literals, matching the Sphinx build's `code.literal`. */
+  --qe-literal-color: #af5f5f; /* 4.54:1 on white -- AA, but only just */
+}
+
+/* Dark mode. The Sphinx theme defines its own dark literal colour under
+   `body.dark-theme code.literal`; this is that value. The light #af5f5f scores
+   only 3.85:1 on stone-900, below the 4.5:1 AA floor, where #d78787 is 6.42:1.
+   `.dark` and `:root` are both (0,1,0), so this wins on source order -- it has
+   to stay below the block above. */
+.dark {
+  --qe-literal-color: #d78787;
+}
+
+@layer base {
+  /* Paragraph rhythm. The plugin ships `.article :where(p)` at 1.25em (22.5px).
+     The Sphinx build leaves `p` at `margin: revert`, i.e. the UA default of
+     `1em 0` measured against its own text size, so `1em` keeps that proportion.
+     `.article p` is (0,1,1) and beats the plugin's (0,1,0). */
+  .article p {
+    margin: 1em 0; /* 18px at 18px content */
+  }
+
+  /* Anchors. Ported out of `tailwind.config.js`'s `typography.DEFAULT.css.a`
+     and `invert.css.a` when the broken `typography` spread was removed -- see
+     the note there. Upstream prose otherwise sets `font-weight: 500` and
+     underlines every anchor.
+
+     `:where(a)` keeps these at (0,1,0), matching the rules they replace. That
+     matters: heading anchors carry a `font-normal` utility and `.link` carries
+     its own colour and underline, both emitted later in the sheet, so they win
+     the tie -- exactly as they did before. A plain `.article a` would be
+     (0,1,1) and would wrongly override both. */
+  .article :where(a) {
+    font-weight: inherit;
+    text-decoration: none;
+  }
+
+  .article :where(a):hover {
+    text-decoration: underline;
+  }
+
+  /* Dark mode at (0,2,0): beats prose-invert, still loses to `.link`'s own dark
+     colour utility. `.link` is deliberately not excluded -- it took its weight
+     from this rule and its colour from its own utility. */
+  .dark .article :where(a) {
+    color: #fff;
+    font-weight: 600;
+  }
+
+  /* Inline literals. `:not(pre) > code` keeps this off code blocks, which the
+     Sphinx build leaves as plain monospace -- applying the literal colour there
+     would fight the syntax highlighting. Code inside headings is deliberately
+     included: Sphinx styles those as literals too. At (0,1,2) this outranks
+     both `:where(code)` and `:where(h3 code)`, which are (0,1,0). */
+  .article :not(pre) > code {
+    font-weight: 400;
+    color: var(--qe-literal-color, #af5f5f);
+    /* No `font-family` on purpose. The Sphinx build sets inline literals in
+       Source Code Pro, monospace (measured on python-programming.quantecon.org),
+       so the monospace family that Tailwind's preflight and JupyterLab's
+       stylesheet already put on `code` is the right one -- the same stack the
+       code blocks use. Self-hosting Source Code Pro is a separate change. */
+    /* Root-relative on purpose: this must NOT scale with `.article`. The
+       Sphinx build sizes inline code at `.9rem` off its own root (16.2px),
+       fixed regardless of the surrounding text -- including inside headings.
+       Against this theme's 16px root, `1rem` is the same 16px. `1em` would
+       inherit the heading scale and blow code in an h2/h3 up to match it. */
+    font-size: 1rem; /* 16px; the Sphinx build renders 16.2px */
+    font-style: normal;
+    letter-spacing: 0.01rem;
+    overflow-wrap: break-word;
+  }
+
+  /* The typography plugin wraps inline code in literal backticks via
+     `:where(code)::before/::after`, (0,1,1). The Sphinx build renders none, so
+     suppress them. `content: none` stops the boxes being generated at all.
+     Upstream @myst-theme already fixes this in `themeExtensions.typography`,
+     but that never reaches the build -- see the note in tailwind.config.js. */
+  .article :not(pre) > code::before,
+  .article :not(pre) > code::after {
+    content: none;
+  }
+
+  /* Figures: no space above, 1rem below. Scoped to `.article` because the
+     plugin's `:where(figure)` is (0,1,0) and a bare `figure` at (0,0,1) would
+     lose to it. Top/bottom longhands only -- the shorthand's left/right would
+     outrank `.auto`/`.terminal` at (0,1,0) and cancel the auto margins that
+     centre these same figures. */
+  .article figure {
+    margin-top: 0;
+    margin-bottom: 1em; /* 16px, matching the paragraph rhythm */
+    padding: 0.5em; /* 8px; box-sizing is border-box, so width is unchanged */
+  }
+
+  /* Lists sit flush -- the surrounding paragraphs' 1rem margins define the
+     space before and after. This clears three plugin rules at once:
+     `:where(ul)`, `:where(ol)` and `:where(ul ul, ul ol, ol ul, ol ol)`. All
+     three are (0,1,0), because `:where()` contributes no specificity whatever
+     it wraps, so `.article ul` at (0,1,1) beats the nested-list rule too.
+     Padding is left alone, so the 1.625em indent stays, and the longhands
+     leave the inline margins to whatever else sets them. */
+  .article ul,
+  .article ol {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  /* List spacing. The plugin sets these via `.article :where(li)`, which is
+     (0,1,0), so `.article li` at (0,1,1) wins outright -- no need to mirror its
+     `ul > li` shape (that selector carries only `padding-inline-start`). The
+     Sphinx build uses `li { margin: .5rem 0 }`, half its root size (9px at its
+     18px desktop root); `0.5em` keeps that proportion against the content size
+     here. */
+  .article li {
+    margin: 0.5em 0; /* 9px at 18px content */
+  }
+
+  /* MyST wraps list-item text in a <p>, which would otherwise pick up the prose
+     paragraph margin of 1.25em and stack it inside the li margin above.
+     Direct children only, so paragraphs in a nested admonition or figure keep
+     their own spacing. At (0,1,2) this also outranks the `.article p` rule. */
+  .article li > p {
+    margin: 0;
+  }
+}
+
+@layer components {
+  /* Content base size. `.article` is where @tailwindcss/typography puts the
+     prose font-size, so it is set here rather than on :root -- every `em` in
+     this file resolves against it. Flat at every width; see UNITS above. This
+     matches the UA default, so there is no first-paint size change to guard
+     against -- nothing needs to pin it in `CRITICAL_CSS`.
+
+     No `--tw-prose-links` here, deliberately. The anchor colour that came off
+     `tailwind.config.js` with the broken `typography` spread looks like a
+     regression but is not: it never reached the page, before or after.
+
+     The typography plugin colours anchors with
+     `.article :where(a):not(...) { color: var(--tw-prose-links) }`, (0,1,0),
+     emitted in the components layer. Every anchor myst-to-react renders in
+     content carries a class that re-colours it from the *utilities* layer --
+     `.link`, `.hover-link`, `.text-inherit` -- and utilities are emitted after
+     components, so they win at equal specificity. The one classless anchor is
+     the project title, and `ProjectFrontmatter.tsx` puts `prose-a:text-inherit`
+     on it precisely so it does NOT take a link colour.
+
+     Measured on the visual fixture: forcing the token to a sentinel value
+     changed 0 of 35 anchors across /, /features, /lists and /notebook. Setting
+     it here would be dead code. If article anchors ever do need recolouring,
+     it has to be a rule that outranks those utilities, not this token. */
+  .article {
+    font-size: 1.125rem; /* 18px */
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   SITE FOOTER
+
+   The footer part (`site.parts.footer`) renders *inside* `.article`, so it
+   inherits the content typography set above -- the content size and rhythm,
+   prose link colours, centred images. These rules put it back to the Sphinx
+   build's footer, measured off python-programming.quantecon.org.
+
+   Selectors are `.article .qe-site-footer`, (0,2,0), on purpose. At (0,1,0) a
+   bare `.qe-site-footer` loses to the utilities already on the element
+   (`text-qetext-light`, `text-opacity-80`, and `.link` on the badge anchor),
+   because utilities are emitted after components. The extra `.article` wins on
+   specificity instead of relying on source order.
+   --------------------------------------------------------------------------- */
+@layer components {
+  .article .qe-site-footer {
+    /* `rem`, not `em`: this is chrome pinned to the Sphinx footer's own size,
+       so it must not track the content base. 0.9rem against this theme's 16px
+       root is the 14.4px the Sphinx build renders (its .8rem of an 18px root). */
+    font-size: 0.9rem; /* 14.4px */
+    line-height: 1.5; /* 21.6px */
+    /* This overrides the element's `text-qetext-light text-opacity-80`
+       utilities outright, so that 80% no longer applies; the `opacity: 0.7`
+       below is what fades the footer. */
+    color: #444;
+    /* The 36px gap above the rule is padding, not margin: `styles/app.css` sets
+       `margin-top: 0 !important` on every `.simple-center-grid > *`, and this
+       footer is a direct child of that grid. */
+    padding-top: 2.5em; /* 36px */
+    /* The Sphinx footer sets `margin: 36px 0`, so it also clears 36px below the
+       last line. Padding rather than margin here: this is the last grid child,
+       and a bottom margin on it does not extend the document. */
+    padding-bottom: 2.5em; /* 36px */
+    /* The Sphinx footer carries `opacity: .7` on the whole element, so its rule,
+       badge and text all render faded. Without this the colours above are
+       correct as *declared* but render too strong: the rule samples
+       rgb(0 114 188) against the Sphinx build's rgb(75 155 207), and the text
+       likewise. Matching the opacity reproduces both exactly. */
+    opacity: 0.7;
+  }
+
+  .article .qe-site-footer p {
+    margin: 1em 0; /* 14.4px */
+  }
+
+  .article .qe-site-footer a {
+    color: #0072bc; /* rgb(0 114 188), the same blue as the rule above */
+    text-decoration: none;
+  }
+
+  /* Dark mode. The rule above is (0,2,1), so it beats both `.link`'s dark
+     colour utility and `.dark .article :where(a)` -- and #0072bc drawn at the
+     footer's 70% opacity on stone-900 is about 2.3:1. blue-300, the theme's
+     dark `.link` hover colour, lands near 5.3:1 at the same opacity. */
+  .dark .article .qe-site-footer a {
+    color: #93c5fd;
+  }
+
+  /* The licence badge is wrapped `a.link > span > picture > img`; prose styles
+     make the picture a block and centre the image with auto margins. */
+  .article .qe-site-footer :is(img, picture) {
+    display: inline;
+    margin: 0;
+  }
+
+  /* The 5px rule itself; its `mb-5` utility is 20px, the Sphinx gap is 18px. */
+  .article .qe-site-footer > div:first-child {
+    margin-bottom: 1.25em; /* 18px */
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   BACK TO TOP
+
+   `BackToTop` (app/components/Outline.tsx) renders a bare `<a>` inside
+   `.article`, so it inherits the content size and the surrounding text
+   colour. The Sphinx build styles this as a small blue pill
+   (`.qe-page__toc .back-to-top-btn`), measured live at #0072bc / 15.3px / 600
+   with 9px 18px padding and a 4px radius.
+
+   The colour selector is deliberately only (0,1,1). `.dark .article :where(a)`
+   is (0,2,0) and so still wins in dark mode, keeping the existing white link
+   there rather than painting this blue on a dark background.
+   --------------------------------------------------------------------------- */
+@layer components {
+  .qe-back-to-top a {
+    /* `rem` for the same reason as the footer: pinned to the Sphinx button's
+       size, not the content base. The awkward figure is exactly .85rem of the
+       Sphinx build's 18px root expressed against this theme's 16px one. */
+    font-size: 0.95625rem; /* 15.3px */
+    font-weight: 600;
+    line-height: 1.5; /* 22.95px; prose otherwise gives this 1.75 (26.8px) */
+    color: #0072bc;
+    /* `inline-block` so the vertical padding actually takes; the anchor is
+       inline by default, and Sphinx uses `display: block` inside its own fixed
+       wrapper. Padding in px because it is `.5rem 1rem` against Sphinx's 18px
+       root, which no em against this element's own 15.3px reproduces cleanly. */
+    display: inline-block;
+    padding: 9px 18px;
+    border-radius: 4px;
+    text-decoration: none;
+  }
+}
+
+/* Sizing classes applied from lecture source, e.g. `:class: terminal` on a
+   figure. Deliberately unlayered: rules inside `@layer components` are purged
+   unless Tailwind spots the class in `content`, and it never scans lecture
+   markdown. Unlayered CSS is passed through untouched. It is emitted after the
+   main Tailwind layers, though a block of responsive `@media` utilities still
+   follows, so this is not the last word in the cascade. */
+.auto {
+  width: 70%;
+  height: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.terminal {
+  width: 80%;
+  height: auto;
+  margin-left: auto;
+  margin-right: auto;
+}

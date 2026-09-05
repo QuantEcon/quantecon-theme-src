@@ -9,10 +9,9 @@ import { test, expect, type Page, type Route } from "@playwright/test";
  * grid collapsed to `display: block`. The fix inlines critical CSS into `<head>`
  * (see `app/root.tsx`), which parses synchronously and styles that first paint.
  *
- * The same unstyled frame also exposed the contents sidebar: `-translate-x-full`
- * does nothing until app.css lands, so the panel painted in-flow and visible,
- * then slid shut once the stylesheet arrived — the "menu opens on load" report.
- * It is covered here too, since the cause and the guard are the same.
+ * The contents drawer is checked here too: any panel that relies on author CSS
+ * to stay hidden paints open in that same frame. It is a popover now, so the UA
+ * stylesheet hides it and the assertions below expect that.
  *
  * This test makes the failure mode deterministic by **aborting all external
  * stylesheets**, so the only styling that can reach the page is the inline
@@ -25,22 +24,6 @@ import { test, expect, type Page, type Route } from "@playwright/test";
  */
 
 const PAGE = "/";
-
-/**
- * Slack, in CSS px, allowed on the parked nav panel's right edge.
- *
- * `translateX(-100%)` puts that edge at exactly 0 in theory, but the panel is
- * unstyled at this point, so its width is shrink-to-fit and lands on a
- * fractional value (135.171875px in WebKit here). WebKit snaps the painted
- * translate to a whole device pixel while leaving the border-box width
- * fractional, so the measured edge comes back at +0.171875 rather than 0 — the
- * exact remainder varies with the intrinsic width, hence with platform font
- * metrics. A strict `> 0` test therefore passes on the ubuntu CI runner and
- * fails on macOS for the same, correct, markup.
- *
- * 1px is well inside "not visible" and well outside any snapping remainder.
- */
-const OFFSCREEN_EPS = 1;
 
 async function isolateInlineCss(page: Page, { stripCritical = false } = {}) {
   await page.route("**/*", async (route: Route) => {
@@ -70,7 +53,8 @@ async function firstPaintState(page: Page) {
   await page.waitForSelector(".simple-center-grid", { timeout: 5000 }).catch(() => {});
   return page.evaluate(() => {
     const grid = document.querySelector(".simple-center-grid");
-    const sidebar = document.querySelector(".qe-contents-sidebar");
+    const sidebar = document.querySelector(".qe-toc");
+    const closeIcon = document.querySelector(".qe-toc-toggle__close");
     const applied = Array.from(document.styleSheets).filter((sheet) => {
       try {
         return !!sheet.cssRules && sheet.cssRules.length > 0; // applied, not pending
@@ -81,18 +65,17 @@ async function firstPaintState(page: Page) {
     return {
       gridDisplay: grid ? getComputedStyle(grid).display : "(absent)",
       bodyFont: getComputedStyle(document.body).fontFamily,
-      // The nav panel is closed on load, so it must start parked off-screen to
-      // the left: its right edge at (or left of) the viewport's left edge. If
-      // any real width of it is on-screen here, the menu visibly flashes open.
+      // A closed popover is `display: none` per the UA stylesheet, so it paints
+      // nothing even with no author CSS at all — hence both tests below expect
+      // it hidden.
       //
-      // Reported as the measured edge rather than a boolean so the assertions
-      // can carry a sub-pixel tolerance — see `OFFSCREEN_EPS` below.
-      //
-      // `null` when the element is missing, and the guards below reject it
-      // explicitly: `null` numerically coerces to 0, which would *pass* the
-      // off-screen check, so a renamed hook would slip through the main test
-      // and surface as a confusing failure in the control instead.
-      sidebarRight: sidebar ? sidebar.getBoundingClientRect().right : null,
+      // `null` when the element is missing, so a renamed hook fails the
+      // explicit presence guard instead of silently satisfying "not rendered".
+      sidebarRendered: sidebar ? sidebar.getClientRects().length > 0 : null,
+      // The toggle's close icon is hidden by a critical-CSS rule; without it
+      // both icons paint side by side on the first frame. `null` when missing,
+      // for the same reason as above.
+      toggleCloseRendered: closeIcon ? closeIcon.getClientRects().length > 0 : null,
       // null href == an inline <style>; any string == an external sheet that applied
       appliedExternal: applied.some((sheet) => !!sheet.href),
     };
@@ -117,11 +100,15 @@ test.describe("FOUC guard (WebKit) — inline critical CSS styles the first pain
     // not about the webfont having arrived.
     expect(state.bodyFont).toMatch(/^["']?Source Sans 3 Variable["']?\s*,/);
     expect(
-      state.sidebarRight,
-      "`.qe-contents-sidebar` not found — the hook the critical CSS targets was renamed or removed"
+      state.sidebarRendered,
+      "`.qe-toc` not found — the contents drawer was renamed or removed"
     ).not.toBeNull();
-    // Nav panel parked off-screen (right edge at 0, modulo the sub-pixel slack).
-    expect(state.sidebarRight).toBeLessThan(OFFSCREEN_EPS);
+    expect(state.sidebarRendered).toBe(false); // closed popover paints nothing
+    expect(
+      state.toggleCloseRendered,
+      "`.qe-toc-toggle__close` not found — the toggle's close icon was renamed or removed"
+    ).not.toBeNull();
+    expect(state.toggleCloseRendered).toBe(false); // hidden by the inline rule
   });
 
   test("control: removing the inline critical CSS reproduces the FOUC", async ({ page }) => {
@@ -133,14 +120,19 @@ test.describe("FOUC guard (WebKit) — inline critical CSS styles the first pain
     expect(state.appliedExternal).toBe(false);
     expect(state.gridDisplay).toBe("block");
     expect(state.bodyFont).not.toMatch(/Source Sans 3/);
-    // Without the inline rule the nav panel lays out in-flow and fully visible —
-    // this is the "menu flashes open on load" symptom. Measured at ~1272px of a
-    // 1280px viewport, so the margin over OFFSCREEN_EPS is three orders of
-    // magnitude: the two states are never in danger of being confused.
+    // Hidden even with every stylesheet stripped — that is the UA stylesheet's
+    // doing, not ours, so this control expects it hidden rather than flashing.
     expect(
-      state.sidebarRight,
-      "`.qe-contents-sidebar` not found — the hook the critical CSS targets was renamed or removed"
+      state.sidebarRendered,
+      "`.qe-toc` not found — the contents drawer was renamed or removed"
     ).not.toBeNull();
-    expect(state.sidebarRight).toBeGreaterThan(OFFSCREEN_EPS);
+    expect(state.sidebarRendered).toBe(false);
+    // Unlike the drawer, the close icon relies on the critical CSS: with it
+    // stripped, both icons paint — which proves the inline rule is doing work.
+    expect(
+      state.toggleCloseRendered,
+      "`.qe-toc-toggle__close` not found — the toggle's close icon was renamed or removed"
+    ).not.toBeNull();
+    expect(state.toggleCloseRendered).toBe(true);
   });
 });
