@@ -15,7 +15,7 @@ export interface TemplateOptions {
   git_metadata?: GitMetadata;
 
   // Notebook launcher configuration (set under `site.options` in myst.yml).
-  // Generalises the previously hardcoded Colab/JupyterHub launch URLs so
+  // Generalises the previously hardcoded Colab launch URLs so
   // non-default branches, repo naming and nested lecture dirs work. All keys
   // are optional; the defaults reproduce the historical behaviour
   // (`<github>.notebooks`, branch `main`, and no source/notebooks path

@@ -258,37 +258,25 @@ test.describe("QuantEcon theme — visual regression", () => {
     await expect(drawer).toBeHidden();
   });
 
-  // Launch popover: Colab is the default and primary target (BinderHub is
-  // deliberately not offered — #26). window.open is stubbed so the launch URL
-  // assertion is deterministic and offline; the URL's repo part comes from the
+  // Launch is a direct link to Colab — the only launch target (BinderHub was
+  // deliberately not offered, #26; the private JupyterHub option was removed in
+  // #87). Asserting the anchor's href rather than a stubbed window.open keeps
+  // this offline and deterministic, and pins that the control is a *link*, so a
+  // regression back to a chooser would fail here. The repo part comes from the
   // fixture's `github` field, so only the stable pieces (host, .notebooks
-  // convention, branch, path) are pinned.
+  // convention, branch, path) are matched.
   test("launch-colab", async ({ page }, testInfo) => {
     test.skip(
       testInfo.project.name !== "desktop-chrome",
-      "the launch popover lives in the desktop toolbar; mobile wraps it in MobileActionsMenu"
+      "the launch control lives in the desktop toolbar; mobile wraps it in MobileActionsMenu"
     );
     await page.goto("/notebook", { waitUntil: "domcontentloaded" });
     await settle(page);
-    await page.evaluate(() => {
-      (window as any).__opened = [];
-      window.open = (url?: string | URL) => {
-        (window as any).__opened.push(String(url));
-        return null;
-      };
-    });
-    await page.getByRole("button", { name: "Launch notebook" }).first().click();
-    const dialog = page.getByRole("dialog");
-    await expect(dialog.getByRole("radio", { name: "Google Colab" })).toBeChecked();
-    await expect(dialog.getByRole("radio", { name: "Private" })).toBeVisible();
-    await expect(page).toHaveScreenshot("launch-open.png", {
-      maxDiffPixelRatio: 0.01,
-      animations: "disabled",
-    });
-    await dialog.getByRole("button", { name: "Launch Notebook" }).click();
-    const opened = await page.evaluate(() => (window as any).__opened);
-    expect(opened).toHaveLength(1);
-    expect(opened[0]).toMatch(
+    const launch = page.getByRole("link", { name: "Launch notebook" }).first();
+    await expect(launch).toBeVisible();
+    await expect(launch).toHaveAttribute("target", "_blank");
+    await expect(launch).toHaveAttribute(
+      "href",
       /^https:\/\/colab\.research\.google\.com\/github\/QuantEcon\/[\w.-]+\.notebooks\/blob\/main\/notebook\.ipynb$/
     );
   });
