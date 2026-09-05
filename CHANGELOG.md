@@ -20,6 +20,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-09-05
+
+> Headline: the toolbar and lecture typography now match the existing Sphinx
+> builds — an icon-only search trigger, PT Serif headings on the Sphinx scale,
+> and QuantEcon-blue content links — and every toolbar control gets a proper
+> accessible name in place of a nested button. The notebook launcher collapses
+> to a direct Colab link, dropping the Private JupyterHub option no lecture
+> site ever configured. The "back to top" button no longer fades out of the
+> page margin on load, and the WebKit FOUC guard is hardened against the
+> hydration race that could turn it red for reasons unrelated to the critical
+> CSS.
+
 ### Changed
 - The toolbar search trigger is now a plain magnifier icon, matching the search
   affordance on the existing lecture sites and the styling of the neighbouring
@@ -494,7 +506,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial version of the QuantEcon MyST theme: Remix + `@myst-theme` book theme with QuantEcon branding, toolbar (home, search, fullscreen, font scaling, dark mode, downloads, Colab/JupyterHub launch, edit-on-GitHub), content-driven site footer, and bundled brand assets.
 
-[Unreleased]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.5.0...HEAD
+[2.5.0]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.3.1...v2.4.0
 [2.3.1]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.2.0...v2.3.0
