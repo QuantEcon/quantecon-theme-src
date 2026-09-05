@@ -63,6 +63,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   open on keyboard focus of the actual control. Closing the search dialog no
   longer leaves its tooltip open over the trigger
   ([#165](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/165)).
+- The "back to top" button no longer fades out of the page margin on load. It
+  is hidden by `opacity-0` and carries a `transition-opacity`, so on any frame
+  where the stylesheet is absent it painted at full opacity and then animated
+  away once the sheet landed. That frame is not the first paint alone: the
+  React hydration recovery ([#126](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/126))
+  re-renders the head and briefly drops the stylesheet after the component has
+  mounted, which is why gating the transition on mount cannot stop it. The
+  critical CSS now pins the button to `opacity: 0` on the same zero-specificity
+  terms as the toggle's close icon, and the WebKit FOUC guard asserts it — with
+  the rule the button never paints, without it the control sees it at full
+  opacity. Measured with the stylesheet delayed: 17–18 animating frames before,
+  none after. Supersedes the `useMounted` approach in
+  [#141](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/141).
 
 ### Dependencies
 - `@fontsource/pt-serif` 5.3.0 self-hosts the PT Serif heading face (400/700,
