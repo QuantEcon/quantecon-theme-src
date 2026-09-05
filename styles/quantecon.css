@@ -81,18 +81,99 @@
 :root {
   /* Inline literals, matching the Sphinx build's `code.literal`. */
   --qe-literal-color: #af5f5f; /* 4.54:1 on white -- AA, but only just */
+  /* Content links, matching the Sphinx build's `a` / `a:hover`. */
+  --qe-link-color: #0072bc; /* 5.05:1 on white -- AA */
+  --qe-link-hover-color: #004979;
 }
 
 /* Dark mode. The Sphinx theme defines its own dark literal colour under
    `body.dark-theme code.literal`; this is that value. The light #af5f5f scores
    only 3.85:1 on stone-900, below the 4.5:1 AA floor, where #d78787 is 6.42:1.
    `.dark` and `:root` are both (0,1,0), so this wins on source order -- it has
-   to stay below the block above. */
+   to stay below the block above.
+
+   Links go white, as the Sphinx dark theme paints them (`&.dark-theme a
+   { color: #fff !important }`) -- and as `.dark .article :where(a)` below
+   already does for every anchor that is not a `.link`. Hover stays white too:
+   the Sphinx dark theme has no hover colour change. */
 .dark {
   --qe-literal-color: #d78787;
+  --qe-link-color: #fff;
+  --qe-link-hover-color: #fff;
 }
 
 @layer base {
+  /* Heading face. The Sphinx build sets `h1,h2,h3,h4,h5` in `"PT Serif",serif`
+     and then puts h4/h5 back to Source Sans Pro at weight 900 -- so serif is
+     h1-h3 only, and that split is reproduced here. The face is self-hosted via
+     app/links.ts (@fontsource/pt-serif) and mirrored in CRITICAL_CSS
+     (app/root.tsx) so the first WebKit paint is serif too.
+
+     Family only here -- sizes are matched in the block below. The typography
+     plugin's heading weights (800/700/600) resolve against PT Serif's 400+700
+     faces to the same 700 the Sphinx build renders -- it asks for 900, which
+     also resolves to 700.
+
+     The plugin's own heading rules are `.article :where(h1)` etc at (0,1,0);
+     `.article h1` at (0,1,1) wins outright, and no utility on the rendered
+     headings (`pt-12 m-0`) sets a family. */
+  .article h1,
+  .article h2,
+  .article h3 {
+    font-family: 'PT Serif', serif;
+  }
+
+  /* Heading scale, matching the Sphinx build's content headings: h1 2em of
+     the body size, then h2 1.7rem / h3 1.4rem / h4 1.2rem / h5 1rem of its
+     root -- which is 18px at desktop widths, the same 18px this theme sets on
+     `.article`. So each value carries over as the same number in `em`, and
+     `em` (not `rem`) keeps the whole scale tracking the content size, per
+     UNITS above. h5 has no size rule: the plugin leaves it at 1em, already
+     the match. The plugin's own scale was h1 2.25em / h2 1.5em / h3 1.25em /
+     h4 1em. Mirrored in CRITICAL_CSS (app/root.tsx) so the first WebKit paint
+     lays out at the final sizes.
+
+     The plugin's heading *margins* are left alone, deliberately: they are
+     declared in `em`, so they resolve against these new sizes and keep their
+     proportions. */
+  .article h1 {
+    font-size: 2em; /* 36px at 18px content */
+  }
+
+  .article h2 {
+    font-size: 1.7em; /* 30.6px */
+  }
+
+  .article h3 {
+    font-size: 1.4em; /* 25.2px */
+  }
+
+  .article h4 {
+    font-size: 1.2em; /* 21.6px */
+  }
+
+  /* Heading line-height. Measured computed on the live Sphinx build (every
+     level renders line-height = 1.15 x its font-size: 41.4px at h1's 36px
+     down to 20.7px at h5's 18px), replacing the plugin's per-level values
+     (1.11 / 1.33 / 1.6 / 1.5, and prose's 1.75 on the unstyled h5). */
+  .article h1,
+  .article h2,
+  .article h3,
+  .article h4,
+  .article h5 {
+    line-height: 1.15;
+  }
+
+  /* h4/h5 weight. The Sphinx build sets both at 900 in Source Sans. Unlike
+     h1-h3 -- where any weight from 600 up resolves to PT Serif's single 700
+     face, so the plugin's values already render identically -- the sans here
+     is a variable font with a real weight axis, and the plugin's 600 (h4) and
+     unstyled 400 (h5) draw visibly lighter than the Sphinx build's 900. */
+  .article h4,
+  .article h5 {
+    font-weight: 900;
+  }
+
   /* Paragraph rhythm. The plugin ships `.article :where(p)` at 1.25em (22.5px).
      The Sphinx build leaves `p` at `margin: revert`, i.e. the UA default of
      `1em 0` measured against its own text size, so `1em` keeps that proportion.
@@ -120,9 +201,9 @@
     text-decoration: underline;
   }
 
-  /* Dark mode at (0,2,0): beats prose-invert, still loses to `.link`'s own dark
-     colour utility. `.link` is deliberately not excluded -- it took its weight
-     from this rule and its colour from its own utility. */
+  /* Dark mode at (0,2,0): beats prose-invert. `.link` is deliberately not
+     excluded -- it takes its weight from this rule, and its colour from the
+     CONTENT LINKS section below (which lands on the same #fff in dark mode). */
   .dark .article :where(a) {
     color: #fff;
     font-weight: 600;
@@ -231,6 +312,55 @@
      it has to be a rule that outranks those utilities, not this token. */
   .article {
     font-size: 1.125rem; /* 18px */
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   CONTENT LINKS
+
+   myst-to-react colours content anchors through two classes: `.link` (plain
+   links) and `.hover-link` (cross-references, citations, footnotes). Upstream
+   defines both in `@myst-theme/styles` as blue-700/blue-400 with blue
+   decoration colours; the Sphinx builds render links in QuantEcon blue
+   instead. These rules re-colour the classes to the measured Sphinx values --
+   colour only. The underline itself (always-on, dotted for `.hover-link`) is
+   left as upstream ships it.
+
+   Specificity is matched to the upstream rules this overrides, with source
+   order breaking each tie (this file is @import-ed after `@myst-theme/styles`,
+   see styles/app.css):
+
+     - `.link` here (0,1,0) ties upstream `.link` -- wins on order.
+     - `.link:hover` (0,2,0) ties upstream's compiled `hover:` utility.
+     - `.dark :is(...)` (0,2,0) ties upstream's `dark:` -> `.link:is(.dark *)`.
+     - `.dark :is(...):hover` (0,3,0) ties `.link:hover:is(.dark *)`.
+
+   `text-decoration-color: currentColor` replaces upstream's separate blue
+   decoration utilities in one declaration per rule -- the underline always
+   draws in the link's own colour, as the Sphinx build's plain underline does.
+
+   Known differences from the Sphinx build, deliberately out of scope here:
+   it underlines only on hover, and colours `:visited` links #004979. */
+@layer components {
+  .link,
+  .hover-link {
+    color: var(--qe-link-color, #0072bc);
+    text-decoration-color: currentColor;
+  }
+
+  .link:hover,
+  .hover-link:hover {
+    color: var(--qe-link-hover-color, #004979);
+    text-decoration-color: currentColor;
+  }
+
+  /* Dark mode needs its own rules despite the tokens flipping under `.dark`:
+     upstream's dark utilities are literal colours at higher specificity than
+     the base rules above, so tokens alone would never reach the page there. */
+  .dark :is(.link, .hover-link),
+  .dark :is(.link, .hover-link):hover {
+    color: var(--qe-link-color);
+    text-decoration-color: currentColor;
   }
 }
 

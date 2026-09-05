@@ -31,6 +31,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   trigger and hint placement; search behaviour, keyboard navigation and
   platform detection are unchanged
   ([#165](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/165)).
+- Lecture headings now follow the Sphinx builds' typography. `h1`–`h3` are set
+  in PT Serif with `h4`/`h5` kept in the sans face, sized on the Sphinx scale
+  (h1 `2em`, h2 `1.7em`, h3 `1.4em`, h4 `1.2em` of the content size, so the
+  scale tracks the font-scale controls), with every level at line-height 1.15
+  and `h4`/`h5` at weight 900 to match the Sphinx build's measured values.
+  All of it is mirrored into the critical CSS so the first WebKit paint on
+  static-build navigations is already serif at the final sizes rather than
+  painting the title small and swapping
+  ([#166](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/166)).
+- Content links are coloured to match the Sphinx lecture builds: `#0072bc`
+  (5.05:1 on white, WCAG AA) with `#004979` on hover, and white in both states
+  in dark mode as the Sphinx dark theme does. Both of myst-to-react's anchor
+  classes are covered — `.link` for plain links and `.hover-link` for
+  cross-references, citations and footnotes — via `--qe-link-color` /
+  `--qe-link-hover-color` tokens in `styles/quantecon.css`, overriding the
+  upstream blue-700/blue-400 at matched specificity, with the underline drawn
+  in `currentColor` so it always follows the text. Colour only: the Sphinx
+  builds' hover-only underline and `:visited` colour are deliberately not
+  matched here. Site chrome (footer badge, back-to-top) keeps its own rules
+  ([#167](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/167)).
 
 ### Fixed
 - Every toolbar control was nesting a second `<button>` inside its real button
@@ -70,6 +90,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   about grid layout. The underlying hydration failure remains open in
   [#126](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/126);
   carried over from [#141](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/141).
+
+### Dependencies
+- `@fontsource/pt-serif` 5.3.0 self-hosts the PT Serif heading face (400/700,
+  upright and italic), routed through the same Remix/esbuild pipeline as Source
+  Sans 3, so no Google Fonts request
+  ([#166](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/166)).
+
 
 ## [2.4.0] - 2026-09-04
 
