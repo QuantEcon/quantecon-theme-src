@@ -20,6 +20,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- The toolbar search trigger is now a plain magnifier icon, matching the search
+  affordance on the existing lecture sites and the styling of the neighbouring
+  toolbar icons, in place of the boxed "Search ⌘K" placeholder. The ⌘K /
+  Ctrl K keyboard hint moves into the search dialog, overlaid on the right edge
+  of the text input. Because `@myst-theme/site` exports only the top-level
+  `Search` component, `Search.tsx` is forked verbatim from
+  `@myst-theme/site@1.3.0` into `app/components/toolbar/` apart from the
+  trigger and hint placement; search behaviour, keyboard navigation and
+  platform detection are unchanged
+  ([#165](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/165)).
+
+### Fixed
+- Every toolbar control was nesting a second `<button>` inside its real button
+  or link, because the Radix tooltip trigger renders its own element by
+  default: invalid HTML and a duplicate tab and screen-reader stop on each
+  control. Tooltips now merge onto the real interactive element (`asChild`),
+  icon-only triggers that had no accessible name get an `aria-label` (the
+  mobile "more actions" menu no longer announces itself as "Downloads"), two
+  stray `tabIndex` attributes on decorative icons are dropped, and tooltips
+  open on keyboard focus of the actual control. Closing the search dialog no
+  longer leaves its tooltip open over the trigger
+  ([#165](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/165)).
+
 ## [2.4.0] - 2026-09-04
 
 > Headline: lecture content now matches the typography of the existing Sphinx

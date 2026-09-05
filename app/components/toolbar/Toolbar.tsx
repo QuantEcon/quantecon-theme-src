@@ -1,6 +1,6 @@
 import classNames from 'classnames';
 import { LoadingBar } from '@myst-theme/site';
-import { Search } from '@myst-theme/site/src/components/Navigation/Search';
+import { Search } from './Search';
 import { House } from 'lucide-react';
 import { SidebarToggle } from './SidebarToggle';
 import { QuantEconButton } from './QuantEconButton';
@@ -37,11 +37,11 @@ export function Toolbar() {
           <SidebarToggle />
         </li>
         <li>
-          <Link to={baseurl ?? '/'}>
-            <Tooltip label="Home">
+          <Tooltip label="Home" asChild>
+            <Link to={baseurl ?? '/'} aria-label="Home">
               <House className="opacity-90 hover:scale-110" width={iconSize} height={iconSize} />
-            </Tooltip>
-          </Link>
+            </Link>
+          </Tooltip>
         </li>
         {/*
           `shrink-0` is load-bearing: the logo has a pinned height and an auto

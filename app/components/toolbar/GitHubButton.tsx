@@ -37,9 +37,9 @@ export function GitHubButton({
   return (
     <div className={classNames('cursor-pointer', sizeClasses)}>
       {editUrl && (
-        <a href={editUrl}>
-          <Tooltip label="Edit on GitHub">{logo}</Tooltip>
-        </a>
+        <Tooltip label="Edit on GitHub" asChild>
+          <a href={editUrl}>{logo}</a>
+        </Tooltip>
       )}
       {!editUrl && logo}
     </div>

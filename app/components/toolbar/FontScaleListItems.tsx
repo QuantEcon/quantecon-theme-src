@@ -31,34 +31,36 @@ export function FontScaleListItems({ className, size }: { className: string; siz
   return (
     <>
       <li className={className}>
-        <button
-          onClick={increment}
-          className="flex items-center cursor-pointer"
-          disabled={current === 2}
-        >
-          <Tooltip label="Increase font size">
+        <Tooltip label="Increase font size" asChild>
+          <button
+            onClick={increment}
+            aria-label="Increase font size"
+            className="flex items-center cursor-pointer"
+            disabled={current === 2}
+          >
             <CirclePlus
               className={current === 2 ? 'opacity-100' : 'opacity-70 hover:scale-110 '}
               width={current === 2 ? 1.2 * size : size}
               height={current === 2 ? 1.2 * size : size}
             />
-          </Tooltip>
-        </button>
+          </button>
+        </Tooltip>
       </li>
       <li className={className}>
-        <button
-          onClick={decrement}
-          className="flex items-center cursor-pointer"
-          disabled={current === 0}
-        >
-          <Tooltip label="Reduce font size">
+        <Tooltip label="Reduce font size" asChild>
+          <button
+            onClick={decrement}
+            aria-label="Reduce font size"
+            className="flex items-center cursor-pointer"
+            disabled={current === 0}
+          >
             <CircleMinus
               className={current === 0 ? 'opacity-100' : 'opacity-70 hover:scale-110 '}
               width={current === 0 ? 1.2 * size : size}
               height={current === 0 ? 1.2 * size : size}
             />
-          </Tooltip>
-        </button>
+          </button>
+        </Tooltip>
       </li>
     </>
   );
