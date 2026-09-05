@@ -34,6 +34,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   opacity. Measured with the stylesheet delayed: 17–18 animating frames before,
   none after. Supersedes the `useMounted` approach in
   [#141](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/141).
+- The WebKit FOUC guard no longer goes red for reasons unrelated to the critical
+  CSS. Hydration currently fails on every page load (React #418/#423), and the
+  recovery re-render restores the inlined critical `<style>` 150–240ms after
+  `DOMContentLoaded` — after the control test has deliberately stripped it from
+  the served HTML to prove the guard is meaningful. The measurement used to run
+  from the test after `domcontentloaded`, so on a loaded runner every control
+  assertion flipped at once. It now samples from an init script that fires
+  in-page on `DOMContentLoaded`, before hydration is even scheduled. Both cases
+  also assert their own preconditions — that the strip actually matched, and
+  whether the inline block is present as sampled — so a reshaped `CRITICAL_CSS`
+  reports as a stale strip pattern instead of as a run of confusing failures
+  about grid layout. The underlying hydration failure remains open in
+  [#126](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/126);
+  carried over from [#141](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/141).
 
 ## [2.4.0] - 2026-09-04
 
