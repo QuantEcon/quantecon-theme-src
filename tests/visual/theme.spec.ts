@@ -199,8 +199,10 @@ test.describe("QuantEcon theme — visual regression", () => {
   test("sidebar-open", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await settle(page);
-    await page.locator('button:has([aria-label="Show table of contents"])').click();
-    // The open state is a 300ms translate transition; wait for the sidebar to
+    // The icons are aria-hidden, so the button itself carries the only
+    // accessible name to target.
+    await page.getByRole("button", { name: "Table of contents" }).click();
+    // The open state is a 300ms translate transition; wait for the drawer to
     // be fully on-screen (its "Contents" heading at ratio 1) rather than a
     // fixed delay.
     await expect(page.getByText("Contents", { exact: true })).toBeInViewport({ ratio: 1 });
@@ -208,6 +210,52 @@ test.describe("QuantEcon theme — visual regression", () => {
       maxDiffPixelRatio: 0.01,
       animations: "disabled",
     });
+  });
+
+  // Guards the reason the drawer is a popover: the browser owns the toggle, so
+  // it works on the server-rendered HTML without hydration. Every other test
+  // runs with JS on and would pass without that property, so this is the only
+  // thing stopping an onClick or a client-only wrapper from silently taking it.
+  test.describe("without JavaScript", () => {
+    // The ordinary `page` fixture, with JS off — no hand-built context, so the
+    // project's own baseURL applies rather than a positional lookup.
+    test.use({ javaScriptEnabled: false });
+
+    test("drawer-opens-without-javascript", async ({ page }, testInfo) => {
+      test.skip(
+        testInfo.project.name !== "desktop-chrome",
+        "asserts a server-render property; one engine is enough"
+      );
+      await page.goto("/", { waitUntil: "domcontentloaded" });
+      const drawer = page.locator(".qe-toc");
+      // Presence first: `toBeHidden` also passes on zero matches, so without
+      // this a renamed or missing drawer would read as "correctly closed".
+      await expect(drawer).toHaveCount(1);
+      await expect(drawer).toBeHidden();
+      await page.getByRole("button", { name: "Table of contents" }).click();
+      await expect(drawer).toBeVisible();
+      await expect(page.getByText("Contents", { exact: true })).toBeInViewport({ ratio: 1 });
+    });
+  });
+
+  // A popover paints in the top layer, above the search dialog's backdrop and
+  // panel. Light dismiss cannot cover the keyboard route to search, so the
+  // drawer closes itself when a modal dialog mounts (see ContentsSidebar.tsx).
+  test("drawer-closes-when-search-opens", async ({ page }, testInfo) => {
+    test.skip(
+      testInfo.project.name !== "desktop-chrome",
+      "keyboard-shortcut behaviour; one engine is enough"
+    );
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await settle(page);
+    const drawer = page.locator(".qe-toc");
+    await page.getByRole("button", { name: "Table of contents" }).click();
+    await expect(drawer).toBeVisible();
+    // Upstream binds Ctrl+K (Cmd+K only when it detects a Mac UA; the Desktop
+    // Chrome device profile is not one).
+    await page.keyboard.press("Control+k");
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await expect(drawer).toBeHidden();
   });
 
   // Launch popover: Colab is the default and primary target (BinderHub is
@@ -282,8 +330,9 @@ test.describe("QuantEcon theme — visual regression", () => {
     await page.goto(`${noThebeBase}/notebook`, { waitUntil: "domcontentloaded" });
     await settle(page);
     // Sanity-check we actually loaded the notebook page (so the count-0 below
-    // isn't a false pass from a 404 / wrong page).
-    await expect(page.getByText("Notebook outputs").first()).toBeVisible();
+    // isn't a false pass from a 404 / wrong page). Match the heading, not bare
+    // text — the drawer links to this page by the same name.
+    await expect(page.getByRole("heading", { name: "Notebook outputs" })).toBeVisible();
     await expect(page.getByRole("button", { name: /start compute/i })).toHaveCount(0);
   });
 });
