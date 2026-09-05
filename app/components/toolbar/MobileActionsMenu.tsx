@@ -8,9 +8,9 @@ import { GitHubButton } from './GitHubButton';
 export function MobileActionsMenu({ sizeClasses, size }: { sizeClasses: string; size: number }) {
   return (
     <DropdownMenu.Root>
-      <Tooltip label="Downloads" asChild>
+      <Tooltip label="More actions" asChild>
         <DropdownMenu.Trigger
-          aria-label="Downloads"
+          aria-label="More actions"
           className="flex items-center cursor-pointer"
         >
           <EllipsisVertical className="opacity-90 hover:scale-110" width={size} height={size} />
