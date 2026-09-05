@@ -1,7 +1,7 @@
 import type { LinksFunction, V2_MetaFunction, LoaderFunction } from '@remix-run/node';
 import tailwind from '~/styles/app.css';
 import thebeCoreCss from 'thebe-core/dist/lib/thebe-core.css';
-import { SourceSans3CSS } from '~/links';
+import { PTSerifCSS, SourceSans3CSS } from '~/links';
 import { getConfig } from '~/backend/loaders.server';
 import type { SiteLoader } from '@myst-theme/common';
 import {
@@ -58,8 +58,8 @@ export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
  *
  * Because these rules carry no specificity, every property set here MUST also
  * be declared by the real stylesheet, otherwise it can never be overridden.
- * (E.g. parking the nav panel off-screen with `visibility:hidden` would stick
- * forever, since no Tailwind class sets `visibility` — hence the transform.)
+ * (Setting `visibility:hidden` on something no Tailwind class un-hides, say,
+ * would stick forever.)
  *
  * Keep the values in sync with their sources of truth:
  *   - font stack:    tailwind.config.js  -> theme.extend.fontFamily.sans
@@ -73,6 +73,15 @@ export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
  *                    it is declared below rather than in styles/app.css so it
  *                    is available at this first paint too. Being `local()`-only
  *                    it costs no request.
+ *   - heading face:  styles/quantecon.css -> `.article h1/h2/h3` ("PT Serif",
+ *                    self-hosted via app/links.ts like the sans above, so it is
+ *                    likewise absent at first paint). Without this rule the
+ *                    headings paint in the sans stack and swap to serif when
+ *                    the Tailwind bundle lands; the generic `serif` fallback
+ *                    here is far closer to the final shape. The sizes come
+ *                    from the same block. They matter beyond reflow: the UA
+ *                    default for an h1 inside <article> is 1.5em, not 2em,
+ *                    so without them the h1 would paint visibly small.
  *   - content size:  styles/quantecon.css -> `.article` font-size (1.125rem).
  *                    Without it the article paints at the UA default 16px and
  *                    jumps to 18px when the Tailwind bundle lands, reflowing
@@ -85,27 +94,35 @@ export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
  *                    page background; the inner content panel uses `qepage-dark`
  *                    #222, see app/components/Page.tsx — intentionally not set here
  *                    since these rules target <body>.)
- *   - nav panel:     app/components/ContentsSidebar.tsx -> `.qe-contents-sidebar`
- *                    (only the class name needs to stay in sync; see below)
  *
- * The nav-panel rule deliberately sets no width. `translateX(-100%)` resolves
- * against the element's own border box, so its right edge lands at `left + W -
- * W` = 0 for **any** width W — it is off-screen before app.css arrives and
- * stays off-screen after, even though the resolved width differs between the
- * two (350/250/350 across the base/lg/2xl bands). `position:fixed` is set so
- * the panel does not push the article down while it waits.
+ *   - toggle icon:   styles/app.css -> `.qe-toc-toggle__close` (only the class
+ *                    name needs to stay in sync)
+ *
+ * The contents drawer itself needs no rule here — as a popover the UA
+ * stylesheet already hides it while closed (see `.qe-toc` in styles/app.css).
+ * Its toggle does: both icons are always in the DOM and lucide emits real
+ * width/height attributes, so without this rule the close icon paints beside
+ * the hamburger on that first frame. The `body:has(.qe-toc:popover-open)` rule
+ * in app.css outranks this zero-specificity one, so the open state still swaps.
  */
 const CRITICAL_CSS = `
 @font-face{font-family:"Source Sans 3 Fallback";src:local("Helvetica"),local("Arial"),local("Liberation Sans"),local("Arimo");size-adjust:92.25%;ascent-override:111%;descent-override:43.36%;line-gap-override:0%}
 :where(html){font-family:"Source Sans 3 Variable","Source Sans 3","Source Sans 3 Fallback",sans-serif}
 :where(.article){font-size:1.125rem}
+:where(.article h1,.article h2,.article h3){font-family:"PT Serif",serif}
+:where(.article h1){font-size:2em}
+:where(.article h2){font-size:1.7em}
+:where(.article h3){font-size:1.4em}
+:where(.article h4){font-size:1.2em}
+:where(.article h1,.article h2,.article h3,.article h4,.article h5){line-height:1.15}
+:where(.article h4,.article h5){font-weight:900}
 :where(body){margin:0;background-color:#fff}
 :where(.dark body){background-color:#1c1917}
 :where([hidden],.hidden){display:none}
+:where(.qe-toc-toggle__close){display:none}
 :where(.simple-center-grid){display:grid;grid-template-columns:[screen-start] 1fr [body-start] minmax(300px,800px) [body-end] 1fr [screen-end]}
 :where(.simple-center-grid) > *{grid-column:body-start / body-end}
 @media (min-width:1280px){:where(.simple-center-grid){grid-template-columns:[screen-start] 1fr 200px 20px [body-start] 800px [body-end] 20px [margin-start] 200px [margin-end] 1fr [screen-end]}}
-:where(.qe-contents-sidebar){position:fixed;left:0;transform:translateX(-100%)}
 `;
 
 export const links: LinksFunction = () => {
@@ -120,6 +137,9 @@ export const links: LinksFunction = () => {
     // renders — a 404, or the missing-site response thrown below — and the body
     // font has to be right on those pages too.
     ...SourceSans3CSS,
+    // Self-hosted PT Serif for the article headings (see app/links.ts). Also
+    // on the root route: the ErrorBoundary pages render an <h1> too.
+    ...PTSerifCSS,
     { rel: 'stylesheet', href: tailwind },
     { rel: 'stylesheet', href: thebeCoreCss },
     { rel: 'stylesheet', href: '/myst-theme.css' },

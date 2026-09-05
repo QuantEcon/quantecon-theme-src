@@ -103,6 +103,77 @@
 }
 
 @layer base {
+  /* Heading face. The Sphinx build sets `h1,h2,h3,h4,h5` in `"PT Serif",serif`
+     and then puts h4/h5 back to Source Sans Pro at weight 900 -- so serif is
+     h1-h3 only, and that split is reproduced here. The face is self-hosted via
+     app/links.ts (@fontsource/pt-serif) and mirrored in CRITICAL_CSS
+     (app/root.tsx) so the first WebKit paint is serif too.
+
+     Family only here -- sizes are matched in the block below. The typography
+     plugin's heading weights (800/700/600) resolve against PT Serif's 400+700
+     faces to the same 700 the Sphinx build renders -- it asks for 900, which
+     also resolves to 700.
+
+     The plugin's own heading rules are `.article :where(h1)` etc at (0,1,0);
+     `.article h1` at (0,1,1) wins outright, and no utility on the rendered
+     headings (`pt-12 m-0`) sets a family. */
+  .article h1,
+  .article h2,
+  .article h3 {
+    font-family: 'PT Serif', serif;
+  }
+
+  /* Heading scale, matching the Sphinx build's content headings: h1 2em of
+     the body size, then h2 1.7rem / h3 1.4rem / h4 1.2rem / h5 1rem of its
+     root -- which is 18px at desktop widths, the same 18px this theme sets on
+     `.article`. So each value carries over as the same number in `em`, and
+     `em` (not `rem`) keeps the whole scale tracking the content size, per
+     UNITS above. h5 has no size rule: the plugin leaves it at 1em, already
+     the match. The plugin's own scale was h1 2.25em / h2 1.5em / h3 1.25em /
+     h4 1em. Mirrored in CRITICAL_CSS (app/root.tsx) so the first WebKit paint
+     lays out at the final sizes.
+
+     The plugin's heading *margins* are left alone, deliberately: they are
+     declared in `em`, so they resolve against these new sizes and keep their
+     proportions. */
+  .article h1 {
+    font-size: 2em; /* 36px at 18px content */
+  }
+
+  .article h2 {
+    font-size: 1.7em; /* 30.6px */
+  }
+
+  .article h3 {
+    font-size: 1.4em; /* 25.2px */
+  }
+
+  .article h4 {
+    font-size: 1.2em; /* 21.6px */
+  }
+
+  /* Heading line-height. Measured computed on the live Sphinx build (every
+     level renders line-height = 1.15 x its font-size: 41.4px at h1's 36px
+     down to 20.7px at h5's 18px), replacing the plugin's per-level values
+     (1.11 / 1.33 / 1.6 / 1.5, and prose's 1.75 on the unstyled h5). */
+  .article h1,
+  .article h2,
+  .article h3,
+  .article h4,
+  .article h5 {
+    line-height: 1.15;
+  }
+
+  /* h4/h5 weight. The Sphinx build sets both at 900 in Source Sans. Unlike
+     h1-h3 -- where any weight from 600 up resolves to PT Serif's single 700
+     face, so the plugin's values already render identically -- the sans here
+     is a variable font with a real weight axis, and the plugin's 600 (h4) and
+     unstyled 400 (h5) draw visibly lighter than the Sphinx build's 900. */
+  .article h4,
+  .article h5 {
+    font-weight: 900;
+  }
+
   /* Paragraph rhythm. The plugin ships `.article :where(p)` at 1.25em (22.5px).
      The Sphinx build leaves `p` at `margin: revert`, i.e. the UA default of
      `1em 0` measured against its own text size, so `1em` keeps that proportion.
