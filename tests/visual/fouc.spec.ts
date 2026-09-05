@@ -9,10 +9,11 @@ import { test, expect, type Page, type Route } from "@playwright/test";
  * grid collapsed to `display: block`. The fix inlines critical CSS into `<head>`
  * (see `app/root.tsx`), which parses synchronously and styles that first paint.
  *
- * The same unstyled frame also exposed the contents sidebar: `-translate-x-full`
- * does nothing until app.css lands, so the panel painted in-flow and visible,
- * then slid shut once the stylesheet arrived — the "menu opens on load" report.
- * It is covered here too, since the cause and the guard are the same.
+ * The contents drawer is checked here too: any panel that relies on author CSS
+ * to stay hidden paints open in that same frame. It is a popover now, so the UA
+ * stylesheet hides it and the assertions below expect that. The toggle's close
+ * icon and the "back to top" button are the other two things that would paint
+ * without author CSS; each has a rule in the critical block and is asserted on.
  *
  * This test makes the failure mode deterministic by **aborting all external
  * stylesheets**, so the only styling that can reach the page is the inline
@@ -27,22 +28,17 @@ import { test, expect, type Page, type Route } from "@playwright/test";
 const PAGE = "/";
 
 /**
- * Slack, in CSS px, allowed on the parked nav panel's right edge.
+ * Aborts external stylesheets, optionally stripping the inline critical block.
  *
- * `translateX(-100%)` puts that edge at exactly 0 in theory, but the panel is
- * unstyled at this point, so its width is shrink-to-fit and lands on a
- * fractional value (135.171875px in WebKit here). WebKit snaps the painted
- * translate to a whole device pixel while leaving the border-box width
- * fractional, so the measured edge comes back at +0.171875 rather than 0 — the
- * exact remainder varies with the intrinsic width, hence with platform font
- * metrics. A strict `> 0` test therefore passes on the ubuntu CI runner and
- * fails on macOS for the same, correct, markup.
- *
- * 1px is well inside "not visible" and well outside any snapping remainder.
+ * Returns a `strippedCritical` probe rather than trusting the regex to have
+ * matched. If `CRITICAL_CSS` is ever reshaped so the pattern stops matching,
+ * the control would otherwise run against a fully-styled page and fail on its
+ * *assertions* — reporting "expected block, received grid", which points at the
+ * critical CSS rather than at the stale pattern that is actually at fault.
+ * Asserting this probe turns that into a failure that names itself.
  */
-const OFFSCREEN_EPS = 1;
-
 async function isolateInlineCss(page: Page, { stripCritical = false } = {}) {
+  const probe = { strippedCritical: false };
   await page.route("**/*", async (route: Route) => {
     const req = route.request();
 
@@ -54,49 +50,114 @@ async function isolateInlineCss(page: Page, { stripCritical = false } = {}) {
     // Control: serve the document with the inlined critical <style> removed.
     if (req.resourceType() === "document" && stripCritical) {
       const response = await route.fetch();
-      const body = (await response.text()).replace(
+      const served = await response.text();
+      const body = served.replace(
         /<style>[^<]*:where\(\.simple-center-grid\)[^<]*<\/style>/g,
         "<!-- critical CSS removed for control -->",
       );
+      if (body !== served) probe.strippedCritical = true;
       return route.fulfill({ response, body });
     }
 
     return route.continue();
   });
+  return probe;
 }
 
-async function firstPaintState(page: Page) {
+/**
+ * Key under which the in-page sampler parks its measurement on `window`.
+ */
+const SAMPLE_KEY = "__qeFirstPaint";
+
+type FirstPaint = {
+  gridDisplay: string;
+  bodyFont: string;
+  sidebarRendered: boolean | null;
+  toggleCloseRendered: boolean | null;
+  backToTopOpacity: string | null;
+  appliedExternal: boolean;
+  criticalInline: boolean;
+};
+
+/**
+ * Measure at first paint, from inside the page, before React hydrates.
+ *
+ * The measurement used to run from the test after `domcontentloaded`, which
+ * left roughly a 150ms budget before hydration. That is not enough: hydration
+ * currently fails on every load (React #418/#423, tracked in #126), and the
+ * recovery re-render puts the critical `<style>` back — measured at 150–240ms
+ * after `DOMContentLoaded`. The control strips that block from the served HTML
+ * precisely to prove the guard is meaningful, so when React restored it the
+ * control's assertions all flipped at once and `fouc-guard` went red for
+ * reasons that had nothing to do with the critical CSS.
+ *
+ * Sampling from an init script closes that window: it runs on
+ * `DOMContentLoaded`, in-page and synchronously, and it reads only the DOM. The
+ * ordering is empirical rather than guaranteed — Remix v1 emits its entry as an
+ * inline `type="module" async` script whose imports must resolve before
+ * `entry.client.tsx` even schedules `requestIdleCallback`/`setTimeout` for
+ * `hydrateRoot`, and WebKit dispatches DOMContentLoaded at end of parse — but
+ * that ordering is what the #126 timings show, with the earliest observed
+ * restoration an order of magnitude later than the sample.
+ *
+ * Note this deliberately survives a *fixed* #126: a control that strips the
+ * inline block guarantees a hydration mismatch by construction, so no repair to
+ * the hydration failure itself could make a post-hydration sample safe here.
+ */
+async function firstPaintState(page: Page): Promise<FirstPaint> {
+  await page.addInitScript((key) => {
+    document.addEventListener(
+      "DOMContentLoaded",
+      () => {
+        const grid = document.querySelector(".simple-center-grid");
+        const sidebar = document.querySelector(".qe-toc");
+        const closeIcon = document.querySelector(".qe-toc-toggle__close");
+        const backToTop = document.querySelector(".qe-back-to-top");
+        const applied = Array.from(document.styleSheets).filter((sheet) => {
+          try {
+            return !!sheet.cssRules && sheet.cssRules.length > 0; // applied, not pending
+          } catch {
+            return false; // cross-origin / not yet loaded
+          }
+        });
+        const sample: FirstPaint = {
+          gridDisplay: grid ? getComputedStyle(grid).display : "(absent)",
+          bodyFont: getComputedStyle(document.body).fontFamily,
+          // A closed popover is `display: none` per the UA stylesheet, so it
+          // paints nothing even with no author CSS at all — hence both tests
+          // below expect it hidden.
+          //
+          // `null` when the element is missing, so a renamed hook fails the
+          // explicit presence guard instead of silently satisfying "not
+          // rendered".
+          sidebarRendered: sidebar ? sidebar.getClientRects().length > 0 : null,
+          // The toggle's close icon is hidden by a critical-CSS rule; without
+          // it both icons paint side by side on the first frame. `null` when
+          // missing, for the same reason as above.
+          toggleCloseRendered: closeIcon ? closeIcon.getClientRects().length > 0 : null,
+          // "Back to top" is hidden by opacity rather than display, and
+          // carries a transition — so if it paints visible here it will *fade*
+          // out once the stylesheet lands. The critical block pins it to 0.
+          // `null` when missing, as above.
+          backToTopOpacity: backToTop ? getComputedStyle(backToTop).opacity : null,
+          // null href == an inline <style>; any string == an external sheet
+          // that applied
+          appliedExternal: applied.some((sheet) => !!sheet.href),
+          // Whether the inline block is present in the document as sampled —
+          // the state the assertions below are actually about.
+          criticalInline: Array.from(document.querySelectorAll("style")).some((el) =>
+            (el.textContent ?? "").includes(":where(.simple-center-grid)"),
+          ),
+        };
+        (window as unknown as Record<string, unknown>)[key] = sample;
+      },
+      { once: true },
+    );
+  }, SAMPLE_KEY);
+
   await page.goto(PAGE, { waitUntil: "domcontentloaded" });
-  await page.waitForSelector(".simple-center-grid", { timeout: 5000 }).catch(() => {});
-  return page.evaluate(() => {
-    const grid = document.querySelector(".simple-center-grid");
-    const sidebar = document.querySelector(".qe-contents-sidebar");
-    const applied = Array.from(document.styleSheets).filter((sheet) => {
-      try {
-        return !!sheet.cssRules && sheet.cssRules.length > 0; // applied, not pending
-      } catch {
-        return false; // cross-origin / not yet loaded
-      }
-    });
-    return {
-      gridDisplay: grid ? getComputedStyle(grid).display : "(absent)",
-      bodyFont: getComputedStyle(document.body).fontFamily,
-      // The nav panel is closed on load, so it must start parked off-screen to
-      // the left: its right edge at (or left of) the viewport's left edge. If
-      // any real width of it is on-screen here, the menu visibly flashes open.
-      //
-      // Reported as the measured edge rather than a boolean so the assertions
-      // can carry a sub-pixel tolerance — see `OFFSCREEN_EPS` below.
-      //
-      // `null` when the element is missing, and the guards below reject it
-      // explicitly: `null` numerically coerces to 0, which would *pass* the
-      // off-screen check, so a renamed hook would slip through the main test
-      // and surface as a confusing failure in the control instead.
-      sidebarRight: sidebar ? sidebar.getBoundingClientRect().right : null,
-      // null href == an inline <style>; any string == an external sheet that applied
-      appliedExternal: applied.some((sheet) => !!sheet.href),
-    };
-  });
+  await page.waitForFunction((key) => !!(window as any)[key], SAMPLE_KEY, { timeout: 5000 });
+  return page.evaluate<FirstPaint, string>((key) => (window as any)[key], SAMPLE_KEY);
 }
 
 test.describe("FOUC guard (WebKit) — inline critical CSS styles the first paint", () => {
@@ -106,6 +167,10 @@ test.describe("FOUC guard (WebKit) — inline critical CSS styles the first pain
 
     // No external sheet applied, so anything styled below comes from inline CSS.
     expect(state.appliedExternal).toBe(false);
+    expect(
+      state.criticalInline,
+      "the inline critical <style> is missing from the page as served — app/root.tsx no longer inlines CRITICAL_CSS"
+    ).toBe(true);
     // The reported FOUC symptoms must be absent on first paint:
     expect(state.gridDisplay).toBe("grid"); // grid not collapsed to block
     // Head of the stack, not just a substring: "Source Sans 3 Variable" (the
@@ -117,30 +182,62 @@ test.describe("FOUC guard (WebKit) — inline critical CSS styles the first pain
     // not about the webfont having arrived.
     expect(state.bodyFont).toMatch(/^["']?Source Sans 3 Variable["']?\s*,/);
     expect(
-      state.sidebarRight,
-      "`.qe-contents-sidebar` not found — the hook the critical CSS targets was renamed or removed"
+      state.sidebarRendered,
+      "`.qe-toc` not found — the contents drawer was renamed or removed"
     ).not.toBeNull();
-    // Nav panel parked off-screen (right edge at 0, modulo the sub-pixel slack).
-    expect(state.sidebarRight).toBeLessThan(OFFSCREEN_EPS);
+    expect(state.sidebarRendered).toBe(false); // closed popover paints nothing
+    expect(
+      state.toggleCloseRendered,
+      "`.qe-toc-toggle__close` not found — the toggle's close icon was renamed or removed"
+    ).not.toBeNull();
+    expect(state.toggleCloseRendered).toBe(false); // hidden by the inline rule
+    expect(
+      state.backToTopOpacity,
+      "`.qe-back-to-top` not found — the back-to-top button was renamed or removed"
+    ).not.toBeNull();
+    expect(state.backToTopOpacity).toBe("0"); // pinned by the inline rule
   });
 
   test("control: removing the inline critical CSS reproduces the FOUC", async ({ page }) => {
-    await isolateInlineCss(page, { stripCritical: true });
+    const probe = await isolateInlineCss(page, { stripCritical: true });
     const state = await firstPaintState(page);
+
+    // Preconditions first, so a stale strip pattern reports as itself rather
+    // than as a run of confusing assertion failures about the critical CSS.
+    expect(
+      probe.strippedCritical,
+      "the strip pattern matched nothing in the served HTML — CRITICAL_CSS was reshaped and the regex in isolateInlineCss needs updating"
+    ).toBe(true);
+    expect(
+      state.criticalInline,
+      "the inline critical <style> is present despite the strip — it was restored before the sample (see #126)"
+    ).toBe(false);
 
     // With no CSS at all, the page is unstyled — this proves the guard above is
     // meaningful (the external abort really does strip styling).
     expect(state.appliedExternal).toBe(false);
     expect(state.gridDisplay).toBe("block");
     expect(state.bodyFont).not.toMatch(/Source Sans 3/);
-    // Without the inline rule the nav panel lays out in-flow and fully visible —
-    // this is the "menu flashes open on load" symptom. Measured at ~1272px of a
-    // 1280px viewport, so the margin over OFFSCREEN_EPS is three orders of
-    // magnitude: the two states are never in danger of being confused.
+    // Hidden even with every stylesheet stripped — that is the UA stylesheet's
+    // doing, not ours, so this control expects it hidden rather than flashing.
     expect(
-      state.sidebarRight,
-      "`.qe-contents-sidebar` not found — the hook the critical CSS targets was renamed or removed"
+      state.sidebarRendered,
+      "`.qe-toc` not found — the contents drawer was renamed or removed"
     ).not.toBeNull();
-    expect(state.sidebarRight).toBeGreaterThan(OFFSCREEN_EPS);
+    expect(state.sidebarRendered).toBe(false);
+    // Unlike the drawer, the close icon relies on the critical CSS: with it
+    // stripped, both icons paint — which proves the inline rule is doing work.
+    expect(
+      state.toggleCloseRendered,
+      "`.qe-toc-toggle__close` not found — the toggle's close icon was renamed or removed"
+    ).not.toBeNull();
+    expect(state.toggleCloseRendered).toBe(true);
+    // Same for "back to top": with the inline rule gone it paints at full
+    // opacity, which is the state the transition would then animate away from.
+    expect(
+      state.backToTopOpacity,
+      "`.qe-back-to-top` not found — the back-to-top button was renamed or removed"
+    ).not.toBeNull();
+    expect(state.backToTopOpacity).toBe("1");
   });
 });

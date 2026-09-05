@@ -38,18 +38,21 @@ export function LaunchButton({ size, showLabel }: { size: number; showLabel?: bo
     sourcePath: launch_source_path,
   };
 
+  // The tooltip merges onto the anchor (`asChild`) rather than rendering its
+  // own trigger inside it -- see Tooltip.tsx and the GitHubButton for the
+  // same shape. The anchor is the one interactive element.
   return (
-    <a
-      href={buildColabUrl(orgRepo, location, config)}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Launch notebook"
-      className="flex items-center cursor-pointer"
-    >
-      <Tooltip label="Launch notebook in Google Colab">
+    <Tooltip label="Launch notebook in Google Colab" asChild>
+      <a
+        href={buildColabUrl(orgRepo, location, config)}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Launch notebook"
+        className="flex items-center cursor-pointer"
+      >
         <CirclePlay className="opacity-90 hover:scale-110" width={size} height={size} />
         {showLabel && <span className="ml-2">Launch</span>}
-      </Tooltip>
-    </a>
+      </a>
+    </Tooltip>
   );
 }

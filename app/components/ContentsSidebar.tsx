@@ -3,16 +3,13 @@ import { getProjectHeadings } from '@myst-theme/common';
 import {
   useBaseurl,
   useLinkProvider,
-  useNavOpen,
   useProjectManifest,
   useSiteManifest,
-  useThemeTop,
   withBaseurl,
 } from '@myst-theme/providers';
-import { useSidebarHeight } from '@myst-theme/site';
-import classNames from 'classnames';
 import { slugToUrl } from 'myst-common';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { TOC_HEADING_ID, TOC_POPOVER_ID } from './contentsDrawer';
 
 type StrictHeading = Omit<Heading, 'level'> & { level: number };
 type HeadingGroup = StrictHeading[];
@@ -45,25 +42,43 @@ function Section({ group }: { group: HeadingGroup }) {
 }
 
 /**
- * True only after the component has mounted on the client.
+ * Closes the drawer when a modal dialog opens.
  *
- * Both the server render and the first (hydrating) client render return
- * `false`, so the markup matches and React does not warn; the effect then
- * flips it on the frame after hydration.
+ * A popover lives in the browser's top layer, which paints above every
+ * z-indexed element — including the search dialog's backdrop (`z-[1000]`) and
+ * panel. Light dismiss does not help: it fires on pointerdown, and the search
+ * hotkey (Cmd/Ctrl+K) is a keydown, so the drawer would stay open above the
+ * modal, un-dimmed, with its links dead under the dialog's pointer-events lock.
+ *
+ * Radix portals the dialog into a container appended directly to <body>, so a
+ * shallow childList observer on <body> is enough — no subtree walk on every
+ * mutation. Any `role="dialog"` counts: a modal opening over an open drawer is
+ * wrong regardless of which dialog it is.
  */
-function useMounted() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  return mounted;
+function useCloseOnDialogOpen(popoverId: string) {
+  useEffect(() => {
+    const drawer = document.getElementById(popoverId);
+    if (!drawer || typeof drawer.hidePopover !== 'function') return;
+    const observer = new MutationObserver((records) => {
+      for (const record of records) {
+        for (const node of record.addedNodes) {
+          if (!(node instanceof Element)) continue;
+          if (node.matches('[role="dialog"]') || node.querySelector('[role="dialog"]')) {
+            drawer.hidePopover(); // no-op when already closed
+            return;
+          }
+        }
+      }
+    });
+    observer.observe(document.body, { childList: true });
+    return () => observer.disconnect();
+  }, [popoverId]);
 }
 
 export function ContentsSidebar() {
-  const [open] = useNavOpen();
-  const mounted = useMounted();
+  useCloseOnDialogOpen(TOC_POPOVER_ID);
   const config = useSiteManifest();
   const project = useProjectManifest();
-  const top = useThemeTop();
-  const { toc } = useSidebarHeight(top);
   const baseurl = useBaseurl();
   const Link = useLinkProvider();
 
@@ -96,37 +111,19 @@ export function ContentsSidebar() {
     );
 
   return (
-    <div
-      ref={toc}
-      className={classNames(
-        // Stable hook for the inline critical CSS in app/root.tsx, which parks
-        // this panel off-screen on the very first paint — before app.css lands.
-        'qe-contents-sidebar',
-        'fixed top-0 left-0',
-        'w-[350px] lg:w-[250px] 2xl:w-[350px]',
-        'h-screen w-[250px] z-[20] pt-[40px] pb-[90px] px-9',
-        'bg-qetoolbar-light dark:bg-qetoolbar-dark ',
-        'border-r-[1px] border-qetoolbar-border',
-        'overflow-y-auto',
-        // Belt and braces, not the primary guard. The critical CSS above is
-        // what actually prevents the flash; because both states are a -100%
-        // translate there is nothing for a transition to interpolate, so
-        // removing this gate does not by itself reintroduce it (measured).
-        //
-        // It is kept because the transition is only ever wanted in response to
-        // a click: withholding it until after mount means any correction made
-        // when app.css lands is applied instantly rather than animated, which
-        // keeps this component correct even if the critical rule is later
-        // changed or dropped.
-        //
-        // `transform` (not `all`) so only the slide animates, on the compositor.
-        mounted && 'transition-transform duration-300 ease-in-out',
-        { 'translate-x-0': open, '-translate-x-full': !open }
-      )}
-      style={{ top: '50px' }}
-    >
-      <div className="mb-4 text-lg font-bold text-qetext-light dark:text-qetext-dark">Contents</div>
-      <nav className="text-qetext-light">
+    // A popover: the browser owns the open/closed state, so there is none in
+    // React and the drawer works before hydration. All presentation lives in
+    // `.qe-toc` (styles/app.css).
+    <div id={TOC_POPOVER_ID} popover="auto" className="qe-toc">
+      {/* A styled div, not a heading: the drawer precedes every page's <h1>
+          in DOM order, so an <h2> here would invert heading-order navigation
+          whenever the drawer is open. */}
+      <div id={TOC_HEADING_ID} className="mb-4 text-lg font-bold">
+        Contents
+      </div>
+      {/* Labelled by the title above, not a second `aria-label` — the toggle
+          is already named "Table of contents"; don't repeat it here. */}
+      <nav aria-labelledby={TOC_HEADING_ID}>
         {headings?.map((headingOrGroup) => {
           if (Array.isArray(headingOrGroup))
             return (

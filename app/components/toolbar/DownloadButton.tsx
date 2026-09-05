@@ -42,17 +42,15 @@ export function DownloadsButton({ size, showLabel }: { size: number; showLabel?:
 
   return (
     <DropdownMenu.Root>
-      <DropdownMenu.Trigger className="flex items-center cursor-pointer">
-        <Tooltip label="Downloads">
-          <CloudDownload
-            className="opacity-90 hover:scale-110"
-            width={size}
-            height={size}
-            tabIndex={0}
-          />
+      <Tooltip label="Downloads" asChild>
+        <DropdownMenu.Trigger
+          aria-label="Downloads"
+          className="flex items-center cursor-pointer"
+        >
+          <CloudDownload className="opacity-90 hover:scale-110" width={size} height={size} />
           {showLabel && <span className="ml-2">Downloads</span>}
-        </Tooltip>
-      </DropdownMenu.Trigger>
+        </DropdownMenu.Trigger>
+      </Tooltip>
       <DropdownMenu.Portal>
         <DropdownMenu.Content
           align="end"

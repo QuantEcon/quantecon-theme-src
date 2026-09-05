@@ -20,6 +20,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- The toolbar search trigger is now a plain magnifier icon, matching the search
+  affordance on the existing lecture sites and the styling of the neighbouring
+  toolbar icons, in place of the boxed "Search ⌘K" placeholder. The ⌘K /
+  Ctrl K keyboard hint moves into the search dialog, overlaid on the right edge
+  of the text input. Because `@myst-theme/site` exports only the top-level
+  `Search` component, `Search.tsx` is forked verbatim from
+  `@myst-theme/site@1.3.0` into `app/components/toolbar/` apart from the
+  trigger and hint placement; search behaviour, keyboard navigation and
+  platform detection are unchanged
+  ([#165](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/165)).
+- Lecture headings now follow the Sphinx builds' typography. `h1`–`h3` are set
+  in PT Serif with `h4`/`h5` kept in the sans face, sized on the Sphinx scale
+  (h1 `2em`, h2 `1.7em`, h3 `1.4em`, h4 `1.2em` of the content size, so the
+  scale tracks the font-scale controls), with every level at line-height 1.15
+  and `h4`/`h5` at weight 900 to match the Sphinx build's measured values.
+  All of it is mirrored into the critical CSS so the first WebKit paint on
+  static-build navigations is already serif at the final sizes rather than
+  painting the title small and swapping
+  ([#166](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/166)).
+- Content links are coloured to match the Sphinx lecture builds: `#0072bc`
+  (5.05:1 on white, WCAG AA) with `#004979` on hover, and white in both states
+  in dark mode as the Sphinx dark theme does. Both of myst-to-react's anchor
+  classes are covered — `.link` for plain links and `.hover-link` for
+  cross-references, citations and footnotes — via `--qe-link-color` /
+  `--qe-link-hover-color` tokens in `styles/quantecon.css`, overriding the
+  upstream blue-700/blue-400 at matched specificity, with the underline drawn
+  in `currentColor` so it always follows the text. Colour only: the Sphinx
+  builds' hover-only underline and `:visited` colour are deliberately not
+  matched here. Site chrome (footer badge, back-to-top) keeps its own rules
+  ([#167](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/167)).
+
 ### Removed
 - The **Private JupyterHub** launch option. The toolbar's Launch control is now a
   direct link to Google Colab instead of a popover with a radio group and a
@@ -41,6 +73,115 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ([#87](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/87)).
 
 ### Fixed
+- Every toolbar control was nesting a second `<button>` inside its real button
+  or link, because the Radix tooltip trigger renders its own element by
+  default: invalid HTML and a duplicate tab and screen-reader stop on each
+  control. Tooltips now merge onto the real interactive element (`asChild`),
+  icon-only triggers that had no accessible name get an `aria-label` (the
+  mobile "more actions" menu no longer announces itself as "Downloads"), two
+  stray `tabIndex` attributes on decorative icons are dropped, and tooltips
+  open on keyboard focus of the actual control. Closing the search dialog no
+  longer leaves its tooltip open over the trigger
+  ([#165](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/165)).
+- The "back to top" button no longer fades out of the page margin on load. It
+  is hidden by `opacity-0` and carries a `transition-opacity`, so on any frame
+  where the stylesheet is absent it painted at full opacity and then animated
+  away once the sheet landed. That frame is not the first paint alone: the
+  React hydration recovery ([#126](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/126))
+  re-renders the head and briefly drops the stylesheet after the component has
+  mounted, which is why gating the transition on mount cannot stop it. The
+  critical CSS now pins the button to `opacity: 0` on the same zero-specificity
+  terms as the toggle's close icon, and the WebKit FOUC guard asserts it — with
+  the rule the button never paints, without it the control sees it at full
+  opacity. Measured with the stylesheet delayed: 17–18 animating frames before,
+  none after. Supersedes the `useMounted` approach in
+  [#141](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/141).
+- The WebKit FOUC guard no longer goes red for reasons unrelated to the critical
+  CSS. Hydration currently fails on every page load (React #418/#423), and the
+  recovery re-render restores the inlined critical `<style>` 150–240ms after
+  `DOMContentLoaded` — after the control test has deliberately stripped it from
+  the served HTML to prove the guard is meaningful. The measurement used to run
+  from the test after `domcontentloaded`, so on a loaded runner every control
+  assertion flipped at once. It now samples from an init script that fires
+  in-page on `DOMContentLoaded`, before hydration is even scheduled. Both cases
+  also assert their own preconditions — that the strip actually matched, and
+  whether the inline block is present as sampled — so a reshaped `CRITICAL_CSS`
+  reports as a stale strip pattern instead of as a run of confusing failures
+  about grid layout. The underlying hydration failure remains open in
+  [#126](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/126);
+  carried over from [#141](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/141).
+
+### Dependencies
+- `@fontsource/pt-serif` 5.3.0 self-hosts the PT Serif heading face (400/700,
+  upright and italic), routed through the same Remix/esbuild pipeline as Source
+  Sans 3, so no Google Fonts request
+  ([#166](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/166)).
+
+
+## [2.4.0] - 2026-09-04
+
+> Headline: lecture content now matches the typography of the existing Sphinx
+> builds, and inline code stops rendering wrapped in literal backticks — a
+> regression that reached every code span on every page, caused by a
+> `tailwind.config.js` spread of an upstream export that is a function, not an
+> object. The static-build asset fix from 2.3.1 is completed: four route and
+> shared-chunk stylesheets it did not cover still shipped absolute
+> `/myst_assets_folder/…` URLs, and a production build now emits zero of them
+> with all 78 references resolving. The site footer and back-to-top button are
+> styled to match the Sphinx builds.
+
+
+### Added
+- The site footer part (`site.parts.footer`) and the back-to-top button are
+  styled to match the Sphinx lecture builds, with every value measured off
+  python-programming.quantecon.org: 14.4px footer text at 70% opacity with an
+  inline licence badge and 36px clearance above the rule and below the last
+  line, and a `↑ Top` pill in QuantEcon blue (with `aria-label="Back to top"`
+  kept for screen readers). The footer content column now matches the width of
+  its own rule, and footer links get a readable colour in dark mode ([#155](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/155)).
+
+### Changed
+- Lecture content typography now follows the Sphinx builds, via a dedicated
+  `styles/quantecon.css` imported after `@myst-theme/styles` so nothing upstream
+  is forked: paragraph, list and figure rhythm in `em`, inline literals in the
+  Sphinx colour (`--qe-literal-color`, with the Sphinx dark-mode value under
+  `.dark`) at a root-relative size and in the monospace stack, and the `.auto`
+  and `.terminal` figure-sizing classes lecture sources already use. The file's
+  header documents how each rule outranks the typography plugin without
+  `!important` ([#155](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/155)).
+- A metric-matched `Source Sans 3 Fallback` face (local Helvetica/Arial with
+  `size-adjust` and ascent/descent overrides) is declared in the critical CSS
+  and appended to the `sans` stack, so the swap to the self-hosted webfont no
+  longer reflows the page: measured text width moves from about 8% off target
+  to under 0.5% while the woff2 is still loading ([#155](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/155)).
+- The contents drawer is rebuilt on the native Popover API. The browser now
+  owns its open/closed state (`popovertarget` on the toolbar toggle), so the
+  drawer works on the server-rendered HTML before hydration, a closed drawer is
+  `display: none` from the UA stylesheet on the very first paint — the
+  critical-CSS rule that parked it off-screen is gone rather than patched —
+  and its links leave the tab order and accessibility tree while closed.
+  **Behaviour changes:** the drawer is now light-dismissed (`popover="auto"`):
+  Escape closes it, and so does clicking or selecting anywhere outside it,
+  where before it stayed open until toggled. It also closes itself when the
+  search dialog opens, since a popover paints above every z-indexed layer
+  including a modal's backdrop. **Browser support:** browsers without the
+  Popover API (Firefox < 125, Safari < 17, which includes anything on iOS 16)
+  get neither the drawer nor its toggle — the in-page outline and site
+  navigation still reach every page there. A polyfill was considered and
+  rejected because it runs after first paint, reintroducing the flash this
+  removes; revisit if that share matters. Drawer widths now live in
+  `styles/app.css` keyed on `theme(screens.*)`, so they no longer depend on
+  Tailwind's emission order
+  ([#130](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/130),
+  [#144](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/144)).
+
+### Fixed
+- Inline code no longer renders wrapped in literal backticks.
+  `tailwind.config.js` spread `themeExtensions.typography` into an object, but
+  upstream exports it as a function, so the spread yielded `{}` and silently
+  dropped every upstream typography setting, including the rule that removes
+  the plugin's `::before`/`::after` backticks. The key is gone and the project
+  values it carried live in `styles/quantecon.css` ([#155](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/155)).
 - The remaining absolute asset URLs in the built stylesheets are now relative
   too. [#139](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/139)
   rewrote the stylesheets in `_assets/`, but Remix also emits route and
@@ -57,6 +198,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   directory rather than assuming one. A production build now emits **zero**
   absolute asset URLs and all 78 references resolve
   ([#150](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/150)).
+- The contents toggle icons no longer animate their first-paint correction,
+  and the close icon no longer paints beside the hamburger on the pre-`app.css`
+  frame. The icons now swap with `display` off the drawer's `:popover-open`
+  state instead of cross-fading with `transition-all`, so there is nothing to
+  animate, and a zero-specificity critical-CSS rule hides the close icon until
+  the stylesheet lands
+  ([#127](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/127),
+  [#144](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/144)).
+- The toolbar logo no longer distorts between roughly 770px and 840px, and the
+  desktop control set no longer overflows the right edge in the 768–856px band.
+  The logo is `shrink-0` (preflight's `max-width: 100%` was letting it clamp to
+  a shrinking flex item), and the toolbar's gap, separator and padding widen at
+  `lg` rather than `md`, returning about 148px to that band
+  ([#144](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/144)).
+- The contents toggle has a visible `:focus-visible` ring, so keyboard users
+  can see where focus returns after Escape closes the drawer (WCAG 2.4.7)
+  ([#144](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/144)).
 
 ## [2.3.1] - 2026-08-26
 
@@ -336,7 +494,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial version of the QuantEcon MyST theme: Remix + `@myst-theme` book theme with QuantEcon branding, toolbar (home, search, fullscreen, font scaling, dark mode, downloads, Colab/JupyterHub launch, edit-on-GitHub), content-driven site footer, and bundled brand assets.
 
-[Unreleased]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.3.1...HEAD
+[Unreleased]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.3.1...v2.4.0
 [2.3.1]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/QuantEcon/quantecon-theme.mystmd/compare/v2.1.0...v2.2.0
