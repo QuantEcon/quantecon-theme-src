@@ -31,6 +31,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   trigger and hint placement; search behaviour, keyboard navigation and
   platform detection are unchanged
   ([#165](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/165)).
+- Lecture headings now follow the Sphinx builds' typography. `h1`–`h3` are set
+  in PT Serif with `h4`/`h5` kept in the sans face, sized on the Sphinx scale
+  (h1 `2em`, h2 `1.7em`, h3 `1.4em`, h4 `1.2em` of the content size, so the
+  scale tracks the font-scale controls), with every level at line-height 1.15
+  and `h4`/`h5` at weight 900 to match the Sphinx build's measured values.
+  All of it is mirrored into the critical CSS so the first WebKit paint on
+  static-build navigations is already serif at the final sizes rather than
+  painting the title small and swapping
+  ([#166](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/166)).
 
 ### Fixed
 - Every toolbar control was nesting a second `<button>` inside its real button
@@ -43,6 +52,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   open on keyboard focus of the actual control. Closing the search dialog no
   longer leaves its tooltip open over the trigger
   ([#165](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/165)).
+
+### Dependencies
+- `@fontsource/pt-serif` 5.3.0 self-hosts the PT Serif heading face (400/700,
+  upright and italic), routed through the same Remix/esbuild pipeline as Source
+  Sans 3, so no Google Fonts request
+  ([#166](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/166)).
+
 
 ## [2.4.0] - 2026-09-04
 
