@@ -40,6 +40,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   static-build navigations is already serif at the final sizes rather than
   painting the title small and swapping
   ([#166](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/166)).
+- Content links are coloured to match the Sphinx lecture builds: `#0072bc`
+  (5.05:1 on white, WCAG AA) with `#004979` on hover, and white in both states
+  in dark mode as the Sphinx dark theme does. Both of myst-to-react's anchor
+  classes are covered — `.link` for plain links and `.hover-link` for
+  cross-references, citations and footnotes — via `--qe-link-color` /
+  `--qe-link-hover-color` tokens in `styles/quantecon.css`, overriding the
+  upstream blue-700/blue-400 at matched specificity, with the underline drawn
+  in `currentColor` so it always follows the text. Colour only: the Sphinx
+  builds' hover-only underline and `:visited` colour are deliberately not
+  matched here. Site chrome (footer badge, back-to-top) keeps its own rules
+  ([#167](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/167)).
 
 ### Fixed
 - Every toolbar control was nesting a second `<button>` inside its real button
