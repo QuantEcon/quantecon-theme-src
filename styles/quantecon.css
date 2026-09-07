@@ -583,7 +583,8 @@
    The light values are the Sphinx build's as shipped. Two fall short of
    WCAG AA on a white ground -- comments #60a0b0 (2.9:1) and numbers
    #40a070 (3.4:1) -- and are reproduced for parity; revisiting them is a
-   decision for both themes, not a fix for one.
+   decision for both themes, not a fix for one. Measured in full, with
+   AA-passing candidates and the options, on #172.
    --------------------------------------------------------------------------- */
 .hljs-comment,
 .hljs-quote {
