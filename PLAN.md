@@ -371,7 +371,7 @@ properly is tracked as future work — see the enhancement issues linked from #8
 
 ## Phase 3 — Code highlighting + text colour schemes
 
-**Status: complete** *(2026-09-07, #89)* — defaults only, by design. Before building,
+**Status: complete** *(2026-09-07, #89 via #171)* — defaults only, by design. Before building,
 the scoping pass on #89 found that no lecture repo sets `qetheme_code_style` or
 `color_scheme`: every live site runs the defaults, so parity is the default rendering,
 applied unconditionally, and the switch surface (Pygments toggle, `gruvbox` / `none`,

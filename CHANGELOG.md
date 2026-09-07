@@ -27,14 +27,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   scope by scope onto the `hljs-*` classes; the mapping, and the two Pygments
   classes highlight.js has no scope for (operators and module names), are
   documented in `styles/quantecon.css`. Phase 3 of the book-theme parity plan
-  ([#89](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/89)), Goal A.
+  ([#89](https://github.com/QuantEcon/quantecon-theme.mystmd/issues/89)), Goal A. ([#171](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/171))
 - Emphasis, strong text and definition terms render in the Sphinx builds'
   default `seoul256` text colours -- teal `em`, amber `strong` and `dt`, both
   upright at weight 550 -- through `--qe-emphasis-color`, `--qe-strong-color`
   and `--qe-definition-color` custom properties with dark-mode values, beside
   the existing `--qe-literal-color`. Only the default scheme ships: no lecture
   repo sets `color_scheme`, so the `gruvbox` / `none` switches and the
-  custom-CSS hook are deferred until a consumer asks for one. Phase 3, Goal B.
+  custom-CSS hook are deferred until a consumer asks for one. Phase 3, Goal B. ([#171](https://github.com/QuantEcon/quantecon-theme.mystmd/pull/171))
 
 ## [2.5.0] - 2026-09-05
 
